@@ -1,0 +1,51 @@
+* {
+    color: rgb(240, 67, 153);
+}
+
+/*this is an universial selector */
+
+h1 {
+    color: limegreen;
+    font-size: larger;
+    font-weight:bolder;
+    text-transform:uppercase;
+    font-family: "Gupter", serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+h2 {
+    color: limegreen;
+    padding: 30px;
+}
+
+h3 {
+    color: limegreen;
+}
+
+.my_class {
+    color: blueviolet;
+}
+
+p strong {
+    color: blue;
+    background-color: rgb(106, 194, 29);
+    
+}
+
+article {
+    text-align: center;
+    border: 1px dashed lime;
+    padding: 10px;
+    font-family: "Gupter", serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+
+/*span {
+    display: block;
+}
+/*#my_heading {
+    color: brown;
+}
