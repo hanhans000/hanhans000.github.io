@@ -5,78 +5,327 @@
 }
 
 body {
+  font-family: "Poppins", sans-serif;
+  /* I believe Poppins font here is ideal since it doesn't overpower different fonts and is easily readable as a body text*/
   background: linear-gradient(125deg, #c3cff5, #f2c2e1);
-  background-size: cover;
-  color: #4f29c6;
-}
-
-.box {
-  width: 80%;
-  margin: auto;
-  overflow: hidden;
-  background-color: #ffffffd1;
-  padding: 20px;
-  border-radius: 20px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  /* Subtle shadow for depth and mimic the 3d feel of the original website */
+  /* I think the gradient background creates so much depth for the whole website. It's also consistent with the overall palette of the original website. */
+  color: #5d5671;
+  line-height: 1.6;
 }
 
 header {
-  background-color: #a962d9;
-  font-family: "Montserrat", sans-serif;
-  color: white;
-  padding: 20px 0;
-}
-
-h1 {
+  background: linear-gradient(135deg, #4f29c6, #8a6ff5);
+  /* another gradient to make it more dynamic and create more depth */
+  padding: 80px 20px 50px;
   text-align: center;
-  margin-bottom: 10px;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
 }
 
-ul {
+.header-content {
+  max-width: 1200px;
+  margin: auto;
+}
+
+header h1 {
+  /* font-family: "Poppins", sans-serif; */
+  /* font-family: "Red Hat Display", sans-serif; */
+  font-family: "Space Mono", monospace;
+  /* I chose this font since the mono type and coding/space, it gives it a futuristic impression and it went well with the pink-ish/gradient color underneath when I put it in white.*/
+  font-weight: 5--;
+  font-size: 3.5em;
+  color: #ffffff;
+  background: linear-gradient(90deg, #d8b4ff, #eceaff);
+  /* another gradient to make it more dynamic and create more depth */
+  padding: 15px 30px;
+  border-radius: 10px;
+  display: inline-block;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 30px;
+}
+
+.navigationlist {
+  margin-top: 40px;
+  list-style: none;
   display: flex;
   justify-content: center;
-  list-style: none;
+  gap: 30px;
 }
 
 .navigationlist a {
   color: #ffffff;
+  /* white color have the biggest contrast on this dark purple */
   text-decoration: none;
-  font-weight: bold;
-  margin: 0 15px;
+  font-family: "Poppins", sans-serif;
+  font-size: 1.2em;
+  padding: 10px 20px;
+  border-radius: 25px;
 }
 
-.section h2 {
-  margin-bottom: 10px;
-  color: #0000004d;
-  font-size: 1.8em;
-  font-weight: 300;
+main {
+  max-width: 1200px;
+  margin: auto;
+  padding: 40px 20px;
+}
+
+h2 {
+  font-size: 2.5em;
+  font-weight: 700;
+  text-align: center;
+  color: #4f29c6;
+  font-family: "Red Hat Display", sans-serif;
+  /* this font and color to put it here looks so captivating and clean, I think it makes sense for the title font in this case */
+  margin-top: 40px;
+  margin-bottom: 30px;
 }
 
 .section {
-  margin-bottom: 40px;
+  margin-bottom: 60px;
+  padding: 30px;
+  background-color: #ffffff;
+  border-radius: 15px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+  /* I tried to create some 3D-feeling so I put the box shadow here */
+}
+.text-box {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: #ffffff;
   padding: 20px;
-  border-radius: 8px;
-  font-family: "Work Sans", sans-serif;
+  border-radius: 10px;
+  height: 100%;
+}
+
+.text-box h3 {
+  margin-bottom: auto;
+}
+
+.section h3 {
+  margin-bottom: 15px;
+  color: #4f29c6;
+  /* I wanted it to look consistent so I put purple here */
+  font-size: 2.2em;
+  font-weight: 400;
+  font-family: "Space Mono", monospace;
+}
+
+/* layout one: Design and Layout */
+.layout-one .grid-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  align-items: center;
+}
+
+.layout-one .text-box,
+.layout-one .image-box {
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.layout-one .image-box img {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+}
+
+/* layout for specific section in layout 1: three-column */
+/* This layout is quite experimental because I tried to keep it fun; it will be a little confusing on a larger screen, but when scaled down, it is still easy to read so I keep it this way. */
+.layout-specific .grid-container-dynamic {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  /* three columns with wider middle for images */
+  gap: 20px;
+  align-items: start;
+  position: relative;
+}
+
+.layout-specific .text-block {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 10px;
+  height: 100%;
+}
+
+.layout-specific .text-block h3 {
+  margin-bottom: auto;
+}
+
+.layout-specific .text-block p {
+  margin-top: auto;
+}
+
+.layout-specific .image-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+}
+
+.layout-specific .image-block img {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 768px) {
+  .layout-specific .grid-container-dynamic {
+    grid-template-columns: 1fr;
+  }
+
+  .layout-specific .image-block {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .layout-specific .image-block img {
+    width: calc(33.33% - 20px);
+    /* images adjusting itself */
+  }
+}
+
+/* Layout Two: Functionality and Interactivity */
+.layout-two .split-layout {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.layout-two .text-box,
+.layout-two .image-box {
+  flex: 1;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.layout-two .image-box img {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+}
+
+/* Image Styles */
+.layout-three .image-box img {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+}
+
+.layout-three .staggered-grid {
+  grid-template-columns: 1fr;
+}
+
+.layout-three .text-box,
+.layout-three .image-box {
+  grid-column: span 1;
+}
+
+.layout-three .text-box {
+  margin-bottom: 20px;
+}
+
+.layout-three .image-box img {
+  margin-bottom: 20px;
+}
+
+/* layout three: User Experience and Overall Impression */
+.layout-three .staggered-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+  grid-template-rows: auto;
+  position: relative;
+  /* i tried to ensure all content is positioned relative to the grid */
+  overflow: hidden;
+}
+
+.layout-three .text-box,
+.layout-three .image-box {
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  position: relative;
+  overflow: hidden;
+}
+
+.layout-three .text-box:nth-child(1) {
+  grid-column: 1 / span 2;
+  grid-row: 1;
+}
+
+.layout-three .image-box:nth-child(2) {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  align-self: center;
+}
+
+.layout-three .image-box:nth-child(3) {
+  grid-column: 1 / span 1;
+  grid-row: 2;
+}
+
+@media (max-width: 768px) {
+  /* when people scale the tab, this ensures that it is responsive and scales itself*/
+  .layout-three .staggered-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+  }
+
+  .layout-three .text-box:nth-child(1),
+  .layout-three .image-box:nth-child(2),
+  .layout-three .image-box:nth-child(3) {
+    grid-column: auto;
+    grid-row: auto;
+  }
+}
+
+/* gif Styling */
+.gif {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
 }
 
 .gif img {
   width: 100%;
+  max-width: 500px;
   height: auto;
   border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for GIFs */
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* specific GIF tyling */
+/* because of the layout, the gifs in row in layout 2 and the loading-screen GIF in layout 3 also need to style seperately so I just create another section for it */
+.specificgif {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.specificgif img {
+  width: 300px;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 footer {
   margin: 0;
   font-size: 0.9em;
-  background-color: #a962d9;
+  background-color: #bca6ed;
   color: #ffffff;
   padding: 10px 0;
   text-align: center;
-}
-
-main {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  box-shadow: 0px -4px 15px rgba(0, 0, 0, 0.1);
 }
