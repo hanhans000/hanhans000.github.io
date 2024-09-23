@@ -35,7 +35,7 @@ body.dark-mode {
   color: var(--dark-mode-text);
 }
 
-/* Sunset Mode */
+/* Brat Mode */
 body.sunset-mode {
   background-color: var(--sunset-mode-bg);
   color: var(--sunset-mode-text);
@@ -102,14 +102,13 @@ video {
 /* Lyrics Overlay: only affect video section */
 #lyrics-overlay {
   position: sticky;
-  bottom: 0;
-  left: 0;
+  /* bottom: 0;
+  left: 30;
   width: 50%;
-  height: 30%;
+  height: 30%; */
   justify-content: center;
-  background: rgba(0, 0, 0, 0.6); /* Slightly darker transparent background */
+  background: rgba(0, 0, 0, 0);
   color: var(--text-color);
-  z-index: 4; /* Allows the video controls to remain interactable */
   padding-bottom: 10px;
   text-align: center;
 }

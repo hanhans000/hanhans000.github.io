@@ -1,53 +1,33 @@
-// console.log("welcome to the class");
-// let myName = "Hans";
-// const city = "Melbourne";
-// // console.log(myName, "lives in", myCity02);
-// // console.log(`${myNames}`);
-// let count = 10;
-// console.log(count);
-// let isItMorningClass = true;
-// let isItAfternoonClass = false;
-
-// let myStudentRecord = {
-//   name: "Hans",
-//   id: 1234,
-//   class: "OART1013",
-//   isItScience: false,
-//   isitDesign: true,
-// };
-// console.log("Hello everyone, my name is", myStudentRecord.name);
-// console.log("my id is", myStudentRecord.id);
-// console.log("my class is", myStudentRecord.class);
-// console.log("are you science student?", myStudentRecord.isItScience);
-
-// const numberArray = [2, 4, 6, 8, 10];
-// console.log(numberArray[2]);
-// myStudentRecord.isItScience = true;
-// if (myStudentRecord.isitScience === true) {
-//   console.log;
-//   ("Sorry you are in a wrong class");
-// } else {
-//   console.log("Welcome to OART1013");
-// }
-
-// let myScore = 60;
-// if (myScore >= 90) {
-//   console.log("You scored a HD");
-// } else if (myScore < 70 && myScore >= 70) {
-//   console.log("you score a D");
-// }
-// console.log("you missed HD");
-// // this is a comment
-
-const names = ["Sara", "Peter", "Alice", "Jenny", "Robit", "Frank"];
-console.log(names.length);
-for (let i = 0; i < names.length; i++) {
-  console.log("hello", names[i]);
+function checkWeather() {
+  let body = document.querySelector("body");
+  let outer = document.querySelector(".outer");
+  console.log("I am just being clicked");
+  let myInput = document.querySelector("#myTemp");
+  let temp = myInput.value;
+  console.log("current temp is", temp);
+  if (temp >= 20 && temp < 30) {
+    body.style.backgroundColor = "orange";
+    outer.style.backgroundColor = "purple";
+    console.log("it feels sunny and warm");
+  } else if (temp >= 10 && temp < 20) {
+    body.style.backgroundColor = "lightblue";
+    outer.style.backgroundColor = "lime";
+    console.log("it feels cold");
+  } else if (temp >= 30) {
+    body.style.backgroundColor = "crimson";
+    outer.style.backgroundColor = "blue";
+    console.log("it is boiling hot");
+  } else if (temp < 10) {
+    body.style.backgroundColor = "gray";
+    outer.style.backgroundColor = "yellow";
+    console.log("it is freezing");
+  }
 }
 
-let shoppingCart = [
-    { name: "T-shirt", price: 20 }
-    { name: "Jeans", price: 50 }
-    { name: "Sneaker", price: 80 }
-    { name: "Backpack", price: 40}
-]
+// // let myName = "rohit";
+// // let mySirname = "khot";
+
+// // let myFullName = `my full name is ${myName} ${mySirname}`;
+// // console.log(myFullName);
+// let temp = 17;
+// // let temp = prompt("what is today's temperature?");

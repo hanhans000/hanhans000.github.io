@@ -25,7 +25,7 @@ const lyrics = [
 ];
 
 const times = [
-  1, 5, 10, 14, 18, 22, 26, 30, 35, 38, 42, 46, 50, 54, 58, 62, 66, 70, 74, 78,
+  4, 5, 10, 14, 18, 22, 26, 30, 35, 38, 42, 46, 50, 54, 58, 62, 66, 70, 74, 78,
   82,
 ];
 
@@ -36,7 +36,7 @@ video.addEventListener("timeupdate", () => {
   const currentTime = Math.floor(video.currentTime);
   let currentIndex = 0;
 
-  // Find the current lyric index based on the current video time
+  //current lyric index based on the current video time
   for (let i = 0; i < times.length; i++) {
     if (currentTime >= times[i]) {
       currentIndex = i;
@@ -49,7 +49,7 @@ video.addEventListener("timeupdate", () => {
   const nextLine =
     currentIndex + 1 < lyrics.length ? lyrics[currentIndex + 1] : "";
 
-  // Build the lyrics HTML with highlighted lines
+  //highlighted lines
   lyricsElement.innerHTML = `
     <p class="highlight">${previousLine}</p>
     <p class="highlight">${currentLine}</p>
@@ -99,3 +99,29 @@ sunsetModeToggle.addEventListener("click", () => {
   body.classList.remove("light-mode", "dark-mode");
   body.classList.add("sunset-mode");
 });
+
+// We create an object array containing the videos
+const Video = [
+  {
+    name: "brat-charli.mp4",
+  },
+];
+
+let loop = false;
+
+const playPauseButton = document.querySelector("#play-pause-btn");
+playPauseButton.addEventListener("click", togglePlay);
+const playPauseImg = document.querySelector("#play-pause-img");
+
+const muteUnmuteButton = document.querySelector("#mute-unmute-btn");
+muteUnmuteButton.addEventListener("click", toggleAudio);
+const muteUnmuteImg = document.querySelector("#mute-unmute-img");
+
+const increaseVolumeButton = document.querySelector("#increase-volume-btn");
+increaseVolumeButton.addEventListener("click", increaseVolume);
+
+const decreaseVolumeButton = document.querySelector("#decrease-volume-btn");
+decreaseVolumeButton.addEventListener("click", decreaseVolume);
+
+const loopButton = document.querySelector("#loop-btn");
+loopButton.addEventListener("click", loopVideo);
