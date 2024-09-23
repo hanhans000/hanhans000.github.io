@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Charli XCX - Interactive Experience</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    <!-- Header Section -->
+    <header>
+      <h1>Charli XCX - Von Dutch</h1>
+    </header>
+
+    <!-- Main Content Section (Video with Lyrics Overlay) -->
+    <main class="content-section">
+      <!-- Video and Lyrics overlay container -->
+      <div class="video-container">
+        <video id="music-video" width="100%" height="500" controls>
+          <source src="brat-charli.mp4" type="video/mp4" />
+        </video>
+
+        <!-- Synchronized Lyrics Overlay (only visible on video section) -->
+        <div id="lyrics-overlay" class="hidden">
+          <div id="lyrics">
+            <!-- Lyrics will be dynamically updated here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Toggle Lyrics Button -->
+      <button id="toggle-lyrics-btn">Push here for Lyrics</button>
+    </main>
+
+    <!-- More Info Button -->
+    <div class="interactive-buttons">
+      <button id="info-btn">More Info</button>
+    </div>
+
+    <!-- More Content Section -->
+    <section id="more-info" class="hidden">
+      <h2>About the Video</h2>
+      <p>
+        "Von Dutch" is one of Charli XCX's iconic hits, blending electronic
+        beats with pop influences. You can stream it
+        <a href="https://charlixcx.lnk.to/VondutchID" target="_blank">here</a>.
+      </p>
+    </section>
+
+    <!-- Artist Info and Community Interaction -->
+    <section class="artist-info">
+      <h2>About Charli XCX</h2>
+      <p>
+        Charli XCX is a British singer, songwriter, and pop music icon. Her
+        groundbreaking work has influenced the sound of modern pop and
+        alternative music.
+      </p>
+      <div class="share-buttons">
+        <button id="share-twitter">Share on Twitter</button>
+      </div>
+    </section>
+
+    <!-- Personalized Viewing -->
+    <section class="personalized-viewing">
+      <h2>Customize Your Experience</h2>
+      <button id="light-mode-toggle">Light Mode</button>
+      <button id="dark-mode-toggle">Dark Mode</button>
+      <button id="sunset-mode-toggle">Brat Mode</button>
+    </section>
+
+    <!-- Footer Section -->
+    <footer>
+      <p>&copy; 2024 Interactive Music Experience. All rights reserved.</p>
+    </footer>
+  </body>
+</html>
