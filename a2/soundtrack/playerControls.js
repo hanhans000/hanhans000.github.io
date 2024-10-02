@@ -1,24 +1,30 @@
-/* DEFINITIONS & SETUP */
+/*SETUP */
+// First, let's get references to all the elements we’ll be interacting with.
 let audioElement = document.getElementById("audioElement");
 // the buttons for the controls
 let playButton = document.getElementById("playButton");
 let stopButton = document.getElementById("stopButton");
 // the progress element
 let progressBar = document.getElementById("progressBar");
-// the image
-let heroImage = document.getElementById("rotateDisk");
+// the disk
+let Disk = document.getElementById("rotateDisk");
 
 // let animatedDisk = the html animated disk
 let animatedDisk = document.getElementById("rotateDisk");
 
-audioElement.removeAttribute("controls");
+// We remove the controls attribute using JS instead of leaving it out in the HTML as a fallback.
+// This ensures that if the JS fails to load, the media player will still display the default controls. audioElement.removeAttribute("controls");audioElement.removeAttribute("controls");
 
 document.getElementById("controlsWrapper").style.display = "flex";
 
+// Now, we listen for the loadedmetadata event to trigger, allowing us to retrieve the media's total duration.
+// Using an arrow function, we update the progress element’s max attribute with this duration.
+// This ensures the progress bar reflects the correct percentage of the media as it plays.
 audioElement.addEventListener("loadedmetadata", () => {
   progressBar.setAttribute("max", audioElement.duration);
 });
 
+// Some mobile devices may not trigger the loadedmetadata event, so we need a fallback to ensure the attribute is set.
 audioElement.addEventListener("playing", () => {
   if (!progressBar.getAttribute("max")) {
     progressBar.setAttribute("max", audioElement.duration);
@@ -32,12 +38,10 @@ audioElement.addEventListener("canplay", () => {
   progressBar.classList.remove("timeline-loading");
 });
 
-// when the media finishes we want to make sure that play icon switches back over from pause to indicate that the user can restart playback
-audioElement.addEventListener("ended", () => {
-  playButton.style.backgroundImage = "url('./icons/play.svg')";
-});
-
-/* PLAY/PAUSE */
+/* PLAY/PAUSE BUTTON */
+// We can control playback using the .play() and .pause() methods on the media element.
+// By combining them into one function, we make sure it behaves as expected.
+// And if the media is paused or stopped, we simply call .play().
 
 function playPause() {
   if (audioElement.paused || audioElement.ended) {
@@ -54,16 +58,14 @@ function playPause() {
 
 playButton.addEventListener("click", playPause);
 
-heroImage.addEventListener("click", playPause);
+Disk.addEventListener("click", playPause);
 
 /* TIMELINE */
-
+// We have two main tasks for our timeline: updating the progress bar to show how much of the audio has played, and allowing the user to click the bar to jump to a specific point.
+// To update the progress bar, we listen for the timeupdate event, which triggers whenever the current playback time changes. While the audio plays, this event fires continuously, keeping the progress bar in sync.
 audioElement.addEventListener("timeupdate", () => {
-  // this statement is simple - we update the progress bar's value attribute with the currentTime property of the audio, because timeupdate runs everytime
-  // currentTime is changed it'll update both as the audio plays and if we were to skip or stop the audio
+  //We update the progress bar's value using the audio's currentTime property. Since the timeupdate event fires whenever the current time changes, the progress bar stays in sync whether the audio is playing, skipped, or paused.
   progressBar.value = audioElement.currentTime;
-
-  /* CURRENT PROGRESS IN MM:SS */
 
   //updatinglog with the current time
   //console.log(parseInt(videoElement.currentTime))
@@ -73,43 +75,48 @@ audioElement.addEventListener("timeupdate", () => {
   // converting seconds to a time 00:00
 
   function convertingToTime(currentLengthOnlySec) {
-    // calculate how many minutes are in the currentLengthOnlySec so that if there was 73 it would be 1.2111 and telling it to round down to the nearest whole number / integer
     var minutes = Math.floor(currentLengthOnlySec / 60);
-    // setting the remaining seconds to calculate the currentLengthOnlySec minus the minutes variable that is * by 60 so if the current length num was 73 the equation would equal 13
     var remainingSeconds = currentLengthOnlySec - minutes * 60;
+    //this particular convertingToTime code I was using chatGPD to write, it setting the remaining seconds to calculate the currentLengthOnlySec
     // joining minutes and remainingSeconds, adding in a 0 in front of remainingSeconds if the value is lower than 10 so that numbers will appear in the same format even when single digit.
     var formattedTime =
       minutes + " : " + (remainingSeconds < 10 ? "0" : "") + remainingSeconds;
     return formattedTime;
   }
 
-  var formattedTime = convertingToTime(currentLengthOnlySec); // Call the function and get the result
-  // get the id of the div in my html and assign the text content to the formatted time
+  var formattedTime = convertingToTime(currentLengthOnlySec);
+  // Call the function and get the result
   document.getElementById("currentLengthNum").textContent = formattedTime;
 
-  /* TOTAL DURATION IN MM:SS */
-
-  /*  Creating a new variable and assigning the audio element duration to it with a parse function so the number is rounded  */
-  let totalDurationOnlySec = parseInt(audioElement.duration);
-  /* calling the math function I created for convertingToTime and applying it to the newly parsed total duration var i have created  */
+  /* Create a new variable and assign the audio element's duration to it, using a parse function to round the value */ let totalDurationOnlySec =
+    parseInt(audioElement.duration);
+  /* calling the math function Chat GPT created above for convertingToTime and applying it to the newly parsed total duration var i have created  */
   var totalDurationConverted = convertingToTime(
     totalDurationOnlySec - currentLengthOnlySec
   );
-  /* assigning the output time to the id totalDuration that is in my html  */
+  /* Set the formatted time as the content for the totalDuration ID in the HTML */
   document.getElementById("totalDuration").textContent = totalDurationConverted;
 
   // adding a percentage amount to be able to add a circle where the progress is
   progressPercentage = (currentLengthOnlySec / totalDurationOnlySec) * 100;
-  // testing print to console as a whole number %
   console.log(parseInt(progressPercentage) + "%");
 
   document.getElementById("progressSlide").style.left =
     progressPercentage - 1.5 + "%";
 });
 
+// The simplest way to implement scrubbing is by updating the audio’s currentTime when the user clicks on the timeline. Normally, I used my finger to drag the progress bar when I'm watching video or film online so I would like to create the that same satisfy experience here, as advanced user experience.
+// In addition to a single click, the code below allows users to click and drag along the timeline, continuously updating the currentTime, and only finishing scrubbing when the mouse button is released.
+// This requires a more sophisticated use of event listeners, but I’ll walk through the design and technical approach to make it clear.
 function scrubToTime(e) {
+  // The first step is to create a function that calculates the mouse’s position relative to the timeline and updates the audio element's currentTime accordingly.
+  // Each time the function runs, we’ll need the mouse position, which we can capture from the event passed to it.
+  // To make the interaction work when the mouse is over the progress bar, we could use the event, but since we want it to function even when the mouse is held down and dragged elsewhere on the page, we need to calculate it manually.
+  // e.clientX gives us the current cursor position from the left edge of the page.
+  // We subtract (progressBar.getBoundingClientRect().left + window.scrollX) to account for any gap between the left edge of the page and the beginning of the progress bar
   let x =
     e.clientX - (progressBar.getBoundingClientRect().left + window.scrollX);
+  // Finally, we update audioElement.currentTime to set the playback position based on this calculation.
   let newTime =
     clampZeroOne(x / progressBar.offsetWidth) * audioElement.duration;
 
@@ -126,13 +133,12 @@ function clampZeroOne(input) {
   return Math.min(Math.max(input, 0), 1);
 }
 
-// the click event fires only if the user presses the mouse down and then releases it on the same element. we can allow for a wider range of interactions by
-// further breaking this down this into its discrete parts and listening to both the mousedown and mouseup events seperately
-
+// The click event only triggers when the user presses and releases the mouse on the same element.
+//To enable more flexible interactions, we can break this down into two separate events: mousedown and mouseup, giving us finer control over the behavior.
 progressBar.addEventListener("mousedown", scrubToTime);
 progressBar.addEventListener("mousedown", (e) => {
-  // the behaviour here is to listen to the mousemove event (fired when the user moves their mouse) when the click is held down but then to stop listening to that
-  // event when the mouse click is released
+  // In this case, we listen for the mousemove event while the mouse is held down, allowing us to track the cursor's movement.
+  //Once the mouse button is released, stop listening to the event.
   window.addEventListener("mousemove", scrubToTime);
   window.addEventListener("mouseup", () => {
     window.removeEventListener("mousemove", scrubToTime);
@@ -157,17 +163,19 @@ function unmuteAudio() {
 muteButton.addEventListener("click", muteAudio);
 unmuteButton.addEventListener("click", unmuteAudio);
 
-/* HELPER FUNCTIONS */
-
+// This function ensures that the given input is clamped between 0 and 1. It takes an input value and returns the value if it's between 0 and 1; otherwise, it returns the nearest boundary (0 or 1). This part is write by chat GPT
+// It ensures the value never exceeds 1 or falls below 0 — a process known as clamping, where we limit the value to stay within a specific range.
+// Finally, we use this clamped value to calculate the exact point in the audio by multiplying it with the total duration, determining where to scrub.
 function clampZeroOne(input) {
   return Math.min(Math.max(input, 0), 1);
 }
 
 function logEvent(e) {
+  // This simple function logs the event e to the console, making it easier to track or debug interactions by printing out event information.
   console.log(e);
 }
-
-// Array of audio files in the correct order
+// I was trying to create an interactive tracklist that automatically plays the next track and highlights the current one as it plays.
+// array of audio files in the correct order
 const audioTracks = [
   "https://ia802706.us.archive.org/24/items/metro-boomin-presents-spider-man-across-the-spider-verse-soundtrack-from-and-ins/Hummingbird%20%28Metro%20Boomin%20%26%20James%20Blake%29.mp3", // Hummingbird
   "https://dn720300.ca.archive.org/0/items/metro-boomin-presents-spider-man-across-the-spider-verse-soundtrack-from-and-ins/Nas%20Morales%20%28Metro%20Boomin%20%26%20Nas%29.mp3", // Nas Morales
@@ -175,46 +183,47 @@ const audioTracks = [
 ];
 
 let currentTrackIndex = 0; // Start at the first track (Hummingbird)
-
+// Sometimes the track takes a while to start. I know it's just loading, not broken, but the original website can be really slow at times. I haven't found a way to fully solve this delay, so I just hope that each time I open the tab, it works fine. I've done what I can to improve the performance where possible.
 // Function to load and play a new track
 function loadTrack(index) {
-  currentTrackIndex = index; // Update current track index
-  audioElement.src = audioTracks[index]; // Set the audio source
-  audioElement.load(); // Load the new track
-  audioElement.play(); // Play the track
+  // This function loads and plays a track from the audioTracks array, based on the provided index. It also updates the display by reloading the track and setting it as the active track.
+  currentTrackIndex = index; // update current track index
+  audioElement.src = audioTracks[index]; // set the audio source
+  audioElement.load(); // load the new track
+  audioElement.play(); // play the track
 
-  // Update the track button colors based on the current track
+  // update the track button colors based on the current track
   updateTrackButtonColors(index);
 }
 
-// Event listener for Next Button
+// event listener for next button
 nextButton.addEventListener("click", () => {
-  // Move to the next track in the array, and loop back to the first if at the end
+  // move to the next track in the array, and loop back to the first if at the end
   currentTrackIndex = (currentTrackIndex + 1) % audioTracks.length;
   loadTrack(currentTrackIndex);
 });
 
-// Event listener for Previous Button
+// event listener for previous button
 prevButton.addEventListener("click", () => {
-  // Move to the previous track in the array, and loop to the last track if at the start
+  // move to the previous track in the array, and loop to the last track if at the start
   currentTrackIndex =
     (currentTrackIndex - 1 + audioTracks.length) % audioTracks.length;
   loadTrack(currentTrackIndex);
 });
 
-// When the track ends, automatically go to the next track
+// when the track ends, automatically go to the next track
 audioElement.addEventListener("ended", () => {
   currentTrackIndex = (currentTrackIndex + 1) % audioTracks.length;
   loadTrack(currentTrackIndex);
 });
 
-// Progress bar update logic
 audioElement.addEventListener("timeupdate", () => {
+  // This listener continuously updates the progress bar as the track plays, reflecting the current time. It also formats and displays the current playback time in minutes and seconds.
   progressBar.value = audioElement.currentTime;
 });
 
 document.addEventListener("DOMContentLoaded", function () {
-  // Define the audio track array
+  //to make sure it goes with right order, I decided to define the audio track here
   const audioTracks = [
     "https://ia802706.us.archive.org/24/items/metro-boomin-presents-spider-man-across-the-spider-verse-soundtrack-from-and-ins/Hummingbird%20%28Metro%20Boomin%20%26%20James%20Blake%29.mp3",
     "https://dn720300.ca.archive.org/0/items/metro-boomin-presents-spider-man-across-the-spider-verse-soundtrack-from-and-ins/Nas%20Morales%20%28Metro%20Boomin%20%26%20Nas%29.mp3",
@@ -225,20 +234,21 @@ document.addEventListener("DOMContentLoaded", function () {
   const progressBar = document.getElementById("progressBar");
   const currentLengthNum = document.getElementById("currentLengthNum");
 
-  // Function to load and play the selected track
+  // function to load and play the selected track
   function loadTrack(index) {
     audioElement.src = audioTracks[index];
-    audioElement.load(); // Reload the audio with the new source
+    audioElement.load();
+    // reload the audio with the new source
 
-    // Reset the progress bar and current time display when a new track is loaded
+    // reset the progress bar and current time display when a new track is loaded
     progressBar.value = 0;
     currentLengthNum.textContent = "00:00";
 
-    // Play the new track
+    // play the new track
     audioElement.play();
   }
 
-  // Add event listeners to the track list buttons
+  // add event listeners to the track list buttons
   const trackButtons = document.querySelectorAll(".track-button");
   trackButtons.forEach((button) => {
     button.addEventListener("click", () => {
@@ -247,16 +257,16 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  // Update progress bar max when track metadata is loaded
+  // update progress bar max when track metadata is loaded
   audioElement.addEventListener("loadedmetadata", () => {
     progressBar.setAttribute("max", audioElement.duration);
   });
 
-  // Update progress bar value as the track plays
+  // update progress bar value as the track plays
   audioElement.addEventListener("timeupdate", () => {
     progressBar.value = audioElement.currentTime;
 
-    // Update current time display in mm:ss format
+    // update current time display in mm:ss format
     let minutes = Math.floor(audioElement.currentTime / 60);
     let seconds = Math.floor(audioElement.currentTime % 60);
     if (seconds < 10) {
@@ -265,52 +275,53 @@ document.addEventListener("DOMContentLoaded", function () {
     currentLengthNum.textContent = minutes + ":" + seconds;
   });
 });
+//whenever code that related to math, I always using chatGPT, here is the case. However, this code is kinda easy for me to understand.
 
-// Get the track buttons and store them in an array
+// get the track buttons and store them in an array
 const trackButtons = document.querySelectorAll(".track-button");
 
-// Function to update the track button colors
+// function to update the track button colors
 function updateTrackButtonColors(currentTrackIndex) {
   trackButtons.forEach((button, index) => {
     if (index == currentTrackIndex) {
-      button.classList.add("active"); // Add the active class to the currently playing track
+      button.classList.add("active"); // add the active class to the currently playing track
     } else {
-      button.classList.remove("active"); // Remove the active class from other tracks
+      button.classList.remove("active"); // remove the active class from other tracks
     }
   });
 }
 
-// Function to load and play a new track
+// function to load and play a new track
 function loadTrack(index) {
   audioElement.src = audioTracks[index];
   audioElement.load(); // Reload the audio with the new source
   audioElement.play(); // Play the new track
 
-  // Update the button colors based on the current track
+  // update the button colors based on the current track
   updateTrackButtonColors(index);
 }
 
-// Event listener for Next Button
+// event listener for Next Button
 nextButton.addEventListener("click", () => {
   currentTrackIndex = (currentTrackIndex + 1) % audioTracks.length; // Loop through tracks
   loadTrack(currentTrackIndex);
 });
 
-// Event listener for Previous Button
+// event listener for Previous Button
 prevButton.addEventListener("click", () => {
   currentTrackIndex =
     (currentTrackIndex - 1 + audioTracks.length) % audioTracks.length; // Loop through tracks
   loadTrack(currentTrackIndex);
 });
 
-// Event listener for Track Buttons
+// event listener for Track Buttons
 trackButtons.forEach((button, index) => {
   button.addEventListener("click", () => {
-    loadTrack(index); // Load the track when the button is clicked
+    loadTrack(index); // load the track when the button is clicked
   });
 });
 
-// When the track ends, automatically go to the next track
+// when the track ends, automatically go to the next track
 audioElement.addEventListener("ended", () => {
   currentTrackIndex = (currentTrackIndex + 1) % audioTracks.length;
   loadTrack(currentTrackIndex);

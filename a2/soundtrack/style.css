@@ -23,7 +23,7 @@ body {
   overflow: hidden;
 }
 
-/* because I want to overlay the play icon on the audio they need to be in their own wrapper */
+/* I'm adding wrapper, I want to overlay the play icon on the audio they need to be in their own wrapper */
 .audio-element-wrapper {
   display: grid;
   grid-template-columns: 1fr;
@@ -33,6 +33,7 @@ body {
 
 #audioElement {
   width: 100%;
+  display: none; /* hides the default media controls */
   grid-column: 1/2;
   grid-row: 1/2;
 }
@@ -73,7 +74,7 @@ body {
 
 .button-icon {
   pointer-events: none;
-  /* ensures that the user interacts with the button as a whole and not just the icon. */
+  /* I want to ensures that the user interacts with the button as a whole and not just the icon. */
 }
 
 #playButton {
@@ -169,13 +170,14 @@ body {
   -moz-appearance: none;
   appearance: none;
   border: none;
-  height: 1rem;
+  height: 1.3rem;
   flex-grow: 1;
   cursor: pointer;
-  background-color: rgb(255, 255, 255);
-  opacity: 5%;
+  background-color: rgb(120, 6, 40);
+  opacity: 3%;
   box-shadow: 0 2px 3px var(--col-02) inset;
   width: 100%;
+  transform: translateY(13px);
 }
 
 .progressSlide {
@@ -194,7 +196,7 @@ body {
 
 /* changing the progress value (the filled portion of the progress bar)  */
 ::-webkit-progress-value {
-  background-color: rgb(255, 255, 255);
+  background-color: rgb(29, 49, 57);
 }
 
 .containerForProgress {
@@ -213,11 +215,11 @@ body {
 
 .rotateDisk {
   width: 80%;
-  height: auto; /* Use 'auto' for proportional height based on the image aspect ratio */
+  height: auto;
   animation: rotation 7s infinite linear;
   /* setting initial animation state to paused so that the disk doesnt turn until play is pressed*/
   animation-play-state: paused;
-  /* pointer-events: none; */
+  pointer-events: none;
   padding: 10%;
   grid-column: 1/-1;
   grid-row: 8/9;
@@ -229,7 +231,7 @@ body {
   pointer-events: all;
 }
 
-/* Here Is the content holder grid setup I have created to be able to space out the elements how I like */
+/* This is the grid layout for the content holder, allowing me to arrange the elements according to my desired spacing. */
 .contentHolder {
   color: rgb(65, 215, 229);
   text-align: center;
@@ -244,11 +246,11 @@ body {
 .rotateDisk {
   grid-row: 1/-1;
 }
-/* this was a grid element that I created to test the spacing and visualise the css grid within my browser while i was creating the page. I ended up discovering a function within firefox that showed the layout in a clearer way with numbers live along the grid that made the designing process much easier.  */
+/* This grid element was used to test spacing and visualize the CSS grid in the browser while building the page. */
 .grid-item {
-  border: 1px solid black; /* Add a border to grid items */
-  padding: 10px; /* Add some padding for spacing within grid items */
-  text-align: center; /* Center content within grid items */
+  border: 1px solid black;
+  padding: 10px; /* add some padding for spacing within grid items */
+  text-align: center;
   z-index: 3;
 }
 
@@ -257,7 +259,7 @@ body {
   width: 100%;
 }
 
-/* I rendered out my media player I modelled in blender with the camera limit set so that only the sections that are over the top of the disk are visible and the background wouldnt render below is my css for placing this png */
+/* I rendered all of my media player, modeled and textured in Blender, with the camera limit set to only show the sections above the disk, hiding the background. Here's the CSS for positioning this PNG. */
 .mediaPlayerOvertop {
   grid-column: 1/-1;
   width: 100%;
@@ -275,23 +277,10 @@ body {
   margin-right: auto;
   pointer-events: all;
   transform: translate(18px, -1px);
-  font-size: 1.7rem; /* Increase the font size for the current time */
-  font-family: "ATF Alternate Gothic", sans-serif; /* Apply ATF Alternate Gothic */
+  font-size: 1.7rem;
+  font-family: "ATF Alternate Gothic", sans-serif;
   font-family: "alternate-gothic-atf", sans-serif;
   font-weight: 500;
-}
-
-.assets {
-  width: auto;
-  height: 100px;
-}
-
-.resourcesHolder {
-  width: 100%;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
 }
 
 @keyframes loadingAnimation {
@@ -309,7 +298,9 @@ body {
   }
 }
 
-/* list for songs */
+/* list of songs */
+
+/* This is the tracklist section. When you press the next or previous button, the track will become active, or you can directly click on it to engage. I chose this design to align with the Spiderverse's comic and illustration style, mimicking a tracklist on a note. This concept adds a creative and interesting touch, making it more engaging and fitting with the overall art style. */
 
 .tracklistOvertop {
   z-index: 5;
@@ -334,8 +325,8 @@ ul#trackList {
   margin: 10px 2px;
   grid-column: 19/14;
   grid-row: 10/3;
-  width: 150px; /* Fixed width to create a square-like area */
-  height: 150px; /* Fixed height */
+  width: 150px; /* fixed width to create a square-like area */
+  height: 150px; /* fixed height */
   z-index: 5;
   font-family: "Reenie Beanie", cursive;
 }
@@ -349,14 +340,9 @@ ul#trackList {
   cursor: pointer;
   text-align: left;
   background-color: transparent;
-  font-family: "Reenie Beanie", cursive; /* Apply Reenie Beanie font */
+  font-family: "Reenie Beanie", cursive; /* as i have explained above, I tried to followed a certain comic style so I thought handwritting font is the best, and it also turns out great */
   font-size: 1rem;
   text-align: center;
-}
-
-/* Define a class for active track */
-.track-button.active {
-  color: rgb(255, 0, 0); /* Adjust text color for active state */
 }
 
 .document {
@@ -364,7 +350,6 @@ ul#trackList {
   font-size: 1.5rem;
   color: white;
   margin-bottom: 20px;
-  font-family: "ATF Alternate Gothic", sans-serif;
   font-family: "alternate-gothic-atf", sans-serif;
   line-height: 1.6;
   padding: 10px 20px;
