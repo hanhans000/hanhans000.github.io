@@ -193,6 +193,7 @@ function loadTrack(index) {
   audioElement.play(); // play the track
 
   // update the track button colors based on the current track
+  //based on the .track-button.active {
   updateTrackButtonColors(index);
 }
 
