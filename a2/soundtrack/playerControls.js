@@ -103,7 +103,7 @@ audioElement.addEventListener("timeupdate", () => {
   // testing print to console as a whole number %
   console.log(parseInt(progressPercentage) + "%");
 
-  document.getElementById("progressCircle").style.left =
+  document.getElementById("progressSlide").style.left =
     progressPercentage - 1.5 + "%";
 });
 
