@@ -345,6 +345,14 @@ ul#trackList {
   text-align: center;
 }
 
+.track-button.active {
+  color: rgb(
+    255,
+    0,
+    0
+  ); /* make the current playing songs turn red like it's written by a red marker on the note, functionally, to tell viewer that that track is playing */
+}
+
 .document {
   text-align: center;
   font-size: 1.5rem;
