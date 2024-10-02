@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+
+<!-- YOU NEED TO INCLUDE THE FOLLOWING HTML SOMEWHERE IN YOUR DESIGN -->
+
+
+
+<html lang="en">
+
+  <head>
+
+   
+    <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gesticulating</title>
+    <link rel="icon" type="/favicon" href="Favicon.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Orbitron">
+    <script src="playerControls.js" defer></script>
+
+  </head>
+
+  <body>
+    
+
+    
+
+
+    <!-- this element holds all of the media player -->
+    <div class="audio-player-wrapper">
+
+
+      <!-- I have created a new div with the class contentHolder with a grid setup so that I can place the different elements of the media player so that they fit within my design. -->
+      <div class="contentHolder">
+
+        <!-- At the top of the list I have the items that should appear on top of all the other elements in order. I have also used the z-index in html to ensure the correct placement of the multiple layers-->
+        <div class="currentLengthInt" id="currentLengthNum"> 0 : 00 </div>
+
+        <div class="containerForProgress">
+          <!-- the original progress bar from the code supplied -->
+          <progress class="audio-progress-bar" id="progressBar" value="0"></progress>
+          <div class="progressCircle" id="progressCircle">
+          </div>   
+        </div>
+
+        <div class="totalLengthInt" id="totalDuration"> 0 : 00 </div>
+        <button class="audio-control-button" id="playButton"></button>
+        <button class="audio-control-button" id="muteButton"></button>
+        <img id="audioPlayOverlay" src="./icons/play.svg">
+        <img src="overtop2.png" class="mediaPlayerOvertop" alt="">
+        <img src="CD.png" class="rotateDisk" id="rotateDisk" alt="">
+        <img src="meidaplayerbase2.png" class="mediaPlayerBase" alt="">
+        
+      </div>
+
+      <!-- this element holds the audio element and the overlay -->
+      <div class="audio-element-wrapper">
+
+
+        <audio id="audioElement" controls>
+          <source src="https://files.freemusicarchive.org/storage-freemusicarchive-org/tracks/4ObifFXlXTEaFngFPDhPzpDE2Qy8hM8n5tOcNp4y.mp3" type="audio/mp3">
+        </audio>
+
+        
+
+        
+
+      </div>
+      <!-- this element holds all of the custom controls -->
+      
+      <div class="audio-controls-wrapper" id="controlsWrapper">
+   
+   
+
+      </div>
+
+      <p class="attribution">
+        "<a target="_blank" rel="noopener noreferrer" href="https://freemusicarchive.org/music/ov-moi-omm/single/gesticulating/">Gesticulating</a>" by 
+        <a target="_blank" rel="noopener noreferrer" href="https://freemusicarchive.org/music/ov-moi-omm/">Ov Moi Omm</a> is licensed under 
+        <a target="_blank" rel="noopener noreferrer" href="https://creativecommons.org/licenses/by/4.0/">a Attribution 4.0 International License. 
+          <img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" style="height: 1em; margin-right: 0.125em; display: inline;"></img>
+          <img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" style="height: 1em; margin-right: 0.125em; display: inline;"></img>
+          <img src="https://mirrors.creativecommons.org/presskit/icons/nc.svg" style="height: 1em; margin-right: 0.125em; display: inline;"></img>
+          <img src="https://mirrors.creativecommons.org/presskit/icons/sa.svg" style="height: 1em; margin-right: 0.125em; display: inline;"></img>
+        </a>. 
+<br> <br>
+Link to additional <a href="https://lucash0rta.github.io/im2350/a2/e4/progress.html">progress document</a>
+      </p> 
+
+    
+
+
+    </div>
+
+  </body>
+
+
+
+</html>

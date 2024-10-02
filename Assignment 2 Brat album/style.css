@@ -1,0 +1,118 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: #fff600;
+  font-family: "Arial", sans-serif;
+  color: #000;
+}
+
+.container {
+  position: relative;
+  height: 100vh;
+  width: 100vw;
+  background: url("/mnt/data/Brat album 2.jpg") no-repeat center center;
+  background-size: cover;
+}
+
+/* Styling the tracks */
+.track {
+  position: absolute;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-weight: bold;
+}
+
+.track:hover {
+  background-color: #ddd;
+}
+
+/* Positioning each track based on the composition of the image */
+#track01 {
+  top: 10%;
+  left: 5%;
+}
+#track02 {
+  top: 10%;
+  right: 5%;
+}
+#track03 {
+  top: 30%;
+  left: 5%;
+}
+#track04 {
+  top: 30%;
+  right: 5%;
+}
+#track05 {
+  top: 50%;
+  left: 5%;
+}
+#track06 {
+  top: 50%;
+  right: 10%;
+}
+#track07 {
+  top: 60%;
+  left: 5%;
+}
+#track08 {
+  top: 65%;
+  right: 5%;
+}
+#track09 {
+  top: 70%;
+  left: 10%;
+}
+#track10 {
+  top: 75%;
+  right: 10%;
+}
+#track11 {
+  top: 80%;
+  left: 15%;
+}
+#track12 {
+  top: 80%;
+  right: 15%;
+}
+#track13 {
+  top: 85%;
+  left: 20%;
+}
+#track14 {
+  top: 85%;
+  right: 20%;
+}
+#track15 {
+  bottom: 5%;
+  right: 5%;
+}
+
+.media-player {
+  position: absolute;
+  bottom: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+}
+
+.progress-bar input[type="range"] {
+  width: 100%;
+}
+
+.time {
+  margin: 10px;
+  font-size: 1rem;
+  text-align: center;
+}
+
+footer p {
+  margin-top: 50px;
+  color: #000;
+  text-align: center;
+}

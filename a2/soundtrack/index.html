@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta
+      charset="utf-8"
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>Spiderverse</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Reenie+Beanie&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" type="image/png" href="CD.png" />
+    <link rel="stylesheet" href="https://use.typekit.net/lsl0fhz.css" />
+    <script src="playerControls.js" defer></script>
+  </head>
+
+  <body>
+    <!-- this element holds all of the media player -->
+    <div class="audio-player-wrapper">
+      <!-- I have created a new div with the class contentHolder with a grid setup so that I can place the different elements of the media player so that they fit within my design. -->
+      <div class="contentHolder">
+        <!-- clickable track list -->
+        <ul id="trackList">
+          Track
+          <li>
+            <button class="track-button" data-track-index="0">
+              Hummingbird (Metro Boomin & James Blake)
+            </button>
+          </li>
+          <li>
+            <button class="track-button" data-track-index="1">
+              Nas Morales (Metro Boomin & Nas)
+            </button>
+          </li>
+          <li>
+            <button class="track-button" data-track-index="2">
+              All The Way Live (Metro Boomin & Future, Lil Uzi Vert)
+            </button>
+          </li>
+        </ul>
+        <div class="currentLengthInt" id="currentLengthNum">0:00</div>
+        <!-- I was doing some nagvigation for the users so I'm adding the current length number -->
+        <div class="containerForProgress">
+          <!-- theprogress bar -->
+          <progress
+            class="audio-progress-bar"
+            id="progressBar"
+            value="0"
+          ></progress>
+          <div class="progressSlide" id="progressSlide"></div>
+        </div>
+        <div id="totalDuration"></div>
+        <!-- Add controls buttons -->
+        <button class="audio-control-button" id="playButton"></button>
+        <button class="audio-control-button" id="muteButton"></button>
+        <button class="audio-control-button" id="prevButton"></button>
+        <button class="audio-control-button" id="nextButton"></button>
+        <button class="audio-control-button" id="unmuteButton"></button>
+        <img src="note overlay 2.png" class="tracklistOvertop" alt="" />
+        <img src="overtop3.png" class="mediaPlayerOvertop" alt="" />
+        <img src="overtop2.png" class="mediaPlayerOvertop" alt="" />
+        <img src="CD.png" class="rotateDisk" id="rotateDisk" alt="" />
+        <img src="mediaplayerbase.png" class="mediaPlayerBase" alt="" />
+      </div>
+    </div>
+    <div class="audio-element-wrapper">
+      <audio id="audioElement" controls>
+        <source
+          src="https://ia802706.us.archive.org/24/items/metro-boomin-presents-spider-man-across-the-spider-verse-soundtrack-from-and-ins/Hummingbird%20%28Metro%20Boomin%20%26%20James%20Blake%29.mp3"
+          type="audio/mp3"
+        />
+      </audio>
+    </div>
+    <div class="audio-controls-wrapper" id="controlsWrapper"></div>
+    <!-- this is the link to additional progress document to explain further what am I doing -->
+    <p class="document">
+      <a href="a2/progress documenting/progressmaking.html">progress making</a>
+    </p>
+  </body>
+</html>

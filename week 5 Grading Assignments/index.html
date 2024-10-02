@@ -1,0 +1,37 @@
+<html lang="en"></html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Javascript examples</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Space+Grotesk&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="reset.css" />
+    <link rel="stylesheet" href="style.css" />
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    <section class="outer">
+      <p id="question1">How much did you score in the assignment 1?</p>
+      <input
+        type="number"
+        id="answer1"
+        placeholder="Enter a number between 1 to 30"
+      />
+
+      <p id="question2">How much did you score in the assignment 2?</p>
+
+      <input
+        type="number"
+        id="answer2"
+        placeholder="Enter a number between 1 to 30"
+      />
+      <button onclick="checkGrade()">Check your grade</button>
+      <!-- <input type="range" name="my-score" id="my-score" min="0" max="30" /> -->
+      <p id="report"></p>
+    </section> 
+  </body>
+</html>

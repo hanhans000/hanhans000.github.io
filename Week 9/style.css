@@ -1,0 +1,99 @@
+/* https://colorhunt.co/palette/1a120b3c2a21d5cea3e5e5cb */
+
+body {
+  background-color: #1a120b;
+  display: flex;
+  text-align: center;
+  margin: auto;
+  max-width: 1000px;
+  justify-content: center;
+  align-items: center;
+  font-family: "Space Grotesk", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+  color: #e5e5cb;
+  /* color: #3c2a21; */
+  font-size: 1.1rem;
+  gap: 1.5rem;
+}
+
+.outer {
+  border: 2px dashed #e5e5cb7a;
+  width: 400px;
+  min-height: 200px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  opacity: 1;
+  /* background-color: cornsilk; */
+  transition: opacity 0.5s ease, transform 0.5s ease, background-color 0.5s ease;
+}
+
+button {
+  padding: 10px 20px;
+  font-size: 1.4rem;
+  border-radius: 12px;
+  border-width: 0;
+  background-color: chartreuse;
+  color: blue;
+  cursor: pointer;
+  transition: background-color 0.5s ease scale 0.7s ease;
+}
+
+button:hover {
+  background-color: aqua;
+  color: rgb(211, 32, 32);
+  cursor: pointer;
+  scale: 0.8;
+}
+
+.duck-fill {
+  cursor: pointer;
+  transition: fill 0.5s ease-in-out;
+}
+
+.duck-fill:hover {
+  fill: rgb(255, 0, 234);
+}
+
+#box {
+  min-width: 100px;
+  min-height: 100px;
+  background-color: aqua;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 30px;
+  animation-name: color-wheel;
+  animation-duration: 5s;
+  animation-iteration-count: 3;
+  animation-timing-function: linear;
+}
+
+@keyframes color-wheel {
+  0% {
+    background-color: aquamarine;
+  }
+  20% {
+    background-color: yellowgreen;
+  }
+  40% {
+    background-color: aqua;
+  }
+  60% {
+    background-color: brown;
+  }
+}
+
+@keyframes duck-wheel {
+  0% {
+    fill: red;
+  }
+  35% {
+  }
+}

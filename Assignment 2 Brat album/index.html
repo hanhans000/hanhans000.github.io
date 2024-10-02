@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Charli XCX - Brat Album Experience</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="reset.css" />
+  </head>
+  <body>
+    <div class="container">
+      <!-- Track titles following the composition of the image -->
+      <div class="track" id="track01" data-time="0">360</div>
+      <div class="track" id="track02" data-time="133">Club classics</div>
+      <div class="track" id="track03" data-time="285">Sympathy is a knife</div>
+      <div class="track" id="track04" data-time="394">
+        I might say something stupid
+      </div>
+      <div class="track" id="track05" data-time="556">Talk talk</div>
+      <div class="track" id="track06" data-time="759">Von dutch</div>
+      <div class="track" id="track07" data-time="928">
+        Everything is Romantic
+      </div>
+      <div class="track" id="track08" data-time="1139">Rewind</div>
+      <div class="track" id="track09" data-time="1314">So I</div>
+      <div class="track" id="track10" data-time="1466">Girl, so confusing</div>
+      <div class="track" id="track11" data-time="1655">Apple</div>
+      <div class="track" id="track12" data-time="1791">B2b</div>
+      <div class="track" id="track13" data-time="1911">Mean girls</div>
+      <div class="track" id="track14" data-time="2085">
+        I think about it all the time
+      </div>
+      <div class="track" id="track15" data-time="2211">365</div>
+
+      <!-- Media player -->
+      <div class="media-player">
+        <audio id="audio-player" controls>
+          <source src="Charli XCX - brat [FULL ALBUM].mp3" type="audio/mp3" />
+          Your browser does not support the audio element.
+        </audio>
+        <div class="progress-bar">
+          <input type="range" id="progress" value="0" max="100" />
+        </div>
+        <div class="time">
+          <span id="current-time">00:00</span> /
+          <span id="total-time">37:00</span>
+        </div>
+      </div>
+
+      <footer>
+        <p>&copy; 2024 Charli XCX - Brat Album Experience</p>
+      </footer>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

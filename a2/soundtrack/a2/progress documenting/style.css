@@ -1,0 +1,23 @@
+body {
+  background-color: rgb(0, 0, 0); /* Set black background */
+  font-family: "ATF Alternate Gothic", sans-serif; /* Apply the desired font */
+  margin: 0; /* Remove default margin */
+  padding: 0; /* Remove default padding */
+}
+
+h1 {
+  font-family: "ATF Alternate Gothic", sans-serif; /* Apply the font to the heading */
+  font-size: 3rem; /* Adjust the size as per your design */
+  color: rgb(117, 72, 188); /* Accent color for the heading */
+  text-align: center; /* Center the heading */
+  margin-top: 20px; /* Add some space at the top */
+}
+
+.progressdocument {
+  width: 70%;
+  align-content: center;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  color: rgb(117, 72, 188);
+}
