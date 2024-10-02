@@ -22,7 +22,23 @@ h1 {
   color: rgb(198, 183, 222);
 }
 
-.assets {
+.assets1 {
   width: auto;
   height: 200px;
+}
+
+.assets2 {
+  width: auto;
+  height: 50px;
+}
+
+.assets3 {
+  width: auto;
+  height: 350px;
+}
+
+.screenshots{
+  width: auto;
+  height: 300px;
+}
 }
