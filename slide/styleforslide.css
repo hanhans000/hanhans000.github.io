@@ -1,0 +1,7 @@
+.slides {
+  border: 2px dashed #e5e;
+  font-size: 4rem;
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+}

@@ -280,7 +280,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // get the track buttons and store them in an array
 const trackButtons = document.querySelectorAll(".track-button");
-
 // function to update the track button colors
 function updateTrackButtonColors(currentTrackIndex) {
   trackButtons.forEach((button, index) => {

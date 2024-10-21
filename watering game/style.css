@@ -1,0 +1,104 @@
+body {
+  background: #000;
+  color: #fff;
+  font-family: "Courier New", Courier, monospace;
+  text-align: center;
+}
+
+.garden {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 50px;
+}
+
+.plant {
+  width: 100px;
+  height: 100px;
+  background-color: lime;
+  border-radius: 50%;
+  position: relative;
+  animation: chaos 5s infinite;
+  transform-origin: bottom center;
+}
+
+@keyframes chaos {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    transform: scale(1.5) rotate(180deg);
+  }
+  100% {
+    transform: scale(1) rotate(360deg);
+  }
+}
+
+.controls {
+  margin-top: 30px;
+}
+
+#messageInput {
+  width: 80%;
+  height: 100px;
+  background-color: #333;
+  color: #fff;
+  border: 2px solid #fff;
+  padding: 10px;
+  font-size: 1rem;
+  margin-bottom: 10px;
+}
+
+#submitBtn {
+  background-color: #ff69b4;
+  border: none;
+  padding: 10px 20px;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+#submitBtn:hover {
+  background-color: #ff1493;
+}
+
+#waterEffect {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.notes-section {
+  margin-top: 30px;
+  padding: 20px;
+  background-color: #1a1a4d;
+  border-radius: 15px;
+  color: #ffed40;
+  width: 60%;
+  margin: 0 auto;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.notes-title {
+  font-size: 2rem;
+  margin-bottom: 10px;
+  background: linear-gradient(90deg, #ff69b4, #ffd700);
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+ul li {
+  margin: 10px 0;
+  padding: 10px;
+  background-color: #333;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 1.2rem;
+}

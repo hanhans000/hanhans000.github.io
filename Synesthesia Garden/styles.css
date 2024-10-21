@@ -1,0 +1,71 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #e0f7fa;
+  color: #333;
+  text-align: center;
+}
+
+header {
+  background-color: #8fc1d4;
+  padding: 20px;
+}
+
+#interactive-container {
+  position: relative;
+  width: 600px;
+  height: 600px;
+  margin: 20px auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Fisheye effect for webcam */
+#webcam {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%; /* Creates the circular effect */
+  object-fit: cover;
+  filter: contrast(1.2) saturate(1.5) brightness(0.9); /* Enhance webcam look */
+  transform: scale(1.2); /* Slight zoom for fisheye look */
+  z-index: 1; /* Webcam behind the plant */
+  display: none; /* Webcam starts hidden */
+}
+
+/* Styling the 3D scene (plant overlay) */
+#3d-scene {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  z-index: 2; /* Plant overlay on top of the webcam */
+}
+
+/* Webcam controls button */
+#toggle-webcam {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: #8fc1d4;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+/* Basic control panel styling */
+.control-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+footer {
+  background-color: #333;
+  color: white;
+  padding: 10px 0;
+}

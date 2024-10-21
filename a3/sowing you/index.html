@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Interactive Plant Watering Game with Webcam</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Interactive Plant Watering Game with Webcam</h1>
+      </header>
+      <main>
+        <section class="game-area">
+          <p>
+            Use sound, light, or water to nurture your plant. Grow it wisely, or
+            it will die.
+          </p>
+
+          <button id="toggle-camera">Turn On Camera</button>
+          <video id="camera" autoplay playsinline style="display: none"></video>
+          <canvas id="fisheyeCanvas"></canvas>
+
+          <div class="controls">
+            <input type="file" id="soundInput" accept="audio/*" />
+            <button id="lightButton">Shine Light</button>
+            <button id="waterButton">Water Plant</button>
+            <button id="tactileButton">Touch Plant</button>
+            <button id="resetButton">Reset Garden</button>
+          </div>
+
+          <div class="popup" id="popup1">
+            <div class="popup-header">
+              <p>Change your mood</p>
+              <button class="close-btn" onclick="closePopup('popup1')">
+                X
+              </button>
+            </div>
+            <p>
+              Choose change your mood if you don't want to open the webcam or
+              don't have one.
+            </p>
+          </div>
+
+          <div id="buttonContainer">
+            <button id="saveButton">Capture this moment</button>
+          </div>
+          
+          <button id="colorButton">Change Text Color</button>
+          
+              </div>
+              <div id="popup-container-1">
+                <div id="popup" class="p1">
+                    <span class="close" id="close-btn-1">&times;</span>
+                    <p>Hey! Welcome to Tear, <br>
+                      The place where you can finally let loose those emotions you've been holding in. <br>
+                      It's your safe haven to <b>jot down</b> those feelings that are hard to express verbally. <br>
+                      Whether it's a note to yourself or a heartfelt letter to someone special, <br>
+                      <b>Tear </b>is here to support you. <br>
+                      So grab a tissue, let those tears flow, and let's start <b>writing</b> or <b>scribbling</b> away!
+                    </p>
+                </div>
+            </div>
+            <div id="popup-container-2">
+              <div id="popup" class="p2">
+                  <span class="close" id="close-btn-2">&times;</span>
+                  <p>
+                    [Hold Shift+S to take a screenshot] <br>
+                   
+                  </p>
+              </div>
+          </div>
+          <div id="popup-container-3">
+            <div id="popup" class="p3">
+                <span class="close" id="close-btn-3">&times;</span>
+                <p>
+                  Choose change your mood if <br>
+               you don't want to open webcam <br>
+               or don't have one.
+                </p>
+            </div>
+          </div>
+          
+          <div id="popup-container-4">
+            <div id="popup" class="p4">
+                <span class="close" id="close-btn-4">&times;</span>
+                <p>Write <br>
+                   something <br>
+                    on the left box</p>
+            </div>
+          </div>
+              <canvas id="canvas1"></canvas>
+        </section>
+      </main>
+
+      <script src="script.js"></script>
+    </div>
+  </body>
+</html>
