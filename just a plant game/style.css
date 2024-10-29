@@ -1,0 +1,315 @@
+@font-face {
+  font-family: "Cascadia Code";
+  src: url("./fonts/CascadiaCode.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Cascadia Code";
+  src: url("./fonts/CascadiaCodeItalic.ttf") format("truetype");
+  font-weight: normal;
+  font-style: italic;
+}
+
+body {
+  font-family: "Cascadia Code", monospace;
+  font-style: italic;
+}
+
+#Canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background-color: lightgray; /* Optional: Set a default background for canvas */
+  border-radius: 50%; /* Creates circular fisheye effect */
+}
+
+#camera {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%; /* Creates circular fisheye effect */
+  object-fit: cover;
+  background-color: lightgray; /* Optional: Set a default background for canvas */
+  display: none; /* Webcam starts hidden */
+}
+
+#game-container {
+  position: absolute;
+  top: 50%; /* Center vertically */
+  left: 50%; /* Center horizontally */
+  transform: translate(-50%, -50%); /* Shift it to the exact center */
+  z-index: 2; /* On top of the camera */
+  text-align: center;
+  background-color: #333;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transform: translate(-50%, -57%);
+  z-index: 1;
+}
+
+#plant-container {
+  width: 400px;
+  height: 420px;
+  border-radius: 15px;
+  margin-bottom: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#plant {
+  max-width: 90%;
+  max-height: 90%;
+}
+
+#camera-control {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+}
+
+#resetButton,
+#resetButtonoverlay {
+  background-color: #ff6666; /* Different color for reset button */
+  color: white;
+  position: fixed; /* Fixes the position of the control button */
+  bottom: 6%; /* Positions the button 10% from the bottom of the page */
+  left: 50%; /* Centers the button horizontally */
+  transform: translateX(-50%); /* Adjusts position to be centered */
+  z-index: 9999; /* Brings the button to the front */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 30px 40px; /* Increase padding for larger button */
+}
+
+.right-controls {
+  position: absolute;
+  bottom: 10%;
+  right: 10%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 2;
+}
+
+#waterButton {
+  position: absolute;
+  bottom: 30px; /* Position at the bottom */
+  right: 100px; /* Adjust horizontal position */
+  padding: 15px 25px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+#lightButton {
+  position: absolute;
+  bottom: 100px; /* Position slightly higher than Water Plant */
+  right: 30px; /* Adjust horizontal position */
+  padding: 15px 25px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+#tactileButton {
+  position: absolute;
+  bottom: 170px; /* Position even higher */
+  right: -50px; /* Adjust horizontal position to place it further left */
+  padding: 15px 25px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* Bottom left controls for additional buttons */
+#left-controls {
+  position: absolute;
+  bottom: 45%;
+  left: 10%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Align items without stretching */
+  gap: 20px;
+  z-index: 2;
+}
+
+#captureMoment,
+#changeEnvironment {
+  padding: 10px; /* Reduce horizontal padding */
+  font-size: 14px; /* Keep the font size as desired */
+  border-radius: 50px; /* Adjust border-radius to make them less circular */
+}
+
+#soundInput {
+  bottom: 170px; /* Position even higher */
+  right: -50px; /* Adjust horizontal position to place it further left */
+  padding: 15px 25px;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 50px; /* Adjust border-radius to make them less circular */
+}
+
+button,
+input {
+  box-shadow: rgb(255, 255, 255) 0px 0px 24px 0px inset,
+    rgb(255, 255, 255) 0px 0px 14px 0px inset,
+    rgb(255, 255, 255) 0px 0px 10px -24px inset;
+  display: inline-block;
+  padding: 12px 16px;
+  border-radius: 60%;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  background-blend-mode: difference;
+  background-color: #abb6ff;
+  border: #e8e9e9c5 1px solid;
+  font-family: "Cascadia Code";
+  font-style: italic;
+}
+
+input {
+  color: rgba(19, 74, 212, 0.55);
+}
+
+/* Style the custom file upload button */
+button {
+  filter: brightness(1.2);
+  display: inline-block;
+  background-color: #8e8e8e;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  background-blend-mode: difference;
+  box-shadow: rgb(255, 255, 255) 0px 0px 24px 0px inset,
+    rgb(255, 255, 255) 0px 0px 14px 0px inset,
+    rgb(255, 255, 255) 0px 0px 10px -24px inset;
+  border: #e8e9e9c5 1px solid;
+  color: black;
+}
+
+/* Optionally style the button on hover or focus */
+.file-upload label:hover,
+.file-upload label:focus,
+button:hover {
+  background-color: #d2d2d2;
+  color: #002ae8;
+  box-shadow: 4px 4px 4px 0px rgb(148, 167, 237);
+}
+
+#canvas1 {
+  top: 0;
+  left: 0;
+  width: 100vw; /* Use viewport width */
+  height: 100vh; /* Use viewport height */
+  position: absolute;
+  z-index: 1;
+  /* Use viewport height with a fixed value */
+  object-fit: contain;
+}
+
+body,
+html {
+  background-image: url(bg2.jpg);
+  background-size: contain;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #00000000;
+}
+
+canvas#defaultCanvas0 {
+  top: 0;
+  left: 0;
+  width: 100vw; /* Use viewport width */
+  height: 100vh; /* Use viewport height */
+  position: absolute;
+  border-radius: 50%;
+  box-shadow: 4px 4px 4px 0px rgb(158, 186, 251);
+  /* Use viewport height with a fixed value */
+  object-fit: contain; /* Ensure the video/image covers the canvas entirely */
+}
+
+/* Modal styling */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+}
+
+.modal-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  font-family: "Cascadia Code", monospace;
+}
+
+/* Instruction panel styling */
+#introSliderPanel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 50vh;
+  background-color: rgba(255, 255, 255, 0.9);
+  overflow: hidden;
+  transform: translateY(0); /* Visible initially */
+  transition: transform 0.5s ease-in-out;
+  z-index: 1000;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.slider-content {
+  padding: 20px;
+  text-align: center;
+}
+
+/* Slider navigation styling */
+.slider-nav {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.nav-button {
+  padding: 10px 20px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#nextButton {
+  position: absolute;
+  right: 0;
+}
+
+#togglePanelButton {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  padding: 10px 20px;
+  background-color: #333;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  z-index: 1001;
+}

@@ -1,22 +1,10 @@
-/* @font-face {
-  font-family: "s1";
-  src: url("./Crozet-Regular.ttf") format("truetype");
+body {
+  font-family: "Cascadia Code SemiLight Italic", monospace;
 }
-
-@font-face {
-  font-family: "s2";
-  src: url("./JosefinSlab-Italic-VariableFont_wght.ttf") format("truetype");
+/* Apply to all elements on the page */
+* {
+  font-family: "Cascadia Code SemiLight Italic", monospace;
 }
-
-@font-face {
-  font-family: "s3";
-  src: url("./PTMono-Regular.ttf") format("truetype");
-}
-
-@font-face {
-  font-family: "s4";
-  src: url("./JosefinSlab-VariableFont_wght.ttf") format("truetype");
-} */
 
 #Canvas {
   width: 100%;
@@ -42,44 +30,114 @@
   transform: translate(-50%, -50%); /* Shift it to the exact center */
   z-index: 2; /* On top of the camera */
   text-align: center;
+  background-color: #333;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transform: translate(-50%, -57%);
+  z-index: 1;
 }
 
 #plant-container {
-  width: 300px;
-  height: 300px;
+  width: 400px;
+  height: 420px;
   border-radius: 15px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  margin-bottom: 20px;
+  margin-bottom: 30px;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
+#plant {
+  max-width: 90%;
+  max-height: 90%;
+}
+
 #camera-control {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+}
+
+#resetButton {
+  background-color: #ff6666; /* Different color for reset button */
+  color: white;
+  font-weight: bold;
   position: fixed; /* Fixes the position of the control button */
-  bottom: 10%; /* Positions the button 10% from the bottom of the page */
+  bottom: 6%; /* Positions the button 10% from the bottom of the page */
   left: 50%; /* Centers the button horizontally */
   transform: translateX(-50%); /* Adjusts position to be centered */
   z-index: 9999; /* Brings the button to the front */
   display: flex;
   justify-content: center;
   align-items: center;
-}
-.controls {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  z-index: 10;
+  padding: 30px 40px; /* Increase padding for larger button */
 }
 
-.toggle-camera {
-  padding: 10px 20px;
-  margin-bottom: 20px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 5px;
+.right-controls {
+  position: absolute;
+  bottom: 10%;
+  right: 10%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 2;
+}
+
+#waterButton {
+  position: absolute;
+  bottom: 30px; /* Position at the bottom */
+  right: 100px; /* Adjust horizontal position */
+  padding: 15px 25px;
+  font-size: 14px;
   cursor: pointer;
+}
+
+#lightButton {
+  position: absolute;
+  bottom: 100px; /* Position slightly higher than Water Plant */
+  right: 30px; /* Adjust horizontal position */
+  padding: 15px 25px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+#tactileButton {
+  position: absolute;
+  bottom: 170px; /* Position even higher */
+  right: -50px; /* Adjust horizontal position to place it further left */
+  padding: 15px 25px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+#soundInput {
+  bottom: 170px; /* Position even higher */
+  right: -50px; /* Adjust horizontal position to place it further left */
+  padding: 15px 25px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* Bottom left controls for additional buttons */
+#left-controls {
+  position: absolute;
+  bottom: 45%;
+  left: 10%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  z-index: 2;
+}
+
+#captureMoment,
+#changeEnvironment {
+  padding: 15px 30px; /* Increase padding for larger button */
+  font-size: 16px; /* Increase font size */
 }
 
 button,
@@ -87,13 +145,9 @@ input {
   box-shadow: rgb(255, 255, 255) 0px 0px 24px 0px inset,
     rgb(255, 255, 255) 0px 0px 14px 0px inset,
     rgb(255, 255, 255) 0px 0px 10px -24px inset;
-
-  font-family: "s2";
   display: inline-block;
   padding: 12px 16px;
-
   border-radius: 60%;
-
   font-size: 14px;
   cursor: pointer;
   backdrop-filter: blur(4px);
@@ -115,7 +169,6 @@ input {
 .file-upload label,
 button {
   filter: brightness(1.2);
-  font-family: "s3";
   display: inline-block;
   padding: 12px 16px;
   background-color: #8e8e8e;
@@ -153,57 +206,10 @@ button:hover {
   object-fit: contain;
 }
 
-#control {
-  position: absolute;
-  z-index: 2;
-}
-
-#message-input {
-  font-family: "s2";
-  resize: none;
-  width: 100%;
-  height: 40vh;
-  overflow-y: auto;
-  background-color: #e5e5e5c1;
-  filter: brightness(1.1);
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  backdrop-filter: blur(2px);
-  box-shadow: 4px 4px 4px 0px rgb(148, 167, 237);
-  color: rgb(17 0 148);
-}
-b {
-  color: rgb(65, 40, 255);
-}
-
-#message-input:focus {
-  outline: #ffffff 1px solid;
-  background-color: rgba(255, 255, 255, 0.775);
-  box-shadow: 4px 4px 4px 0px rgb(75, 75, 75);
-
-  color: rgb(33, 2, 232);
-}
-
-.dynamic-message {
-  display: none; /* Hide dynamically created messages */
-}
-div#message-container {
-  display: flex;
-  /* max-width: 80%; */
-  /* Set width to 100% to fill the entire viewport width */
-  height: 20vh;
-  align-items: center;
-  justify-content: center;
-  position: absolute;
-  z-index: 0;
-}
-
 body,
 html {
   background-image: url(bg2.jpg);
   background-size: contain;
-  font-family: "s2", serif;
   margin: 0;
   padding: 0;
   width: 100%;
@@ -224,7 +230,7 @@ canvas#defaultCanvas0 {
   object-fit: contain; /* Ensure the video/image covers the canvas entirely */
 }
 
-#popup-container-1 {
+/* #popup-container-1 {
   position: absolute;
   top: 50%;
   left: 80%;
@@ -330,4 +336,4 @@ canvas#defaultCanvas0 {
 
 textarea {
   color: #ff0000;
-}
+} */

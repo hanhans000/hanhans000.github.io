@@ -80,46 +80,6 @@ function redrawCanvas() {
 
 adjustCanvasSize(); // Call adjustCanvasSize initially to set canvas size
 
-$(document).ready(function () {
-  // Make the popup draggable
-  $("#popup-container-1").draggable();
-
-  // Close the popup when clicking on the close button
-  $("#close-btn-1").click(function () {
-    $("#popup-container-1").hide();
-  });
-});
-
-$(document).ready(function () {
-  // Make the popup draggable
-  $("#popup-container-2").draggable();
-
-  // Close the popup when clicking on the close button
-  $("#close-btn-2").click(function () {
-    $("#popup-container-2").hide();
-  });
-});
-
-$(document).ready(function () {
-  // Make the popup draggable
-  $("#popup-container-3").draggable();
-
-  // Close the popup when clicking on the close button
-  $("#close-btn-3").click(function () {
-    $("#popup-container-3").hide();
-  });
-});
-
-$(document).ready(function () {
-  // Make the popup draggable
-  $("#popup-container-4").draggable();
-
-  // Close the popup when clicking on the close button
-  $("#close-btn-4").click(function () {
-    $("#popup-container-4").hide();
-  });
-});
-
 // Fisheye Effect
 function drawFisheye() {
   fisheyeCtx.clearRect(0, 0, fisheyeCanvas.width, fisheyeCanvas.height);
@@ -127,7 +87,7 @@ function drawFisheye() {
   requestAnimationFrame(drawFisheye);
 }
 
-$(document).ready(function () {
+document.addEventListener("DOMContentLoaded", function () {
   const videoElement = document.getElementById("camera");
   const toggleCameraButton = document.getElementById("toggle-camera");
 

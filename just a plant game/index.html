@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Just a water plant game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh"></script> -->
+    <link rel="stylesheet" href="style.css" />
+    <!-- Link the CSS file -->
+  </head>
+
+  <body>
+    <header></header>
+
+    <!-- Introductory Slider Panel -->
+    <div id="introSliderPanel">
+      <div class="slider-content">
+        <div class="slide" id="slide1">
+          <h2>Welcome to the Plant Growth Game!</h2>
+          <p>
+            In this game, you will nurture a plant by interacting with it in
+            different ways.
+          </p>
+        </div>
+        <div class="slide" id="slide2" style="display: none">
+          <h2>How to Play</h2>
+          <p>
+            Use the buttons to water, touch, and shine light on your plant to
+            help it grow.
+          </p>
+        </div>
+        <div class="slide" id="slide3" style="display: none">
+          <h2>Be Careful!</h2>
+          <p>If you water the plant too fast, it might die. Take care of it!</p>
+        </div>
+        <div class="slide" id="slide4" style="display: none">
+          <h2>Ready to Begin?</h2>
+        </div>
+
+        <!-- Navigation buttons for slider -->
+        <div class="slider-nav">
+          <button class="nav-button" id="prevButton" onclick="changeSlide(-1)">
+            Previous
+          </button>
+          <button class="nav-button" id="nextButton" onclick="changeSlide(1)">
+            Next
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Button to toggle the instructions panel -->
+    <button id="togglePanelButton" onclick="togglePanel()">
+      Hide Instructions
+    </button>
+
+    <!-- Main Game Interface -->
+    <div id="game-container">
+      <!-- Game content and controls here -->
+    </div>
+
+    <div id="control">
+      <video id="videoElement" style="display: none"></video>
+      <div id="buttonContainer"></div>
+    </div>
+
+    <!-- The toggle camera button -->
+    <div id="camera-control">
+      <button id="toggle-camera">Turn On Camera</button>
+    </div>
+
+    <video id="camera" autoplay playsinline style="display: none"></video>
+    <canvas id="Canvas"></canvas>
+    <!-- Game container for the plant -->
+    <div id="game-container">
+      <div id="plant-container">
+        <!-- This is where the plant image will go -->
+        <img id="plant" src="stage1.png" alt="Plant" />
+      </div>
+      <div id="growth-info">
+        <p>Current Plant Stage: <span id="stage">1</span>/5</p>
+      </div>
+    </div>
+
+    <div id="left-controls">
+      <button id="captureMoment">Capture This Moment</button>
+      <button id="changeEnvironment">Change Environment</button>
+      <input type="file" id="soundInput" accept="audio/*" />
+    </div>
+
+    <div class="right-controls">
+      <button id="lightButton">Shine Light</button>
+      <button id="waterButton">Water Plant</button>
+      <button id="tactileButton">Touch Plant</button>
+      <button id="resetButton">Reset Garden</button>
+    </div>
+
+    <div class="toggle-camera"><button>Turn On Camera</button></div>
+    <canvas id="canvas1"></canvas>
+
+    <!-- Modal for death announcement -->
+    <div id="deathModal" class="modal">
+      <div class="modal-content">
+        <div class="message-box">
+          <p>Your plant has been overwatered and has died.</p>
+          <p>Please press "Reset Garden" to try again.</p>
+        </div>
+        <div class="reset-box">
+          <button id="resetButtonoverlay">Reset Garden</button>
+          <!-- Separate Reset button box -->
+        </div>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
