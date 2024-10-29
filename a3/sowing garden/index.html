@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Just a water plant game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh"></script> -->
+    <link rel="stylesheet" href="https://path-to-cascadia-code-web-font.css" />
+    <link rel="stylesheet" href="style.css" />
+    <!-- Link the CSS file -->
+  </head>
+
+  <body>
+    <header></header>
+    <div id="control">
+      <video id="videoElement" style="display: none"></video>
+      <div id="buttonContainer"></div>
+    </div>
+
+    <!-- The toggle camera button -->
+    <div id="camera-control">
+      <button id="toggle-camera">Turn On Camera</button>
+    </div>
+
+    <video id="camera" autoplay playsinline style="display: none"></video>
+    <canvas id="Canvas"></canvas>
+    <!-- Game container for the plant -->
+    <div id="game-container">
+      <div id="plant-container">
+        <!-- This is where the plant image will go -->
+        <img id="plant" src="stage1.png" alt="Plant" />
+      </div>
+      <div id="growth-info">
+        <p>Current Plant Stage: <span id="stage">1</span>/5</p>
+      </div>
+    </div>
+
+    <div id="left-controls">
+      <button id="captureMoment">Capture This Moment</button>
+      <button id="changeEnvironment">Change Environment</button>
+      <input type="file" id="soundInput" accept="audio/*" />
+    </div>
+
+    <div class="right-controls">
+      <button id="lightButton">Shine Light</button>
+      <button id="waterButton">Water Plant</button>
+      <button id="tactileButton">Touch Plant</button>
+      <button id="resetButton">Reset Garden</button>
+    </div>
+
+    <div class="toggle-camera"><button>Turn On Camera</button></div>
+
+    <!-- <div id="popup-container-2">
+      <div id="popup" class="p2">
+        <span class="close" id="close-btn-2">&times;</span>
+        <p>[Hold Shift+S to take a screenshot] <br /></p>
+      </div> -->
+
+    <canvas id="canvas1"></canvas>
+
+    <script src="script.js"></script>
+  </body>
+</html>
