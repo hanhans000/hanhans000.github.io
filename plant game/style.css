@@ -35,7 +35,7 @@ body {
 }
 
 #game-container {
-  background-color: #34814f;
+  background-color: #1c2d2d;
   position: absolute;
   top: 50%;
   left: 50%;
@@ -47,7 +47,6 @@ body {
   align-items: center;
   justify-content: center;
   z-index: 1;
-  border: 15px solid #e5d1ff9d; /* Change this to your preferred color */
 }
 
 .transparent-background {
@@ -66,6 +65,7 @@ body {
   width: 60%; /* Make it narrower */
   height: 6px; /* Make it thinner */
   background-color: #ddd;
+  border-radius: 10px;
   overflow: hidden;
   margin-bottom: 10px; /* Move closer to the top */
   margin-top: -30px; /* Moves it up within the container */
@@ -363,59 +363,4 @@ canvas#defaultCanvas0 {
   border-radius: 5px;
   cursor: pointer;
   z-index: 1001;
-}
-
-/* Brighten effect animation */
-@keyframes brighten {
-  0% {
-    filter: brightness(1);
-  }
-  50% {
-    filter: brightness(2); /* Brighter effect */
-  }
-  100% {
-    filter: brightness(1);
-  }
-}
-
-#plant.brighten-effect {
-  animation: brighten 1s ease-in-out; /* Extended duration for visibility */
-}
-
-/* Ripple effect for watering */
-@keyframes rippleEffect {
-  0% {
-    transform: scale(1);
-    filter: brightness(1);
-  }
-  50% {
-    transform: scale(1.1);
-    filter: brightness(0.9);
-  }
-  100% {
-    transform: scale(1);
-    filter: brightness(1);
-  }
-}
-
-#plant.water-effect {
-  animation: rippleEffect 0.7s ease;
-}
-
-/* Shake effect for touch */
-@keyframes shakeEffect {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  25% {
-    transform: translateX(-5px);
-  }
-  75% {
-    transform: translateX(5px);
-  }
-}
-
-#plant.touch-effect {
-  animation: shakeEffect 0.4s ease;
 }
