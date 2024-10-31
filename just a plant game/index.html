@@ -3,15 +3,13 @@
   <head>
     <title>Just a water plant game</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh"></script> -->
     <link rel="stylesheet" href="style.css" />
-    <!-- Link the CSS file -->
   </head>
 
   <body>
-    <header></header>
-
+    <header id="game-title">
+      <h1>Plant Growth Game</h1>
+    </header>
     <!-- Introductory Slider Panel -->
     <div id="introSliderPanel">
       <div class="slider-content">
@@ -112,6 +110,27 @@
       <button id="resetButtonOverlay" class="reset-button-overlay">
         Reset Garden
       </button>
+    </div>
+
+    <!-- Camera Toggle Message Modal -->
+    <div id="cameraModal" class="modal">
+      <div class="modal-content">
+        <p>You are your own plants, take care of yourself carefully</p>
+        <button id="closeModalButton">Got it!</button>
+      </div>
+    </div>
+
+    <!-- Modal for game completion announcement -->
+    <div id="completionModal" class="modal">
+      <div class="modal-content">
+        <div class="message-box">
+          <p>Congratulations! You’ve completed the game!</p>
+          <p>Take a snapshot with your fully grown plant.</p>
+        </div>
+        <button id="closeCompletionModal" class="close-modal-button">
+          Close
+        </button>
+      </div>
     </div>
 
     <script src="script.js"></script>

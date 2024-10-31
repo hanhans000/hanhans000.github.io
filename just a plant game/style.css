@@ -12,6 +12,24 @@
   font-style: italic;
 }
 
+/* Style for the game title */
+#game-title {
+  position: absolute;
+  top: 20px; /* Position it at the top */
+  width: 100%;
+  text-align: center;
+  z-index: 3;
+}
+
+#game-title h1 {
+  font-size: 34px; /* Adjust font size as needed */
+  color: #333; /* Title color */
+  margin: 0;
+  padding: 10px;
+  font-weight: bold;
+  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* Adds a 3D effect */
+}
+
 body {
   font-family: "Cascadia Code", monospace;
   font-style: italic;
@@ -21,8 +39,15 @@ body {
   width: 100%;
   height: 100%;
   display: block;
-  background-color: lightgray; /* Optional: Set a default background for canvas */
-  border-radius: 50%; /* Creates circular fisheye effect */
+  background: linear-gradient(
+    -145deg,
+    #aac1c0,
+    #f0f0f0
+  ); /* Light 3D effect with gradient */
+  border-radius: 40%;
+  box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.2),
+    -6px -6px 12px rgba(255, 255, 255, 0.7);
+  border: 2px solid #ccc; /* Subtle border */
 }
 
 #camera {
@@ -34,10 +59,18 @@ body {
   display: none; /* Webcam starts hidden */
 }
 
+#camera-control {
+  position: absolute;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+}
+
 #game-container {
   background-color: #34814f;
   position: absolute;
-  top: 50%;
+  top: 52%;
   left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
@@ -45,9 +78,21 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  background: linear-gradient(145deg, #34814f, #dcdcdc);
+  box-shadow: inset 5px 5px 10px rgba(0, 0, 0, 0.15),
+    inset -5px -5px 10px rgba(255, 255, 255, 0.8);
+}
+
+#plant-container {
+  width: 400px;
+  height: 420px;
+  border-radius: 15px;
+  margin-bottom: 30px;
+  display: flex;
   justify-content: center;
-  z-index: 1;
-  border: 15px solid #e5d1ff9d; /* Change this to your preferred color */
+  align-items: center;
+  border-radius: 12px;
+  background: transparent;
 }
 
 .transparent-background {
@@ -74,7 +119,7 @@ body {
 #progress-bar {
   height: 100%;
   width: 0; /* Initially empty */
-  background-color: #76c7c0; /* Progress color */
+  background-color: #a65d88; /* Progress color */
   transition: width 0.3s; /* Smooth transition */
 }
 
@@ -86,32 +131,14 @@ body {
   margin-top: -15px; /* Adjust this to move it up */
 }
 
-#plant-container {
-  width: 400px;
-  height: 420px;
-  border-radius: 15px;
-  margin-bottom: 30px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
 #plant {
-  max-width: 90%;
-  max-height: 90%;
-}
-
-#camera-control {
-  position: absolute;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 2;
+  max-width: 100%;
+  max-height: 100%;
 }
 
 #resetButton,
 .reset-button-overlay {
-  background-color: #ff6666; /* Different color for reset button */
+  background-color: #a65d88; /* Different color for reset button */
   color: white;
   position: fixed; /* Fixes the position of the control button */
   bottom: 3%; /* Positions the button 10% from the bottom of the page */
@@ -122,10 +149,6 @@ body {
   justify-content: center;
   align-items: center;
   padding: 30px 40px; /* Increase padding for larger button */
-}
-
-.reset-button-overlay:hover {
-  background-color: #ff4c4c; /* Darker color on hover */
 }
 
 .right-controls {
@@ -178,10 +201,10 @@ body {
 }
 
 #captureMoment {
-  color: rgba(19, 74, 212, 0.55);
+  color: #cdcdcd;
   box-shadow: 4px 4px 4px 0px rgb(148, 167, 237);
   background-blend-mode: difference;
-  background-color: #abb6ff;
+  background-color: #42b54b;
   border: #e8e9e9c5 1px solid;
   border-radius: 50px; /* Adjust border-radius to make them less circular */
   box-shadow: rgb(255, 255, 255) 0px 0px 24px 0px inset,
@@ -192,20 +215,27 @@ body {
   border: #e8e9e9c5 1px solid;
 }
 
-#captureMoment:hover {
-  background-color: #8ea6ff; /* Darker shade on hover */
-  color: #002ae8; /* Darker text color on hover */
-  transform: scale(1.05); /* Slightly scale up on hover */
+#captureMoment:hover,
+#changeEnvironment:hover {
+  color: #3e5d6e; /* Darker text color on hover */
 }
 
 #changeEnvironment {
-  padding: 10px; /* Reduce horizontal padding */
-  font-size: 14px; /* Keep the font size as desired */
+  color: #cdcdcd;
+  box-shadow: 4px 4px 4px 0px rgb(148, 167, 237);
+  background-blend-mode: difference;
+  background-color: #4caf50;
+  border: #e8e9e9c5 1px solid;
   border-radius: 50px; /* Adjust border-radius to make them less circular */
+  box-shadow: rgb(255, 255, 255) 0px 0px 24px 0px inset,
+    rgb(255, 255, 255) 0px 0px 14px 0px inset,
+    rgb(255, 255, 255) 0px 0px 10px -24px inset;
+  display: inline-block;
+  padding: 12px 16px;
+  border: #e8e9e9c5 1px solid;
 }
 
-button,
-input {
+button {
   box-shadow: rgb(255, 255, 255) 0px 0px 24px 0px inset,
     rgb(255, 255, 255) 0px 0px 14px 0px inset,
     rgb(255, 255, 255) 0px 0px 10px -24px inset;
@@ -215,7 +245,7 @@ input {
   cursor: pointer;
   backdrop-filter: blur(4px);
   background-blend-mode: difference;
-  background-color: #abb6ff;
+  background-color: #c2d1c6;
   border: #e8e9e9c5 1px solid;
   font-family: "Cascadia Code";
   font-style: italic;
@@ -223,13 +253,10 @@ input {
 
 /* Style the custom file upload button */
 
-input {
-  color: rgba(19, 74, 212, 0.55);
-}
 button {
   filter: brightness(1.2);
   display: inline-block;
-  background-color: #8e8e8e;
+  background-color: #91bc9f;
   color: #fff;
   font-size: 14px;
   cursor: pointer;
@@ -243,12 +270,17 @@ button {
 }
 
 /* Optionally style the button on hover or focus */
-.file-upload label:hover,
-.file-upload label:focus,
 button:hover {
   background-color: #d2d2d2;
-  color: #002ae8;
-  box-shadow: 4px 4px 4px 0px rgb(148, 167, 237);
+  color: #5e8b6e;
+  box-shadow: 4px 4px 4px 0px #92b6a6;
+}
+
+#resetButton:hover {
+  background-color: inherit; /* Or specify the base color */
+  color: inherit; /* Maintain the default text color */
+  box-shadow: none; /* Remove any shadow */
+  cursor: pointer;
 }
 
 #canvas1 {
@@ -274,17 +306,16 @@ html {
   background-color: #00000000;
 }
 
-canvas#defaultCanvas0 {
+/* canvas#defaultCanvas0 {
   top: 0;
   left: 0;
-  width: 100vw; /* Use viewport width */
-  height: 100vh; /* Use viewport height */
+  width: 100vw;
+  height: 100vh;
   position: absolute;
   border-radius: 50%;
   box-shadow: 4px 4px 4px 0px rgb(158, 186, 251);
-  /* Use viewport height with a fixed value */
-  object-fit: contain; /* Ensure the video/image covers the canvas entirely */
-}
+  object-fit: contain;
+} */
 
 /* Modal styling */
 .modal {
@@ -309,6 +340,12 @@ canvas#defaultCanvas0 {
   text-align: center;
   font-family: "Cascadia Code", monospace;
   width: 30%; /* Adjust size as needed */
+}
+
+#closeModalButton {
+  margin-top: 10px;
+  padding: 8px 16px;
+  cursor: pointer;
 }
 
 /* Instruction panel styling */

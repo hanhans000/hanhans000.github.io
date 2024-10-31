@@ -11,6 +11,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const plantImage = document.getElementById("plant");
   const deathModal = document.getElementById("deathModal");
   const resetButton = document.getElementById("resetButton");
+  const completionModal = document.getElementById("completionModal"); // New completion modal
+  const closeCompletionModal = document.getElementById("closeCompletionModal");
 
   let currentStage = 1;
   const maxStage = 5;
@@ -43,7 +45,8 @@ document.addEventListener("DOMContentLoaded", function () {
       plantImage.src = `stage${currentStage}.png`; // Update the plant image
       resetInteractions(); // Reset interactions for the next stage
     } else {
-      console.log("Max growth stage reached.");
+      // Trigger game completion popup if max stage is reached
+      completionModal.style.display = "block";
     }
   }
 
@@ -61,6 +64,11 @@ document.addEventListener("DOMContentLoaded", function () {
     plantImage.src = `stage${currentStage}.png`; // Reset plant image to stage 1
     deathModal.style.display = "none"; // Hide death modal
   }
+
+  // Event listener for close button in completion modal
+  closeCompletionModal.addEventListener("click", () => {
+    completionModal.style.display = "none"; // Simply hide the modal
+  });
 
   function handleInteraction(type) {
     if (interactions[type] > 0) {
@@ -232,60 +240,140 @@ function togglePanel() {
     : "Show Instructions";
 }
 
-// Define the color array for the environment
-const colors = [
-  "#dcb8b2", // Sakura pink
-  "#9d9087", // Taupe
-  "#a33e36", // Deep red
-  "#3c6e71", // Dark green
-  "#556c76", // Slate blue
+const colorGradients = [
+  ["#d48cad", "#b37694"], // Soft pink gradient
+  ["#a65d88", "#8a4b6e"], // Deeper pink gradient
+  ["#7d475c", "#64394a"], // Dark plum gradient
+  ["#5e8b6e", "#4b725b"], // Forest green gradient
+  ["#92b6a6", "#7ba08c"], // Mint green gradient
+  ["#687a92", "#56627a"], // Slate blue gradient
+  ["#3e5d6e", "#31485b"], // Dark teal gradient
 ];
 
-// Counter to keep track of the current color
-let colorIndex = 0;
+let currentGradientIndex = 0;
 
-// Function to change the environment color
-function changeEnvironmentColor() {
-  const gameContainer = document.getElementById("game-container");
+function changeEnvironment() {
+  const [lightColor, darkColor] = colorGradients[currentGradientIndex];
+  document.getElementById(
+    "game-container"
+  ).style.background = `linear-gradient(145deg, ${lightColor}, ${darkColor})`;
 
-  // Apply the current color to the game container
-  gameContainer.style.backgroundColor = colors[colorIndex];
-
-  // Move to the next color or loop back to the start
-  colorIndex = (colorIndex + 1) % colors.length;
+  // Move to the next gradient in the array
+  currentGradientIndex = (currentGradientIndex + 1) % colorGradients.length;
 }
 
-// Add event listener for the "Change Environment" button
-const changeEnvironmentButton = document.getElementById("changeEnvironment");
-changeEnvironmentButton.addEventListener("click", changeEnvironmentColor);
+document
+  .getElementById("changeEnvironment")
+  .addEventListener("click", changeEnvironment);
+
+let cameraIsOn = false; // Track camera state
+
+function changeEnvironment() {
+  const gameContainer = document.getElementById("game-container");
+
+  if (cameraIsOn) {
+    gameContainer.style.background = "transparent";
+  } else {
+    const [lightColor, darkColor] = colorGradients[currentGradientIndex];
+    gameContainer.style.background = `linear-gradient(145deg, ${lightColor}, ${darkColor})`;
+    currentGradientIndex = (currentGradientIndex + 1) % colorGradients.length;
+  }
+}
+
+document
+  .getElementById("changeEnvironment")
+  .addEventListener("click", changeEnvironment);
+
+const videoElement = document.getElementById("camera");
+const toggleCameraButton = document.getElementById("toggle-camera");
+const cameraModal = document.getElementById("cameraModal");
+const closeModalButton = document.getElementById("closeModalButton");
+
+function startCamera() {
+  navigator.mediaDevices
+    .getUserMedia({ video: true })
+    .then((stream) => {
+      videoElement.srcObject = stream;
+      videoElement.style.display = "block";
+      cameraIsOn = true;
+      changeEnvironment(); // Set background to transparent
+      showCameraModal(); // Show the modal
+    })
+    .catch((err) => {
+      console.error("Error accessing webcam:", err);
+      alert("Unable to access your camera. Please check permissions.");
+    });
+}
+
+function stopCamera() {
+  const stream = videoElement.srcObject;
+  if (stream) {
+    const tracks = stream.getTracks();
+    tracks.forEach((track) => track.stop());
+  }
+  videoElement.srcObject = null;
+  videoElement.style.display = "none";
+  cameraIsOn = false;
+  changeEnvironment(); // Reapply gradient background
+}
+
+function showCameraModal() {
+  cameraModal.style.display = "block";
+}
+
+// Close the modal when clicking the close button
+closeModalButton.addEventListener("click", () => {
+  cameraModal.style.display = "none";
+});
+
+toggleCameraButton.addEventListener("click", function () {
+  if (!cameraIsOn) {
+    startCamera();
+    toggleCameraButton.innerText = "Turn Off Camera";
+  } else {
+    stopCamera();
+    toggleCameraButton.innerText = "Turn On Camera";
+  }
+});
 
 document.getElementById("captureMoment").addEventListener("click", function () {
-  // Grab elements
-  const plantCanvas = document.getElementById("canvas1");
-  const video = document.getElementById("camera");
+  // Create an off-screen canvas to combine images
+  const combinedCanvas = document.createElement("canvas");
+  const combinedCtx = combinedCanvas.getContext("2d");
 
-  // Create a new canvas to hold the screenshot
-  const captureCanvas = document.createElement("canvas");
-  const context = captureCanvas.getContext("2d");
+  // Set the canvas size to the game container size
+  const gameContainer = document.getElementById("game-container");
+  const plantContainer = document.getElementById("plant-container");
+  combinedCanvas.width = gameContainer.offsetWidth;
+  combinedCanvas.height = gameContainer.offsetHeight;
 
-  // Set the canvas dimensions to match the plant container
-  const container = document.getElementById("plant-container");
-  captureCanvas.width = container.offsetWidth;
-  captureCanvas.height = container.offsetHeight;
+  // Draw the webcam feed onto the off-screen canvas
+  const videoElement = document.getElementById("camera");
+  combinedCtx.drawImage(
+    videoElement,
+    0,
+    0,
+    combinedCanvas.width,
+    combinedCanvas.height
+  );
 
-  // Draw the video feed on the capture canvas
-  context.drawImage(video, 0, 0, captureCanvas.width, captureCanvas.height);
+  // Draw the plant image on top
+  const plantImage = document.getElementById("plant");
+  const plantX = (combinedCanvas.width - plantImage.width) / 2;
+  const plantY = (combinedCanvas.height - plantImage.height) / 2;
+  combinedCtx.drawImage(
+    plantImage,
+    plantX,
+    plantY,
+    plantImage.width,
+    plantImage.height
+  );
 
-  // Draw the plant canvas on top
-  context.drawImage(plantCanvas, 0, 0);
-
-  // Convert to image and download
-  captureCanvas.toBlob((blob) => {
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "screenshot.png";
-    link.click();
-  });
+  // Convert the combined canvas to an image and download it
+  const imageLink = document.createElement("a");
+  imageLink.href = combinedCanvas.toDataURL("image/png");
+  imageLink.download = "you_and_your_plants.png";
+  imageLink.click();
 });
 
 document.addEventListener("DOMContentLoaded", function () {
