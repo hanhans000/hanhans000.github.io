@@ -8,31 +8,52 @@
 
   <body>
     <header id="game-title">
-      <h1>Plant Growth Game</h1>
+      <h1>Synesthesia Garden</h1>
     </header>
-    <!-- Introductory Slider Panel -->
+    <!-- Introduce Slider -->
     <div id="introSliderPanel">
       <div class="slider-content">
         <div class="slide" id="slide1">
-          <h2>Welcome to the Plant Growth Game!</h2>
+          <h2>Welcome to the Synesthesia Garden!</h2>
           <p>
-            In this game, you will nurture a plant by interacting with it in
-            different ways.
+            In the game, you’re not just nurturing a plant
+            <br />
+            <br />
+            you’re engaging in an experience designed to highlight the delicate
+            balance of care that plants
+            <br />
+            <br />
+
+            and by extension, all life—require
           </p>
         </div>
         <div class="slide" id="slide2" style="display: none">
           <h2>How to Play</h2>
           <p>
-            Use the buttons to water, touch, and shine light on your plant to
-            help it grow.
+            With each stage, your goal is to nurture it mindfully by fulfilling
+            three essential needs: Water, Shine Light, and Touch Plant.
+            <br />
+            <br />
+            Each button contributes to growth,
+            <br />but be cautious, <br />
+            <br />
+            overcaring like pressing too fast or repeating actions, can be
+            harmful, and the plant may die.
           </p>
         </div>
         <div class="slide" id="slide3" style="display: none">
-          <h2>Be Careful!</h2>
-          <p>If you water the plant too fast, it might die. Take care of it!</p>
+          <h2>Remember to explore the site</h2>
+          <p>
+            As you care for your plant, keep an eye out for extra features that
+            add a bit of magic to the experience.
+          </p>
         </div>
         <div class="slide" id="slide4" style="display: none">
           <h2>Ready to Begin?</h2>
+          <p>
+            Press hide instructions in the top right to begin, you can always
+            come back to read this!
+          </p>
         </div>
 
         <!-- Navigation buttons for slider -->
@@ -52,7 +73,7 @@
       Hide Instructions
     </button>
 
-    <!-- Main Game Interface -->
+    <!-- The game's interface -->
     <div id="containers">
       <!-- Game content and controls here -->
     </div>
@@ -73,7 +94,7 @@
       <div id="plant-container">
         <img id="plant" src="stage1.png" alt="Plant" />
       </div>
-      <!-- Progress bar for interactions -->
+      <!-- Progress bar for the status of the plant -->
       <div id="progress-bar-container">
         <div id="progress-bar"></div>
       </div>
@@ -84,8 +105,6 @@
     <div id="left-controls">
       <button id="changeEnvironment">Change Environment</button>
       <button id="captureMoment">Capture This Moment</button>
-
-      <!-- <input type="file" id="soundInput" accept="audio/*" /> -->
     </div>
 
     <div class="right-controls">
@@ -98,34 +117,51 @@
     <div class="toggle-camera"><button>Turn On Camera</button></div>
     <canvas id="canvas1"></canvas>
 
-    <!-- Modal for death announcement -->
+    <!-- Modal for plant's death -->
     <div id="deathModal" class="modal">
       <div class="modal-content">
         <div class="message-box">
-          <p>Your plant has been overwatered and has died.</p>
-          <p>Please press "Reset Garden" to try again.</p>
+          <p>Your plant has been overcared and it has died.</p>
+          <p>
+            Try taking care of it more slowly and remember to meet all three of
+            its needs at each stage
+          </p>
+          <p>Please press "Reset Garden" to try again</p>
         </div>
       </div>
-      <!-- Separate Reset button outside the modal-content box -->
       <button id="resetButtonOverlay" class="reset-button-overlay">
         Reset Garden
       </button>
     </div>
 
-    <!-- Camera Toggle Message Modal -->
+    <!-- The reason why I have to put two reset button here is because I cant manage to make the original reset garden appear on top, especially when the death modal appear  -->
+    <!-- So I create a alternative way, is that I create another reset button that is the same as the reset button and put it on the same position as the old reset button  -->
+
+    <!-- Camera toggle message to guilde people -->
     <div id="cameraModal" class="modal">
       <div class="modal-content">
-        <p>You are your own plants, take care of yourself carefully</p>
+        <p>
+          You are your own plants, take care of yourself carefully <br />
+          <br />
+
+          And remember to take a snapshot with your plants!
+        </p>
+        <br />
         <button id="closeModalButton">Got it!</button>
       </div>
     </div>
 
-    <!-- Modal for game completion announcement -->
+    <!-- Game completion announcement -->
     <div id="completionModal" class="modal">
       <div class="modal-content">
         <div class="message-box">
           <p>Congratulations! You’ve completed the game!</p>
-          <p>Take a snapshot with your fully grown plant.</p>
+          <p>
+            Take a snapshot with your plant by close this popup, turn on your
+            camera and click "Capture this moment". <br />
+            <br />If you dont have a camera or if you are shy, you can also take
+            a snapshot of just the plant.
+          </p>
         </div>
         <button id="closeCompletionModal" class="close-modal-button">
           Close

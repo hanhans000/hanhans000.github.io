@@ -1,3 +1,18 @@
+/* Context Influence*/
+/* The Tamagotchi style directly influenced the layout and interaction elements in this game */
+/*Buttons and feedback effects were chosen to make interactions feel responsive and engaging, much like caring for a digital pet */
+/* At its core, the design reflects a blend of nurturing and personalization */
+/* I aimed to build a simple yet meaningful interaction loop—users provide light, water, and touch to help the plant grow through stages.  */
+/* The central idea is to replicate the simple satisfaction of watching something thrive under careful attention */
+/* emphasizing the message of patience and empathy in self-care, symbolized through plant care. */
+
+/* Challenges and Future Implementation */
+/* One of the main challenges with this design is keeping the animation effects fresh and engaging. */
+/* While the current animations for watering, light, and touch work well to provide feedback, they could feel repetitive after a while.  */
+/* To keep things interesting, I have to consider adding variations to the animations */
+/* Another idea for the future is the website could open up a whole range of multi-sensory experiences, where users are encouraged to take care of different virtual ecosystems or even experiment with different themes */
+/* It’s a simple concept, but with the right tweaks, it has the potential to grow into a versatile, empathy-building experience. */
+
 @font-face {
   font-family: "Cascadia Code";
   src: url("./fonts/CascadiaCode.ttf") format("truetype");
@@ -12,51 +27,68 @@
   font-style: italic;
 }
 
-/* Style for the game title */
+/* My typography choice - Cascadia Code gives the design a "soft-coded" feeling, aligning with the retro, pixelated theme inspired by Tamagotchi */
+/*I like how it making text appear more technical and readable
+
+
+/* Game title styling */
 #game-title {
   position: absolute;
-  top: 20px; /* Position it at the top */
+  top: 20px;
   width: 100%;
   text-align: center;
   z-index: 3;
 }
 
-#game-title h1 {
-  font-size: 34px; /* Adjust font size as needed */
-  color: #333; /* Title color */
+body,
+html {
+  background-image: url(bg2.jpg);
+  background-size: contain;
   margin: 0;
-  padding: 10px;
-  font-weight: bold;
-  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* Adds a 3D effect */
-}
-
-body {
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #00000000;
   font-family: "Cascadia Code", monospace;
   font-style: italic;
 }
 
+#game-title h1 {
+  font-size: 34px;
+  color: #333;
+  margin: 0;
+  padding: 10px;
+  font-weight: bold;
+  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+  /* Adds a 3D effect to make it more realistic */
+}
+
+/* The title and modal elements are positioned with high z-index values to maintain visibility */
+/* Bright colors and subtle effects were used to keep the experience lighthearted. */
 #Canvas {
   width: 100%;
   height: 100%;
   display: block;
-  background: linear-gradient(
-    -145deg,
-    #aac1c0,
-    #f0f0f0
-  ); /* Light 3D effect with gradient */
+  background: linear-gradient(-145deg, #aac1c0, #f0f0f0);
+  /* Light 3D effect with gradient */
   border-radius: 40%;
   box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.2),
     -6px -6px 12px rgba(255, 255, 255, 0.7);
-  border: 2px solid #ccc; /* Subtle border */
+  border: 2px solid #ccc;
 }
+
+/* The Tamagotchi style had a direct influence on the game's layout and interaction elements */
+/* Buttons and feedback effects were chosen to create interactions that feel responsive, similar to caring for a digital pet */
+/* The gradient backgrounds are used for both aesthetic pleasure and functional feedback. */
 
 #camera {
   width: 100%;
   height: 100%;
-  border-radius: 50%; /* Creates circular fisheye effect */
+  border-radius: 50%;
   object-fit: cover;
-  background-color: lightgray; /* Optional: Set a default background for canvas */
-  display: none; /* Webcam starts hidden */
+  background-color: lightgray;
+  display: none;
 }
 
 #camera-control {
@@ -83,6 +115,10 @@ body {
     inset -5px -5px 10px rgba(255, 255, 255, 0.8);
 }
 
+/* The main game container has a gradient background and soft shadows, mimicking a glassy effect inspired by Tamagotchi screens */
+/* Gradients and shadows give depth to containers*/
+/* shadows in the game container emulate a “glass” look, reminiscent of vintage games */
+
 #plant-container {
   width: 400px;
   height: 420px;
@@ -94,9 +130,10 @@ body {
   border-radius: 12px;
   background: transparent;
 }
+/* Plant container with rounded edges and transparency aligns with a nature theme, letting the plant “grow” on screen without visual distraction */
 
 .transparent-background {
-  background-color: transparent !important;
+  background-color: transparent;
 }
 
 .progress-info-container {
@@ -104,31 +141,33 @@ body {
   flex-direction: column;
   align-items: center;
   width: 100%;
-  margin-top: 20px; /* Adjusts spacing above plant */
+  margin-top: 20px;
 }
+/* The rectagular shape of the progress bar is because of the shape of pixalated screen of the old gameplay */
+/* Structuring the progress bar and info in a column within the main game container for better layout and spacing */
 
 #progress-bar-container {
-  width: 60%; /* Make it narrower */
-  height: 6px; /* Make it thinner */
+  width: 60%;
+  height: 6px;
   background-color: #ddd;
   overflow: hidden;
-  margin-bottom: 10px; /* Move closer to the top */
-  margin-top: -30px; /* Moves it up within the container */
+  margin-bottom: 10px;
+  margin-top: -30px;
 }
 
 #progress-bar {
   height: 100%;
-  width: 0; /* Initially empty */
-  background-color: #a65d88; /* Progress color */
-  transition: width 0.3s; /* Smooth transition */
+  width: 0;
+  background-color: #a65d88;
+  transition: width 0.3s;
 }
 
 #growth-info {
   font-size: 16px;
   color: #fff;
   text-align: center;
-  margin-top: 5px; /* Adjust spacing below progress bar */
-  margin-top: -15px; /* Adjust this to move it up */
+  margin-top: 5px;
+  margin-top: -15px;
 }
 
 #plant {
@@ -136,104 +175,7 @@ body {
   max-height: 100%;
 }
 
-#resetButton,
-.reset-button-overlay {
-  background-color: #a65d88; /* Different color for reset button */
-  color: white;
-  position: fixed; /* Fixes the position of the control button */
-  bottom: 3%; /* Positions the button 10% from the bottom of the page */
-  left: 50%; /* Centers the button horizontally */
-  transform: translateX(-50%); /* Adjusts position to be centered */
-  z-index: 9999; /* Brings the button to the front */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 30px 40px; /* Increase padding for larger button */
-}
-
-.right-controls {
-  position: absolute;
-  bottom: 10%;
-  right: 10%;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  z-index: 2;
-}
-
-#waterButton {
-  position: absolute;
-  bottom: 30px; /* Position at the bottom */
-  right: 100px; /* Adjust horizontal position */
-  padding: 15px 25px;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-#lightButton {
-  position: absolute;
-  bottom: 100px; /* Position slightly higher than Water Plant */
-  right: 30px; /* Adjust horizontal position */
-  padding: 15px 25px;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-#tactileButton {
-  position: absolute;
-  bottom: 170px; /* Position even higher */
-  right: -50px; /* Adjust horizontal position to place it further left */
-  padding: 15px 25px;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-/* Bottom left controls for additional buttons */
-#left-controls {
-  position: absolute;
-  bottom: 45%;
-  left: 10%;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start; /* Align items without stretching */
-  gap: 20px;
-  z-index: 2;
-}
-
-#captureMoment {
-  color: #cdcdcd;
-  box-shadow: 4px 4px 4px 0px rgb(148, 167, 237);
-  background-blend-mode: difference;
-  background-color: #42b54b;
-  border: #e8e9e9c5 1px solid;
-  border-radius: 50px; /* Adjust border-radius to make them less circular */
-  box-shadow: rgb(255, 255, 255) 0px 0px 24px 0px inset,
-    rgb(255, 255, 255) 0px 0px 14px 0px inset,
-    rgb(255, 255, 255) 0px 0px 10px -24px inset;
-  display: inline-block;
-  padding: 12px 16px;
-  border: #e8e9e9c5 1px solid;
-}
-
-#captureMoment:hover,
-#changeEnvironment:hover {
-  color: #3e5d6e; /* Darker text color on hover */
-}
-
-#changeEnvironment {
-  color: #cdcdcd;
-  box-shadow: 4px 4px 4px 0px rgb(148, 167, 237);
-  background-blend-mode: difference;
-  background-color: #4caf50;
-  border: #e8e9e9c5 1px solid;
-  border-radius: 50px; /* Adjust border-radius to make them less circular */
-  box-shadow: rgb(255, 255, 255) 0px 0px 24px 0px inset,
-    rgb(255, 255, 255) 0px 0px 14px 0px inset,
-    rgb(255, 255, 255) 0px 0px 10px -24px inset;
-  display: inline-block;
-  padding: 12px 16px;
-  border: #e8e9e9c5 1px solid;
-}
+/* The water, light, and touch interactions are consistent with a nurturing game concept improves usability by clearly connecting actions to plant growth.  */
 
 button {
   box-shadow: rgb(255, 255, 255) 0px 0px 24px 0px inset,
@@ -249,11 +191,6 @@ button {
   border: #e8e9e9c5 1px solid;
   font-family: "Cascadia Code";
   font-style: italic;
-}
-
-/* Style the custom file upload button */
-
-button {
   filter: brightness(1.2);
   display: inline-block;
   background-color: #91bc9f;
@@ -268,65 +205,150 @@ button {
   border: #e8e9e9c5 1px solid;
   color: black;
 }
+/* Buttons are rounded and have a blend mode effect, creating an approachable, soft-button aesthetic reminiscent of playful Tamagotchi interactions */
+/* These elements use pastel and muted colors, with smooth transitions and hover effects for interaction clarity.  */
+/* These elements use pastel and muted colors, with smooth transitions and hover effects for interaction clarity.  */
+/* Buttons with a blurred background provide a sense of layering to increase usability without distracting from the central content */
 
-/* Optionally style the button on hover or focus */
+/* Style the button on hover or focus */
 button:hover {
   background-color: #d2d2d2;
   color: #5e8b6e;
   box-shadow: 4px 4px 4px 0px #92b6a6;
 }
 
-#resetButton:hover {
-  background-color: inherit; /* Or specify the base color */
-  color: inherit; /* Maintain the default text color */
-  box-shadow: none; /* Remove any shadow */
+#resetButton,
+.reset-button-overlay {
+  background-color: #a65d88;
+  color: white;
+  position: fixed;
+  bottom: 3%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 30px 40px;
+}
+
+.right-controls {
+  position: absolute;
+  bottom: 10%;
+  right: 10%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 2;
+}
+/* Button positions are thoughtfully spaced for intuitive reach and interaction. */
+/* The primary plant interaction buttons (water, light, touch) are grouped on the right, arranged vertically. */
+/* This positioning allows easy, sequential access for players, minimizing hand movement across the screen and enhancing usability for repetitive actions. */
+
+/* Bottom left controls for additional buttons */
+#left-controls {
+  position: absolute;
+  bottom: 45%;
+  left: 10%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+  z-index: 2;
+  gap: 50px;
+}
+
+#waterButton {
+  position: absolute;
+  bottom: 30px;
+  right: 100px;
+  padding: 15px 25px;
+  font-size: 14px;
   cursor: pointer;
 }
 
-#canvas1 {
-  top: 0;
-  left: 0;
-  width: 100vw; /* Use viewport width */
-  height: 100vh; /* Use viewport height */
+#lightButton {
   position: absolute;
-  z-index: 1;
-  /* Use viewport height with a fixed value */
-  object-fit: contain;
+  bottom: 100px;
+  right: 30px;
+  padding: 15px 25px;
+  font-size: 14px;
+  cursor: pointer;
 }
 
-body,
-html {
-  background-image: url(bg2.jpg);
-  background-size: contain;
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  background-color: #00000000;
+#tactileButton {
+  position: absolute;
+  bottom: 170px;
+  right: -50px;
+  padding: 15px 25px;
+  font-size: 14px;
+  cursor: pointer;
 }
 
-/* canvas#defaultCanvas0 {
+#captureMoment {
+  color: #cdcdcd;
+  box-shadow: 4px 4px 4px 0px rgb(148, 167, 237);
+  background-blend-mode: difference;
+  background-color: #42b54b;
+  border: #e8e9e9c5 1px solid;
+  border-radius: 50px;
+  box-shadow: rgb(255, 255, 255) 0px 0px 24px 0px inset,
+    rgb(255, 255, 255) 0px 0px 14px 0px inset,
+    rgb(255, 255, 255) 0px 0px 10px -24px inset;
+  display: inline-block;
+  padding: 12px 16px;
+  border: #e8e9e9c5 1px solid;
+}
+
+#changeEnvironment {
+  color: #cdcdcd;
+  box-shadow: 4px 4px 4px 0px rgb(148, 167, 237);
+  background-blend-mode: difference;
+  background-color: #4caf50;
+  border: #e8e9e9c5 1px solid;
+  border-radius: 50px;
+  box-shadow: rgb(255, 255, 255) 0px 0px 24px 0px inset,
+    rgb(255, 255, 255) 0px 0px 14px 0px inset,
+    rgb(255, 255, 255) 0px 0px 10px -24px inset;
+  display: inline-block;
+  padding: 12px 16px;
+  border: #e8e9e9c5 1px solid;
+}
+
+#captureMoment:hover,
+#changeEnvironment:hover {
+  color: #3e5d6e;
+}
+
+#resetButton:hover {
+  background-color: inherit;
+  color: inherit;
+  box-shadow: none;
+  cursor: pointer;
+}
+/* By using gentle greens, soft pinks, and mint hues, the design promotes a calming atmosphere */
+/* The color scheme helps create a soft, friendly interface that draws attention without overwhelming the user */
+
+#canvas1 {
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
   position: absolute;
-  border-radius: 50%;
-  box-shadow: 4px 4px 4px 0px rgb(158, 186, 251);
+  z-index: 1;
   object-fit: contain;
-} */
+}
 
-/* Modal styling */
+/* Modals are set with a translucent background for clarity and rounded corners soften the design */
 .modal {
-  display: none; /* Hidden by default */
+  display: none;
   position: fixed;
   z-index: 1000;
   left: 0;
   top: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.4); /* Dark but see-through */
+  background-color: rgba(0, 0, 0, 0.4);
 }
 
 .modal-content {
@@ -334,12 +356,12 @@ html {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: rgba(255, 255, 255, 0.8); /* Lighter semi-transparent box */
+  background-color: rgba(255, 255, 255, 0.8);
   padding: 20px;
   border-radius: 8px;
   text-align: center;
   font-family: "Cascadia Code", monospace;
-  width: 30%; /* Adjust size as needed */
+  width: 30%;
 }
 
 #closeModalButton {
@@ -348,27 +370,28 @@ html {
   cursor: pointer;
 }
 
-/* Instruction panel styling */
 #introSliderPanel {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  height: 50vh;
+  height: 60vh;
   background-color: rgba(255, 255, 255, 0.9);
   overflow: hidden;
-  transform: translateY(0); /* Visible initially */
+  transform: translateY(0);
   transition: transform 0.5s ease-in-out;
   z-index: 1000;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .slider-content {
-  padding: 20px;
+  font-size: 1.2em;
+  line-height: 1.5;
+  max-width: 700px;
+  margin: 0 auto;
   text-align: center;
 }
 
-/* Slider navigation styling */
 .slider-nav {
   display: flex;
   justify-content: space-between;
@@ -387,6 +410,7 @@ html {
 #nextButton {
   position: absolute;
   right: 0;
+  transform: translateX(-310px);
 }
 
 #togglePanelButton {
@@ -402,13 +426,15 @@ html {
   z-index: 1001;
 }
 
+/* Animation for the interaction of the plants */
+
 /* Brighten effect animation */
 @keyframes brighten {
   0% {
     filter: brightness(1);
   }
   50% {
-    filter: brightness(2); /* Brighter effect */
+    filter: brightness(2);
   }
   100% {
     filter: brightness(1);
@@ -416,7 +442,7 @@ html {
 }
 
 #plant.brighten-effect {
-  animation: brighten 1s ease-in-out; /* Extended duration for visibility */
+  animation: brighten 1s ease-in-out;
 }
 
 /* Ripple effect for watering */
