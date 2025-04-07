@@ -1,0 +1,7 @@
+/* Add margin to the left, right, and top of the body element */
+body {
+    font-family: 'IM Fell English', serif;
+    margin-left: 100px;
+    margin-right: 20px;
+    margin-top: 100px; /* Adjust the value as needed */
+}
