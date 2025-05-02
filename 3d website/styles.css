@@ -1,0 +1,175 @@
+/* Define a CSS variable for the cube size; default is 300px */
+:root {
+  --cube-size: 300px;
+}
+
+/* Basic reset and full viewport styling */
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background: #333;
+  overflow: hidden;
+  font-family: sans-serif;
+  cursor: grab;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Scene container with perspective */
+.scene {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  perspective: 1200px;
+  overflow: hidden;
+}
+
+/* .world rotates via mouse drag; add smooth transition for preset view changes */
+.world {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform-style: preserve-3d;
+  transition: transform 0.5s ease;
+}
+
+/* Massive grid on the XZ plane */
+.grid {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2000px;
+  height: 2000px;
+  background-image:
+    repeating-linear-gradient(0deg, #444 0, #444 1px, transparent 1px, transparent 40px),
+    repeating-linear-gradient(90deg, #444 0, #444 1px, transparent 1px, transparent 40px);
+  transform: translate(-50%, -50%) rotateX(90deg);
+  transform-origin: center;
+  opacity: 0.6;
+}
+
+/* Cube styling – use the responsive variable for its width/height */
+.cube {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--cube-size);
+  height: var(--cube-size);
+  transform: translate(-50%, -50%);
+  transform-style: preserve-3d;
+  transition: transform 0.3s ease;
+}
+
+/* Cube face styling: each face is subdivided into a 3x3 grid using CSS gradients */
+.face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 2px solid rgba(255,255,255,0.2);
+  background-image:
+    linear-gradient(to right, rgba(255,255,255,0.2) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,0.2) 1px, transparent 1px);
+  background-size: calc(100% / 3) calc(100% / 3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(var(--cube-size) / 12);
+  color: #fff;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+}
+
+/* Each face's translate uses half the cube size */
+.front  { transform: rotateY(0deg) translateZ(calc(var(--cube-size) / 2)); }
+.left   { transform: rotateY(-90deg) translateZ(calc(var(--cube-size) / 2)); }
+.top    { transform: rotateX(90deg) translateZ(calc(var(--cube-size) / 2)); }
+
+/* Spherical Viewport Gizmo (fixed at bottom-left) */
+.viewport-gizmo {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  width: 120px;
+  height: 120px;
+  perspective: 800px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #444, #222);
+  box-shadow: inset 0 0 10px #000, 0 0 15px rgba(255,255,255,0.2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transform-style: preserve-3d;
+  pointer-events: auto;
+}
+
+/* Gizmo preset button styling */
+.axis {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform-style: preserve-3d;
+}
+.axis .line {
+  position: absolute;
+  width: 30px;
+  height: 2px;
+  top: -1px;
+  left: 0;
+  transform-origin: 0 50%;
+}
+.axis .circle {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  font-size: 10px;
+  line-height: 18px;
+  text-align: center;
+  color: #fff;
+  top: -8px;
+  left: 30px;
+  transform-origin: center;
+  cursor: pointer;
+  border: 1px solid #fff;
+  background: rgba(255,255,255,0.2);
+  transition: background 0.2s;
+}
+.axis .circle:hover {
+  background: rgba(255,255,255,0.4);
+}
+
+/* Preset buttons for three views (Front, Left, Top) with color mapping:  
+   Front (red), Left (blue), Top (green)  */
+.front-axis {
+  transform: translate(-50%, -50%) rotate(0deg);
+}
+.front-axis .line { background: red; transform: rotate(-90deg); }
+.front-axis .circle { background: red; }
+.left-axis {
+  transform: translate(-50%, -50%) rotate(240deg);
+}
+.left-axis .line { background: blue; transform: rotate(0deg); }
+.left-axis .circle { background: blue; }
+.top-axis {
+  transform: translate(-50%, -50%) rotate(120deg);
+}
+.top-axis .line { background: green; transform: rotate(90deg); }
+.top-axis .circle { background: green; }
+
+/* Optional Instructions Panel */
+.instructions {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  padding: 10px;
+  font-size: 14px;
+  border-radius: 4px;
+}
+.instructions ul {
+  margin: 5px 0 0 20px;
+  list-style: disc;
+}

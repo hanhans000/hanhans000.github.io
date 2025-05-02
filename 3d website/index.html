@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Responsive 3D Cube with Interactive Gizmo</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Main 3D Scene Container -->
+  <div class="scene">
+    <!-- .world rotates via mouse drag and contains the grid and cube -->
+    <div class="world" id="world">
+      <div class="grid"></div>
+      <div class="cube">
+        <!-- Cube faces (only Front, Left, and Top remain as before) -->
+        <div class="face front">Front</div>
+        <div class="face left">Left</div>
+        <div class="face top">Top</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive Spherical Gizmo with preset buttons -->
+  <div class="viewport-gizmo" id="viewportGizmo">
+    <div class="axis front-axis">
+      <div class="line"></div>
+      <div class="circle" data-preset="front">Front</div>
+    </div>
+    <div class="axis left-axis">
+      <div class="line"></div>
+      <div class="circle" data-preset="left">Left</div>
+    </div>
+    <div class="axis top-axis">
+      <div class="line"></div>
+      <div class="circle" data-preset="top">Top</div>
+    </div>
+  </div>
+
+  <!-- Optional Instructions Panel -->
+  <div class="instructions">
+    <p>Drag to rotate world (X &amp; Y only). Resize the window to adjust cube size.</p>
+    <p>Click a gizmo button for a preset view:</p>
+    <ul>
+      <li>Front: 0°, 0°</li>
+      <li>Left: 0°, -90°</li>
+      <li>Top: -90°, 0°</li>
+    </ul>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
