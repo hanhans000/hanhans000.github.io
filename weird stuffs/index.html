@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Found Objects House - Interactive 3D Experience</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="loading-screen">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h2>Loading the House of Stories...</h2>
+            <p>Preparing your 3D experience</p>
+        </div>
+    </div>
+
+    <div id="app">
+        <!-- Navigation -->
+        <nav class="navbar">
+            <div class="nav-brand">
+                <h1>🏠 Found Objects House</h1>
+            </div>
+            <div class="nav-controls">
+                <button id="help-btn" class="nav-btn">?</button>
+                <button id="sound-btn" class="nav-btn">🔊</button>
+                <button id="fullscreen-btn" class="nav-btn">⛶</button>
+            </div>
+        </nav>
+
+        <!-- 3D Scene Container -->
+        <div id="scene-container">
+            <canvas id="three-canvas"></canvas>
+        </div>
+
+        <!-- Object Info Panel -->
+        <div id="object-info" class="info-panel hidden">
+            <div class="info-header">
+                <h3 id="object-title">Object Name</h3>
+                <button id="close-info" class="close-btn">×</button>
+            </div>
+            <div class="info-content">
+                <div id="object-image" class="object-image"></div>
+                <div id="object-story" class="object-story">
+                    <h4>Story</h4>
+                    <p id="story-text">Click on objects to discover their stories...</p>
+                </div>
+                <div id="object-details" class="object-details">
+                    <h4>Details</h4>
+                    <ul id="details-list"></ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Story Modal -->
+        <div id="story-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="modal-title">Object Story</h2>
+                    <button id="close-modal" class="close-btn">×</button>
+                </div>
+                <div class="modal-body">
+                    <div id="modal-image" class="modal-image"></div>
+                    <div id="modal-story" class="modal-story">
+                        <p id="modal-story-text"></p>
+                    </div>
+                    <div class="modal-navigation">
+                        <button id="prev-story" class="nav-story-btn">← Previous</button>
+                        <button id="next-story" class="nav-story-btn">Next →</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Help Modal -->
+        <div id="help-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>How to Explore</h2>
+                    <button id="close-help" class="close-btn">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="help-content">
+                        <div class="help-section">
+                            <h3>🎮 Controls</h3>
+                            <ul>
+                                <li><strong>Mouse:</strong> Look around the house</li>
+                                <li><strong>Scroll:</strong> Zoom in/out</li>
+                                <li><strong>Click:</strong> Interact with objects</li>
+                                <li><strong>Drag:</strong> Move around the scene</li>
+                            </ul>
+                        </div>
+                        <div class="help-section">
+                            <h3>🔍 Discovery</h3>
+                            <ul>
+                                <li>Look for glowing objects throughout the house</li>
+                                <li>Each object has a unique story to tell</li>
+                                <li>Explore different rooms to find hidden treasures</li>
+                                <li>Some objects may have audio stories</li>
+                            </ul>
+                        </div>
+                        <div class="help-section">
+                            <h3>🏠 Rooms</h3>
+                            <ul>
+                                <li><strong>Living Room:</strong> Family heirlooms and memories</li>
+                                <li><strong>Kitchen:</strong> Cooking tools and recipes</li>
+                                <li><strong>Bedroom:</strong> Personal items and dreams</li>
+                                <li><strong>Attic:</strong> Forgotten treasures and secrets</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mini Map -->
+        <div id="mini-map" class="mini-map">
+            <div class="map-title">House Map</div>
+            <div class="map-rooms">
+                <div class="room-dot living-room active" data-room="living">Living</div>
+                <div class="room-dot kitchen" data-room="kitchen">Kitchen</div>
+                <div class="room-dot bedroom" data-room="bedroom">Bedroom</div>
+                <div class="room-dot attic" data-room="attic">Attic</div>
+            </div>
+        </div>
+
+        <!-- Progress Indicator -->
+        <div id="progress-bar" class="progress-bar">
+            <div class="progress-fill"></div>
+            <span class="progress-text">Objects Found: <span id="found-count">0</span>/12</span>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
+

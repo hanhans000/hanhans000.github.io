@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Level 3: The Bedroom (Vent Entry)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    body {
+        /* Use Inter font for better mobile/general display, fall back to Courier for ASCII consistency */
+        font-family: 'Inter', 'Courier New', Courier, monospace;
+        background-color: #0d0d0d;
+        color: #888;
+        font-size: 14px;
+        line-height: 14px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+        overflow: auto; /* Allow scrolling if map is larger than viewport */
+    }
+    
+    /* Load Inter font */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+
+    #map-container {
+        padding: 10px;
+        margin: 20px; /* Ensure space around the map */
+        max-width: 95vw; /* Fluid width */
+        overflow-x: auto; /* Scroll horizontally if needed */
+    }
+
+    pre {
+        margin: 0;
+        font-weight: bold;
+        cursor: default;
+        user-select: none;
+        white-space: pre;
+        line-height: 1.1; /* Tighter line height for ASCII art */
+    }
+
+    /* --- LEVEL 3: BEDROOM ANIMATIONS & ASSETS --- */
+    /* Shared */
+    .wall { color: #444; }
+    .neon { color: #ff00ff; font-weight: bold; text-shadow: 0 0 5px #ff00ff; }
+    
+    /* Water/Plunge */
+    .l3-water { 
+        color: #00aaff; 
+        text-shadow: 0 0 5px #0ff; 
+        animation: pulseWater 1.5s infinite alternate; /* Added pulse effect */
+    } 
+    .l3-plunge { color: #f00; text-shadow: 0 0 8px red; }
+
+    /* Rug */
+    .l3-rug { 
+        color: #d94; 
+        opacity: 0.6; 
+        animation: subtleGlow 4s infinite alternate; /* Added subtle glow */
+    } 
+
+    /* Bed Goal */
+    .l3-bed { color: #fff; background-color: #222; text-shadow: 0 0 5px #fff; } 
+    .l3-bed-frame { color: #555; }
+    
+    /* Monitor/Tech */
+    .l3-monitor { color: #3f3; text-shadow: 0 0 5px #0ff; animation: monitorFlicker 0.2s infinite alternate; }
+    @keyframes monitorFlicker { 0% { opacity: 1; } 100% { opacity: 0.9; color: #3f3; } }
+
+    /* Cat */
+    .l3-cat { color: #aa00ff; text-shadow: 0 0 8px #ff00ff; }
+    .cat-art { 
+        color: #800080; 
+        animation: catBreath 3s ease-in-out infinite; /* Added breathing animation */
+    }
+
+    /* Drain/Vent & Sewer Wall */
+    .drain-pipe { 
+        color: #4af; 
+        font-weight: bold; 
+        text-shadow: 0 0 5px blue; 
+    }
+    .drain-pipe, .drain-pipe span {
+        /* Ensure children inherit pipe style unless overridden */
+        color: #4af;
+    }
+
+    /* Mouse in Vent (New Style) */
+    .l3-mouse { 
+        color: #ffaa00; /* Orange/Brown for a mouse */
+        text-shadow: 0 0 5px #ffaa00; 
+        display: inline-block;
+        animation: mouseWiggle 0.5s infinite alternate;
+    }
+
+    /* Keyframe Animations */
+    @keyframes pulseWater { 
+        0% { opacity: 0.8; } 
+        100% { opacity: 1; text-shadow: 0 0 8px #0ff; }
+    }
+    @keyframes subtleGlow {
+        0% { opacity: 0.6; }
+        50% { opacity: 0.75; }
+        100% { opacity: 0.6; }
+    }
+    @keyframes catBreath {
+        0% { transform: scaleY(1); opacity: 0.9; }
+        50% { transform: scaleY(0.98); opacity: 1; }
+        100% { transform: scaleY(1); opacity: 0.9; }
+    }
+    @keyframes mouseWiggle {
+        0% { transform: translateY(0px); }
+        100% { transform: translateY(-0.5px); }
+    }
+</style>
+</head>
+<body>
+
+<!-- ASCII Dungeon Map Container -->
+<div id="map-container">
+<pre id="game-stage">
+(FROM KITCHEN)
+                          <span class="drain-pipe">||</span>
+                          <span class="drain-pipe">||</span>
+      <span class="drain-pipe">+=================++=================+</span>
+      <span class="drain-pipe">|          THE SEWER PIPE            |</span>
+      <span class="drain-pipe">|   ▓▓▓▓▓▓▓▓▓▓▓▓||▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓   |</span>
+      <span class="drain-pipe">|   ▓▓▓▓▓▓▓▓▓▓▓▓||▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓   |</span>
+      <span class="drain-pipe">|   ▓▓▓▓▓▓▓▓▓▓▓▓||▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓   |</span>
+      <span class="drain-pipe">|   ▓▓▓▓▓▓▓▓     </span><span class="l3-mouse">_  _</span><span class="drain-pipe">     ▓▓▓▓▓▓▓▓   |</span>
+      <span class="drain-pipe">|   ▓▓▓▓▓▓▓▓    </span><span class="l3-mouse">(o)(o)--.</span><span class="drain-pipe"> ▓▓▓▓▓▓▓▓   |</span> <span class="l3-mouse"><--- THE MOUSE</span>
+      <span class="drain-pipe">|   ▓▓▓▓▓▓▓▓     </span><span class="l3-mouse">\../ ( )</span><span class="drain-pipe"> ▓▓▓▓▓▓▓▓   |</span>      <span class="l3-mouse">(Blocking path)</span>
+      <span class="drain-pipe">|   ▓▓▓▓▓▓▓▓     </span><span class="l3-mouse">m\/m--m'-</span><span class="drain-pipe"> ▓▓▓▓▓▓▓▓   |</span>
+      <span class="drain-pipe">|   ▓▓▓▓▓▓▓▓▓▓▓▓||▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓   |</span>
+      <span class="drain-pipe">|   ▓▓▓▓▓▓▓▓▓▓▓▓||▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓   |</span>
+      <span class="drain-pipe">|   ▓▓▓▓▓▓▓▓▓▓▓▓vv▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓   |</span>
+      <span class="drain-pipe">+=================++=================+</span>
+                          <span class="drain-pipe">||</span>
+                          <span class="drain-pipe">||</span>  (Water dripping)
+                          <span class="drain-pipe">||</span>
+                          <span class="drain-pipe">vv</span>
++-------------------<span class="drain-pipe">||</span>---------------------------+
+|  SMALL BATHROOM    <span class="drain-pipe">V</span>  (Vent Entry)             |
+|                                                |
+|  [ BATHTUB ]       [ THE TOILET ]             |
+|  +---------+       ______________             |
+|  | |<span class="l3-water">W</span>| /  /|       |            |             |
+|  | |<span class="l3-water">W</span>||  | |       | [||]   (<span class="l3-plunge">P</span>) |             |
+|  | |<span class="l3-water">W</span>||__| |       |____________|             |
+|  | |<span class="l3-water">W</span>|     |        _ /   \ _                 |
+|  | |<span class="l3-water">W</span>|(Crt)|       ( (     ) ) (Bowl)         |
+|  |___|_____|        \ \____/ /                 |
+|                      \______/                  |
+|   (TILED FLOOR)             ||                 |
+|   +-----+-----+           __||__               |
+|   |     |     |          |______|              |
+|   +-----+-----+                                |
+|   |     |     |          [ BATH MAT ]          |
+|   +-----+-----+           <span class="l3-rug">MMMMMMMMMMM</span>          |
++-----------------------------    -------------+
+                              | [<span class="wall">DOOR</span>]|        
+                              |       |        
+                              |       |        
++----------------------------------+    +-------------------------------------+
+|   <span class="neon">THE BEDROOM</span>                   |    |                                     |
+|                                 |    |     <span class="l3-bed-frame">.-----------.</span>                   |
+|   (WARDROBE)                    <span class="wall">'-------'</span>   | <span class="l3-bed-frame">.-------.</span> |                   |
+|  .-----------------.                       | | <span class="l3-monitor">C:\>_</span> | | (WORK DESK)         |
+|  |  ___________    |                       | <span class="l3-bed-frame">'-------'</span> |                   |
+|  | |  |     |  |   |                       | [Kb] [Ms] |                   |
+|  | |  |     |  |   |                       |___________|                   |
+|  | |  '--.  |  |   |                        /        \                    |
+|  | | [==] '--' |   |                       /_________\\                   |
+|  | '-----------'   |                                                     |
+|  '-----------------'                                 (WINDOW)            |
+|                                                      <span class="l3-bed-frame">+-------+</span>           |
+|                                                      |  * * |           |
+|  (QUEEN BED)                                         | * * |           |
+|  <span class="l3-bed">.---.________</span>                              <span class="l3-bed-frame">+-------+</span>           |
+| /   /         /|        <span class="l3-rug">:::::::::::::::::</span>           | [===] |           |
+| /___/________/ |        <span class="l3-rug">::  PATTERNED  ::</span>           |       |           |
+| |   |  ====  | |        <span class="l3-rug">::    AREA     ::</span>           |       |           |
+| |___|________|/         <span class="l3-rug">:::::::::::::::::</span>           | [===] |           |
+|                         <span class="l3-rug">:::::::::::::::::</span>           |       |           |
+|                                                     |   /_\ |           |
+|                            <span class="l3-cat">(SLEEPING CAT)</span>           |  (<span class="l3-cat">O O</span>)|           |
+|                             <span class="cat-art">|W|/,, |  (`\</span>           <span class="l3-bed-frame">+-------+</span>           |
+|                          <span class="cat-art">_.|o o |_   ) )</span>            (CAT TREE)          |
+|                          <span class="cat-art">-(((---(((--------</span>                             |
+|                                                                         |
++--------------------------------------------------------------------------------+
+</pre>
+</div>
+
+<!-- Added a small script to ensure the Inter font is used via link/import for better appearance -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+</body>
+</html>

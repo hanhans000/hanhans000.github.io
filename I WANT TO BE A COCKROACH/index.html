@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>I WANT TO BE A COCKROACH | muốn làm con gián</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="container">
+        <!-- Title Screen -->
+        <div id="title-screen">
+            <div class="title-content">
+                <h1 class="main-title">I WANT TO BE A COCKROACH</h1>
+                <h2 class="subtitle">muốn làm con gián</h2>
+                <p class="instruction">Click anywhere to begin your transformation</p>
+                <div class="cockroach-preview"></div>
+            </div>
+        </div>
+
+        <!-- Transformation Screen -->
+        <div id="transformation-screen" class="hidden">
+            <div class="transformation-content">
+                <div class="transformation-text">
+                    <h2>Transforming...</h2>
+                    <p>You are becoming a cockroach</p>
+                </div>
+                <div class="transformation-animation">
+                    <div class="human-silhouette"></div>
+                    <div class="arrow">→</div>
+                    <div class="cockroach-silhouette"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game World -->
+        <div id="game-world" class="hidden">
+            <!-- Cockroach Character -->
+            <div id="cockroach" class="cockroach-character">
+                <div class="cockroach-body">
+                    <div class="cockroach-head">
+                        <div class="antenna antenna-left"></div>
+                        <div class="antenna antenna-right"></div>
+                        <div class="eye eye-left"></div>
+                        <div class="eye eye-right"></div>
+                    </div>
+                    <div class="cockroach-thorax"></div>
+                    <div class="cockroach-abdomen">
+                        <div class="segment"></div>
+                        <div class="segment"></div>
+                        <div class="segment"></div>
+                    </div>
+                    <div class="leg leg-1"></div>
+                    <div class="leg leg-2"></div>
+                    <div class="leg leg-3"></div>
+                    <div class="leg leg-4"></div>
+                    <div class="leg leg-5"></div>
+                    <div class="leg leg-6"></div>
+                </div>
+            </div>
+
+            <!-- Environment Elements -->
+            <div class="environment">
+                <div class="floor"></div>
+                <div class="wall wall-left"></div>
+                <div class="wall wall-right"></div>
+                <div class="wall wall-back"></div>
+                
+                <!-- Food Items -->
+                <div class="food-item" style="left: 20%; top: 30%;">🍕</div>
+                <div class="food-item" style="left: 60%; top: 50%;">🍎</div>
+                <div class="food-item" style="left: 80%; top: 20%;">🍞</div>
+                
+                <!-- Cracks and Hiding Spots -->
+                <div class="crack" style="left: 10%; top: 70%;"></div>
+                <div class="crack" style="left: 50%; top: 80%;"></div>
+                <div class="crack" style="left: 90%; top: 60%;"></div>
+            </div>
+
+            <!-- UI Overlay -->
+            <div class="ui-overlay">
+                <div class="status-bar">
+                    <div class="status-item">
+                        <span class="status-label">Perspective:</span>
+                        <span class="status-value" id="perspective">Cockroach</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Size:</span>
+                        <span class="status-value" id="size">Small</span>
+                    </div>
+                </div>
+                <div class="controls-hint">
+                    <p>🖱️ Drag to move | 🔍 Scroll to zoom | Click to interact</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instructions Modal -->
+        <div id="instructions-modal" class="modal hidden">
+            <div class="modal-content">
+                <h3>Welcome to the Cockroach World</h3>
+                <ul>
+                    <li>🖱️ <strong>Drag</strong> your mouse to move around</li>
+                    <li>🔍 <strong>Scroll</strong> to zoom in/out</li>
+                    <li>👆 <strong>Click</strong> on food items to eat</li>
+                    <li>🕳️ <strong>Hide</strong> in cracks when you see danger</li>
+                    <li>🌙 <strong>Explore</strong> the world from a cockroach's perspective</li>
+                </ul>
+                <button class="close-btn" onclick="closeInstructions()">Got it!</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
+
+
+

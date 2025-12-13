@@ -1,97 +1,123 @@
 <!DOCTYPE html>
-
-<!-- YOU NEED TO INCLUDE THE FOLLOWING HTML SOMEWHERE IN YOUR DESIGN -->
-
-
-
-<html lang="en">
-
+<html>
   <head>
-
-   
-    <meta charset="utf-8" name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gesticulating</title>
-    <link rel="icon" type="/favicon" href="Favicon.png">
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Orbitron">
-    <script src="playerControls.js" defer></script>
-
+    <title>Just a water plant game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
   </head>
 
   <body>
-    
-
-    
-
-
-    <!-- this element holds all of the media player -->
-    <div class="audio-player-wrapper">
+    <header id="game-title">
+      <h1>HTML Garden</h1>
+    </header>
 
 
-      <!-- I have created a new div with the class contentHolder with a grid setup so that I can place the different elements of the media player so that they fit within my design. -->
-      <div class="contentHolder">
+    <!-- Button to toggle the instructions panel -->
+    <button id="togglePanelButton" onclick="togglePanel()">
+    Instructions
+    </button>
 
-        <!-- At the top of the list I have the items that should appear on top of all the other elements in order. I have also used the z-index in html to ensure the correct placement of the multiple layers-->
-        <div class="currentLengthInt" id="currentLengthNum"> 0 : 00 </div>
-
-        <div class="containerForProgress">
-          <!-- the original progress bar from the code supplied -->
-          <progress class="audio-progress-bar" id="progressBar" value="0"></progress>
-          <div class="progressCircle" id="progressCircle">
-          </div>   
-        </div>
-
-        <div class="totalLengthInt" id="totalDuration"> 0 : 00 </div>
-        <button class="audio-control-button" id="playButton"></button>
-        <button class="audio-control-button" id="muteButton"></button>
-        <img id="audioPlayOverlay" src="./icons/play.svg">
-        <img src="overtop2.png" class="mediaPlayerOvertop" alt="">
-        <img src="CD.png" class="rotateDisk" id="rotateDisk" alt="">
-        <img src="meidaplayerbase2.png" class="mediaPlayerBase" alt="">
-        
-      </div>
-
-      <!-- this element holds the audio element and the overlay -->
-      <div class="audio-element-wrapper">
-
-
-        <audio id="audioElement" controls>
-          <source src="https://files.freemusicarchive.org/storage-freemusicarchive-org/tracks/4ObifFXlXTEaFngFPDhPzpDE2Qy8hM8n5tOcNp4y.mp3" type="audio/mp3">
-        </audio>
-
-        
-
-        
-
-      </div>
-      <!-- this element holds all of the custom controls -->
-      
-      <div class="audio-controls-wrapper" id="controlsWrapper">
-   
-   
-
-      </div>
-
-      <p class="attribution">
-        "<a target="_blank" rel="noopener noreferrer" href="https://freemusicarchive.org/music/ov-moi-omm/single/gesticulating/">Gesticulating</a>" by 
-        <a target="_blank" rel="noopener noreferrer" href="https://freemusicarchive.org/music/ov-moi-omm/">Ov Moi Omm</a> is licensed under 
-        <a target="_blank" rel="noopener noreferrer" href="https://creativecommons.org/licenses/by/4.0/">a Attribution 4.0 International License. 
-          <img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" style="height: 1em; margin-right: 0.125em; display: inline;"></img>
-          <img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" style="height: 1em; margin-right: 0.125em; display: inline;"></img>
-          <img src="https://mirrors.creativecommons.org/presskit/icons/nc.svg" style="height: 1em; margin-right: 0.125em; display: inline;"></img>
-          <img src="https://mirrors.creativecommons.org/presskit/icons/sa.svg" style="height: 1em; margin-right: 0.125em; display: inline;"></img>
-        </a>. 
-<br> <br>
-Link to additional <a href="https://lucash0rta.github.io/im2350/a2/e4/progress.html">progress document</a>
-      </p> 
-
-    
-
-
+    <!-- The game's interface -->
+    <div id="containers">
+      <!-- Game content and controls here -->
     </div>
 
+    <div id="control">
+      <video id="videoElement" style="display: none"></video>
+      <div id="buttonContainer"></div>
+    </div>
+
+    <!-- The toggle camera button -->
+    <div id="camera-control">
+      <button id="toggle-camera">Turn On Camera</button>
+    </div>
+
+    <video id="camera" autoplay playsinline style="display: none"></video>
+    <canvas id="Canvas"></canvas>
+    <div id="game-container">
+      <div id="plant-container">
+        <img id="plant"  alt="Plant" />  <pre>
+   _ _
+  (_\_)
+   /_\
+   | |
+  /___\
+  </pre>
+      </div>
+      <!-- Progress bar for the status of the plant -->
+      <div id="progress-bar-container">
+        <div id="progress-bar"></div>
+      </div>
+      <div id="growth-info">
+        <p>Current Plant Stage: <span id="stage">1</span>/5</p>
+      </div>
+    </div>
+    <div id="left-controls">
+      <button id="changeEnvironment">Change Environment</button>
+      <button id="captureMoment">Capture This Moment</button>
+    </div>
+
+    <div class="right-controls">
+      <button id="lightButton">Shine Light</button>
+      <button id="waterButton">Water Plant</button>
+      <button id="tactileButton">Touch Plant</button>
+      <button id="resetButton">Reset Garden</button>
+    </div>
+
+    <div class="toggle-camera"><button>Turn On Camera</button></div>
+    <canvas id="canvas1"></canvas>
+
+    <!-- Modal for plant's death -->
+    <div id="deathModal" class="modal">
+      <div class="modal-content">
+        <div class="message-box">
+          <p>Your plant has been overcared and it has died.</p>
+          <p>
+            Try taking care of it more slowly and remember to meet all three of
+            its needs at each stage
+          </p>
+          <p>Please press "Reset Garden" to try again</p>
+        </div>
+      </div>
+      <button id="resetButtonOverlay" class="reset-button-overlay">
+        Reset Garden
+      </button>
+    </div>
+
+    <!-- The reason why I have to put two reset button here is because I cant manage to make the original reset garden appear on top, especially when the death modal appear  -->
+    <!-- So I create a alternative way, is that I create another reset button that is the same as the reset button and put it on the same position as the old reset button  -->
+
+    <!-- Camera toggle message to guilde people -->
+    <div id="cameraModal" class="modal">
+      <div class="modal-content">
+        <p>
+          You are your own plants, take care of yourself carefully <br />
+          <br />
+
+          And remember to take a snapshot with your plants!
+        </p>
+        <br />
+        <button id="closeModalButton">Got it!</button>
+      </div>
+    </div>
+
+    <div id="completionModal" class="modal">
+      <div class="modal-content">
+        <div class="message-box">
+          <p>Congratulations! You’ve completed the game!</p>
+          <p>
+            Take a snapshot with your plant by close this popup, turn on your
+            camera and click "Capture this moment". <br />
+            <br />If you dont have a camera or if you are shy, you can also take
+            a snapshot of just the plant.
+          </p>
+        </div>
+        <button id="closeCompletionModal" class="close-modal-button">
+          Close
+        </button>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
   </body>
-
-
-
 </html>

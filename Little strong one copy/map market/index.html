@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Level 1: The Wet Market</title>
+<style>
+    body {
+        background-color: #0d0d0d;
+        color: #888;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 14px;
+        line-height: 14px;
+        white-space: pre;
+        padding: 20px;
+        overflow-x: hidden; /* Prevent scrollbar from the moving bike */
+    }
+
+    /* --- ANIMATIONS --- */
+    
+    /* Water Ripple: Blue to Cyan cycle */
+    .water { display: inline-block; font-weight: bold; }
+    .water::after { content: "~~~~~~~~"; animation: rippleAnim 2s infinite linear; }
+    @keyframes rippleAnim {
+        0%   { color: #0088ff; }
+        50%  { color: #00ffff; text-shadow: 0 0 3px #0088ff; }
+        100% { color: #0088ff; }
+    }
+
+    /* Swimming Fish: Up and Down bobbing */
+    .fish { display: inline-block; font-weight: bold; color: #add8e6; }
+    .fish::after { content: "><(((('>"; animation: swimAnim 1s infinite ease-in-out alternate; }
+    @keyframes swimAnim {
+        0%   { transform: translateY(0); }
+        100% { transform: translateY(-3px); }
+    }
+
+    /* Blood Pulse: Dark red to bright red */
+    .blood { display: inline-block; font-weight: bold; }
+    .blood::after { content: "~BLOOD~"; animation: bloodAnim 3s infinite ease-in-out; }
+    @keyframes bloodAnim {
+        0%   { color: #550000; }
+        50%  { color: #aa0000; text-shadow: 0 0 5px #550000; }
+        100% { color: #550000; }
+    }
+
+    /* Blood Drop Animation */
+    .drop { display: inline-block; color: #ff0000; font-weight: bold; animation: dropAnim 0.8s infinite linear; }
+    @keyframes dropAnim {
+        0% { transform: translateY(0); opacity: 1; }
+        80% { opacity: 1; }
+        100% { transform: translateY(10px); opacity: 0; }
+    }
+
+    /* Flopping Fish Animation */
+    .flopper { display: inline-block; color: #88ccff; font-weight: bold; animation: flopAnim 0.15s infinite alternate; }
+    @keyframes flopAnim {
+        0% { transform: rotate(-30deg) translateY(0); }
+        50% { transform: rotate(0deg) translateY(-2px); }
+        100% { transform: rotate(30deg) translateY(0); }
+    }
+
+    /* Neon Sign Flicker */
+    .neon { color: #ff00ff; font-weight: bold; animation: neonAnim 0.1s infinite alternate; }
+    @keyframes neonAnim {
+        0%   { text-shadow: 0 0 2px #ff00ff; opacity: 1; }
+        100% { text-shadow: 0 0 5px #ff00ff; opacity: 0.9; }
+    }
+
+    /* Vegetable Sway */
+    .veg { display: inline-block; color: #4f4; transform-origin: bottom center; animation: swayAnim 3s infinite ease-in-out; }
+    @keyframes swayAnim {
+        0%, 100% { transform: rotate(0deg); }
+        50% { transform: rotate(5deg); }
+    }
+
+    /* Ice Sparkle */
+    .ice { color: #cceeff; animation: sparkleAnim 1.5s infinite alternate; }
+    @keyframes sparkleAnim {
+        0% { text-shadow: 0 0 0 #fff; opacity: 0.8; }
+        100% { text-shadow: 0 0 4px #fff; opacity: 1; color: #fff; }
+    }
+
+    /* Crab Fight Animations */
+    .crab-left { display: inline-block; color: #d66; animation: fightLeft 0.5s infinite cubic-bezier(.36,.07,.19,.97) alternate; }
+    .crab-right { display: inline-block; color: #d66; animation: fightRight 0.5s infinite cubic-bezier(.36,.07,.19,.97) alternate; }
+
+    @keyframes fightLeft {
+        0% { transform: translateX(0) rotate(0deg); }
+        40% { transform: translateX(0) rotate(-5deg); } /* Wind up */
+        100% { transform: translateX(4px) rotate(15deg); color: #ff0000; } /* Strike! */
+    }
+
+    @keyframes fightRight {
+        0% { transform: translateX(0) rotate(0deg); }
+        40% { transform: translateX(0) rotate(5deg); } /* Wind up */
+        100% { transform: translateX(-4px) rotate(-15deg); color: #ff0000; } /* Strike! */
+    }
+
+    /* Spice Color Shift */
+    .spice { display: inline-block; animation: spiceAnim 4s infinite linear; }
+    @keyframes spiceAnim {
+        0% { color: #ffaa00; }
+        33% { color: #d2691e; }
+        66% { color: #8b4500; }
+        100% { color: #ffaa00; }
+    }
+
+    /* Durian Stink Pulse */
+    .durian { color: #ccaa00; font-weight: bold; animation: stinkAnim 2s infinite ease-in-out; }
+    @keyframes stinkAnim {
+        0% { text-shadow: 0 0 0 #ccaa00; }
+        50% { text-shadow: 0 0 8px #554400; color: #ffeeaa; }
+        100% { text-shadow: 0 0 0 #ccaa00; }
+    }
+
+    /* Sewer Steam */
+    .sewer { color: #333; font-weight: bold; text-shadow: 0 1px 0 #555; }
+    .steam { display: inline-block; color: #666; opacity: 0; animation: steamAnim 4s infinite linear; }
+    @keyframes steamAnim {
+        0% { transform: translateY(0) scale(1); opacity: 0; }
+        20% { opacity: 0.6; }
+        100% { transform: translateY(-8px) scale(1.5); opacity: 0; }
+    }
+
+    /* Motorcycle Animation */
+    .street-layer {
+        width: 100%;
+        height: 200px;
+        position: relative;
+        overflow: hidden;
+        border-top: 2px dashed #333;
+        margin-top: 10px;
+        color: #555;
+    }
+    
+    .scooter {
+        display: inline-block;
+        color: #5599ff; /* Moped Color */
+        font-weight: bold;
+        position: absolute;
+        top: 20px;
+        transform: scaleX(-1); /* Flip horizontally to face Right */
+        animation: driveLeft 12s linear infinite;
+    }
+
+    @keyframes driveLeft {
+        from { left: 100%; } /* Start off-screen Right */
+        to { left: -600px; } /* Move off-screen Left */
+    }
+
+    .dragon { color: #ff00ff; font-weight: bold; }
+    .melon  { color: #00aa00; font-weight: bold; }
+    .melon-in { color: #ff3333; }
+
+    /* --- ASSETS --- */
+    .wall    { color: #444; }
+    .sign    { color: #fff; background-color: #333; padding: 0 2px; }
+    .banana  { color: #ff0; font-weight: bold; } /* Bright Yellow */
+    .meat    { color: #f44; }
+    .mud     { color: #654; } /* The ground texture */
+    .fruit   { color: #fa0; } /* Orange/Citrus color */
+    
+    /* New Entrance Assets */
+    .staff-only { color: #fff; background-color: #aa0000; font-weight: bold; padding: 0 2px; }
+    .curtain { color: #88ccff; opacity: 0.7; }
+    .dark-alley { background-color: #111; color: #333; }
+    .crate { color: #8b4513; }
+
+</style>
+</head>
+<body>
+<div class="map">
+      (STREET ENTRANCE)
+             ||
+_____________||_________________________________________________________________________________________________________________________________________________________
+________________________________________________________________________________________________________________________________________________________________________
+   .---.                     .---.                                                                                                                                     |
+  (  <span class="sign">$</span>  )  [<span class="sign">FRESH CATCH</span>]    (  <span class="sign">$</span>  )                                                                                                                        (SERVICE ENTRANCE) |
+   '---'  +-------------+    '---'                                                                                                                                _____|_____
+    ||    |  /`·.¸      |     ||        [<span class="neon">FISH $15</span>]             [<span class="neon">CRAB $28</span>]           [<span class="neon">PORK $12</span>]                                                             | <span class="staff-only">STAFF ONLY</span>|
+    ||    | /¸...¸`:·   |     ||      +--------------+          +--------------+       <span class="wall">.---.   .---.   .---.</span>                                                     | ___________ |
+    ||    |             |     ||      | ~  <span class="fish"></span> ~|          |  <span class="crab-left">(V)</span>    <span class="crab-right">(V)</span>  |      <span class="meat">(   ( ) (   ( ) (   ( )</span>                                                     | <span class="curtain">| | | | | |</span> |
+   _||_   | <span class="ice"><span class="flopper">><></span> <span class="flopper">><></span> <span class="flopper">><></span></span> |    _||_     | ~  <span class="fish"></span> ~|          |  <span class="crab-left">(@@)</span>   <span class="crab-right">(@@)</span> |      <span class="meat"> \ <span class="drop">,</span> )   \ <span class="drop">.</span> )   \ <span class="drop">'</span> )</span>                                                     | <span class="curtain">| | | | | |</span> |
+  /____\  +-------------+   /____\    +--------------+          +--------------+       <span class="meat"> ) (     ) (     ) (</span>                                                     | <span class="curtain">| | | | | |</span> |
+                                                                                      <span class="wall">| |     | |     | |</span>                                                     | <span class="curtain">: : : : : :</span> |
+  <span class="mud">░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░`-´░░░░░`-´░░░░░`-´░░░░░░░</span>                                                     | <span class="curtain">. . . . . .</span> |
+  <span class="mud">░░</span> <span class="sewer"> .===. </span>  <span class="mud">░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░</span>                                                     |             |
+  <span class="mud">░░</span> <span class="sewer"> ||||| </span><span class="steam">~</span>   <span class="mud">░░</span>                               <span class="mud">░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░</span> <span class="blood"></span> <span class="mud">░░░░░░░░░░░░░░░░░░░░░░░</span>                                                     |  <span class="crate">[CRATES]</span>   |
+  <span class="mud">░░</span> <span class="sewer"> '===' </span>    <span class="mud">░░</span>                               <span class="mud">░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░</span> <span class="meat">~~~~~~~</span> <span class="mud">░░░░░░░░░░░░░░░░░░░░░░░</span>                                                     |  <span class="crate">[||||||]</span>   |
+  <span class="mud">░░░░░░░░░░░░░░</span>                      <span class="mud">░░░░░░</span> <span class="ice">~SLIPPERY~</span> <span class="mud">░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░</span>                                                     |__<span class="crate">[||||||]</span>___|
+                                                                                                                                                                        \
+   (VEGETABLES)                  (DURIANS)           (BANANAS)               (SPICES & DRY GOODS)           (LOCAL GREENS)           (CITRUS MOUNTAIN)                   \
+   <span class="veg">vvv   vvv   vvv</span>               <span class="durian"> ^,^   ^,^</span>          <span class="banana"> //   \\</span>               <span class="spice">^^^      ^^^</span>                   <span class="veg">{{{{{{{}}}}</span>              <span class="fruit"> o  o  o </span>                      \
+  <span class="veg">(   ) (   ) (   )</span>              <span class="durian">(* *) (* *)</span>        <span class="banana">((     ))</span>              <span class="spice">^^^^^    ^^^^^</span>                   <span class="veg">{{{{{{}}}</span>               <span class="fruit">o o  o o </span>                       \  (TO KITCHEN)
+   <span class="veg">\ /   \ /   \ /</span>               <span class="durian"> `~'   `~'</span>        <span class="banana">((((   ))))</span>             <span class="spice">^^^^^^^  ^^^^^^^</span>                   <span class="veg">{{{{{{{}}</span>              <span class="fruit">o  o  o  o</span>                        >
+   <span class="veg">_Y_   _Y_   _Y_</span>               [<span class="neon">$18/KG </span>]          [<span class="neon">$3/BUN </span>]              <span class="spice">[=======][=======]</span>                 <span class="wall">[=======]</span>              <span class="wall">[==========]</span>                       /
+  +---------------+             (DRAGONFRUIT)       (WATERMELONS)          | <span class="neon">$5/100g</span>|| <span class="neon">$12/kg</span> |                 |<span class="neon">$4/BDL </span>|              | <span class="neon">$6/BAG  </span> |                      /
+  | <span class="neon">$2 / KILO !!!</span> |               <span class="dragon"> ,^,   ,^,</span>         <span class="melon"> /'''\ </span>             +-------++-------+                 +-------+              +----------+                     /
+  +---------------+              <span class="dragon"><, ,> <, ,></span>        <span class="melon">(::<span class="melon-in">:::</span>:)</span>                                                                                                    /
+                                  <span class="dragon"> `~'   `~'</span>         <span class="melon"> \___/ </span>                                                                                                   /
+                                 [<span class="neon">$2/EA  </span>]          [<span class="neon">$5/EA  </span>]                                                                                                   /
+____________________________________________________________________________________________________________________________________________________________________/
+</div>
+
+<div class="street-layer">
+<span class="scooter">
+              ___
+             /  _\
+             | /\_|
+          __-'' _'
+         ----'-.
+            |#\#)_,_
+            ##\__ _\__.-.
+    -  .-  (###)   '---.  `.
+ -   __\____`.#\(      )  L(|
+   .'__//\    \#)`-._.' / \\==.
+  /_/_//\_\_  /#/  ### / //\\ \
+   |________(##)___/-' '| (_) |
+____\___/_________________\___/______________________________________
+</span>
+</div>
+
+</body>
+</html>

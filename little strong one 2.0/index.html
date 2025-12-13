@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NEON SCUTTLE: Survival Edition</title>
+    <style>
+        :root {
+            /* PALETTE */
+            --bg-color: #1a0510;
+            --grid-bg: #000000;
+            
+            --dominant-pink: #ff007f;
+            --danger-red: #ff3333;
+            --loot-yellow: #ffff00;
+            --safe-green: #00ff66;
+            --toxic-green: #adff2f;
+            
+            --floor-dim: #552244;
+            --white: #ffffff;
+            
+            --ui-font: 'Courier New', Courier, monospace;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--dominant-pink);
+            font-family: var(--ui-font);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* --- CRT EFFECT --- */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                rgba(255,0,127,0),
+                rgba(255,0,127,0) 50%,
+                rgba(0,0,0,0.2) 50%,
+                rgba(0,0,0,0.2)
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        .vignette {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            box-shadow: inset 0 0 150px rgba(20,0,10,0.9);
+            pointer-events: none;
+            z-index: 11;
+        }
+
+        /* --- UI LAYOUT --- */
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            max-width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        header {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            border-bottom: 2px solid var(--dominant-pink);
+            padding-bottom: 5px;
+            font-size: 14px;
+            color: var(--dominant-pink);
+            text-shadow: 0 0 5px var(--dominant-pink);
+            flex-shrink: 0;
+        }
+
+        .stat-box {
+            display: flex;
+            gap: 15px;
+        }
+
+        .stat {
+            font-weight: bold;
+        }
+
+        /* --- SCROLL WRAPPER FOR BIG MAPS --- */
+        #viewport {
+            flex-grow: 1;
+            display: block; 
+            width: 100%;
+            max-width: 100%;
+            margin-bottom: 10px;
+            border: 1px solid #33001a;
+            overflow: auto;
+            position: relative;
+            
+            scrollbar-width: thin;
+            scrollbar-color: var(--dominant-pink) var(--bg-color);
+        }
+
+        /* --- THE GRID --- */
+        #grid-container {
+            position: relative;
+            background-color: var(--grid-bg);
+            border: 2px solid var(--dominant-pink);
+            display: grid;
+            gap: 0px; 
+            box-shadow: 0 0 15px rgba(255, 0, 127, 0.3);
+            width: fit-content; 
+            margin: 0; 
+        }
+
+        .tile {
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            cursor: default;
+            line-height: 18px;
+            position: relative; 
+            white-space: pre;
+        }
+
+        /* --- ENTITY COLORS --- */
+        .tile.floor { color: var(--floor-dim); z-index: 1; }
+        
+        .tile.wall { 
+            color: var(--dominant-pink); 
+            font-weight: bold;
+            text-shadow: 0 0 2px var(--dominant-pink);
+            z-index: 5;
+        }
+
+        .tile.player { 
+            color: var(--safe-green); 
+            background-color: #002200;
+            font-weight: 900;
+            text-shadow: 0 0 4px var(--safe-green);
+            z-index: 10; 
+            border: 1px solid var(--safe-green); 
+        }
+
+        .tile.enemy {
+            color: var(--danger-red);
+            background-color: #220000;
+            font-weight: bold;
+            text-shadow: 0 0 4px var(--danger-red);
+            z-index: 8;
+        }
+        
+        .tile.human {
+            color: var(--white);
+            font-weight: bold;
+            text-shadow: 0 0 5px var(--danger-red);
+            z-index: 9;
+        }
+
+        .tile.food { 
+            color: var(--loot-yellow); 
+            font-weight: bold;
+            z-index: 5;
+        }
+        
+        .tile.food.crumb {
+             animation: blink 1s infinite;
+        }
+
+        .tile.poison { 
+            color: var(--danger-red); 
+            opacity: 0.7;
+            z-index: 5;
+        }
+
+        .tile.glue { 
+            color: var(--dominant-pink); 
+            opacity: 0.5;
+            text-decoration: line-through;
+            z-index: 2;
+        }
+
+        .tile.exit { 
+            background-color: var(--dominant-pink);
+            color: black;
+            font-weight: bold;
+            box-shadow: 0 0 10px var(--dominant-pink);
+            z-index: 5;
+        }
+
+        /* --- HAZARD OVERLAYS --- */
+        .tile.warning {
+            background-color: rgba(255, 51, 51, 0.3);
+            color: var(--white);
+            animation: blink-fast 0.5s infinite;
+        }
+
+        .tile.impact {
+            background-color: var(--white);
+            color: var(--danger-red);
+            font-weight: 900;
+            animation: shake 0.2s;
+            z-index: 20; 
+        }
+        
+        .tile.spray-impact {
+            background-color: rgba(173, 255, 47, 0.2);
+            color: var(--toxic-green);
+            font-weight: bold;
+            animation: blink-fast 0.2s infinite;
+            z-index: 20;
+        }
+
+        /* --- LOG CONSOLE --- */
+        #log-console {
+            width: 100%;
+            max-width: 800px;
+            height: 80px;
+            background-color: #11050a;
+            border: 1px solid var(--dominant-pink);
+            padding: 5px;
+            font-size: 12px;
+            overflow-y: auto;
+            color: #ff8ec7;
+            font-family: 'Courier New', Courier, monospace;
+            margin-bottom: 5px;
+            white-space: pre-wrap;
+            flex-shrink: 0;
+        }
+        
+        .log-entry { margin-bottom: 4px; border-bottom: 1px dashed #33001a; }
+        .log-entry.new { color: var(--safe-green); }
+        .log-entry.danger { color: var(--danger-red); font-weight: bold; }
+        .log-entry.info { color: var(--loot-yellow); }
+
+        /* --- SKIP BUTTON --- */
+        #btn-skip {
+            width: 100%;
+            max-width: 300px;
+            margin-bottom: 5px;
+            padding: 8px;
+            background: transparent;
+            border: 1px dashed var(--dominant-pink);
+            color: var(--dominant-pink);
+            font-family: var(--ui-font);
+            font-size: 12px;
+            cursor: pointer;
+            text-transform: uppercase;
+            flex-shrink: 0;
+        }
+        #btn-skip:active {
+            background: var(--dominant-pink);
+            color: black;
+        }
+
+        /* --- CONTROLS --- */
+        #mobile-controls {
+            display: none; 
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            width: 100%;
+            max-width: 300px;
+            flex-shrink: 0;
+            margin-bottom: 10px;
+        }
+
+        .control-btn {
+            background: #220011;
+            border: 1px solid var(--dominant-pink);
+            color: var(--dominant-pink);
+            padding: 10px;
+            border-radius: 0;
+            text-align: center;
+            font-size: 18px;
+            touch-action: manipulation;
+        }
+        
+        .control-btn:active { background: var(--dominant-pink); color: black; }
+
+        @media (max-width: 768px) {
+            #mobile-controls { display: grid; }
+            .tile { width: 14px; height: 14px; font-size: 10px; } 
+        }
+
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        @keyframes blink-fast { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        @keyframes shake { 0% { transform: translate(1px, 1px); } 50% { transform: translate(-1px, -1px); } 100% { transform: translate(0, 0); } }
+
+        #game-over-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #000;
+            border: 4px solid var(--danger-red);
+            padding: 30px;
+            text-align: center;
+            z-index: 100;
+            box-shadow: 0 0 50px var(--danger-red);
+        }
+        
+        button.restart-btn {
+            background: var(--dominant-pink);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-family: var(--ui-font);
+            font-weight: bold;
+            margin-top: 15px;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 0 0 10px var(--dominant-pink);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="scanlines"></div>
+    <div class="vignette"></div>
+
+    <div id="game-container">
+        <header>
+            <div class="title">NEON SCUTTLE</div>
+            <div class="stat-box">
+                <div class="stat" id="level-display">L:1</div>
+                <div class="stat" id="grit-display" style="color:var(--safe-green)">GRIT:40</div>
+            </div>
+        </header>
+
+        <div id="viewport">
+            <div id="grid-container"></div>
+        </div>
+
+        <div id="log-console">
+            <div class="log-entry">> SYSTEM REBOOT...</div>
+        </div>
+
+        <button id="btn-skip">>> FORCE ASCEND (SKIP) >></button>
+
+        <div id="mobile-controls">
+            <div></div>
+            <button class="control-btn" id="btn-up">▲</button>
+            <div></div>
+            <button class="control-btn" id="btn-left">◀</button>
+            <button class="control-btn" id="btn-wait">●</button>
+            <button class="control-btn" id="btn-right">▶</button>
+            <div></div>
+            <button class="control-btn" id="btn-down">▼</button>
+            <div></div>
+        </div>
+    </div>
+
+    <div id="game-over-modal">
+        <h2 style="color:var(--danger-red)">WAKE UP</h2>
+        <p id="death-reason" style="color:white">The dream ends.</p>
+        <button class="restart-btn" onclick="game.retryLevel()">TRY AGAIN</button>
+    </div>
+
+    <script>
+        // --- CONSTANTS ---
+        const MAX_GRIT = 40.0;
+        const MOVES_PER_HUNGER = 3; 
+        
+        // --- CUSTOM LEVEL MAPS ---
+        const LEVEL_1_MAP = [
+            "                  ||                                                                                                    ",
+            "_____________||_________________________________________________________________________________________________________________",
+            "________________________________________________________________________________________________________________________________",
+            "   .---.                     .---.                                                                               |      |",
+            "  (  $  )  [FRESH CATCH]    (  $  )                                                                              | EXIT |",
+            "   '---'  +-------------+    '---'                                                                               |  TO  |",
+            "    ||    |  /`·.¸      |     ||        (LIVE TANKS)              (CRAB BUCKETS)            (BUTCHER)            | KITCH|",
+            "    ||    | /¸...¸`:·   |     ||      +--------------+          +--------------+       .---.    .---.    .---.   |  EN  |",
+            "    ||    |             |     ||      | ~  ><(((('> ~|          |  (V)     (V)  |      (   ( ) (   ( ) (   ( )   |      |",
+            "   _||_   | ICE  BED    |    _||_     | ~  ><(((('> ~|          |  (@@)    (@@) |       \\   )   \\   )   \\   )    |  ||  |",
+            "  /____\\  +-------------+   /____\\    +--------------+          +--------------+        ) (      ) (      ) (    |  ||  |",
+            "                                                                                       | |      | |      | |     |  ||  |",
+            "  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░`-´░░░░░`-´░░░░░`-´░░░░░░░|      |",
+            "  ░░ ~PUDDLE~ ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░|      |",
+            "  ░░ ~~~~~~~~ ░░              ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ ~BLOOD~ ░░░░░░░░░░░░░░░░░░░░░░░|      |",
+            "  ░░ ~~~~~~~~ ░░              ░░  (O)  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ ~~~~~~~ ░░░░░░░░░░░░░░░░░░░░░░░|      |",
+            "  ░░░░░░░░░░░░░░              ░░ / | \\ ░░░░ ~SLIPPERY~ ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░|      |",
+            "                                   | |                                                                          |      |",
+            "   (VEGETABLES)                      ^                                (SPICES & DRY GOODS)                      |      |",
+            "   vvv    vvv    vvv                / \\                               ^^^       ^^^                             |      |",
+            "  (   ) (   ) (   )                /___\\                             ^^^^^     ^^^^^                            |      |",
+            "   \\ /    \\ /    \\ /               (BOXES)                           ^^^^^^^  ^^^^^^^                           |      |",
+            "   _Y_    _Y_    _Y_               [|||||]       (FRUITS)            [=======][=======]                         |      |",
+            "  +---------------+                [|||||]        (.)(.)             | PRICE || PRICE |                         |      |",
+            "  | $2 / KILO !!! |                [|||||]       (.)(.)(.)           +-------++-------+                         |      |",
+            "  +---------------+                [|||||]      (.)(.)(.)(.)                                                    |      |",
+            "________________________________________________________________________________________________________________|______|"
+        ];
+
+        const LEVEL_2_MAP = [
+            "                          ||                                                                    ",
+            "                          ||                                                                    ",
+            "+-------------------------||-----------------------------------------------------------------------+",
+            "|    (WALK-IN FRIDGE)     ||                        (DRY STORAGE WAREHOUSE)                        |",
+            "|    +----------------+   ||   +---------------------------------------------------------------+   |",
+            "|    | [MILK]  [VEG]  |   ||   |  [RICE]     [FLOUR]     [OIL]     [SOY]     [SPICE]     [MSG]   |   |",
+            "|    | [====]  [===]  |   ||   |  [====]     [=====]     [===]     [===]     [=====]     [===]   |   |",
+            "|    |                |   ||   |===============================================================|   |",
+            "|    | [MEAT]  [FISH] |   ||   |   [CANS]       [CANS]       [BOX]       [BOX]       [JARS]        |   |",
+            "|    | [====]  [====] |   ||   |   (____)       (____)       [|X|]       [|/|]       (oooo)        |   |",
+            "|    +-------(0)------+   ||   +---------------------------------------------------------------+   |",
+            "|           [HANDLE]      ||                                                                       |",
+            "|                         ||                                                                       |",
+            "|                         ||                                                                       |",
+            "|   +---------------------+                                +-----------------------------------+   |",
+            "|   |  THE HOT LINE (COOKING STATION)                                                          |   |",
+            "|   |                                                                                          |   |",
+            "|   |   (WOK STATION 1)          (WOK STATION 2)           (STOVE TOP)            (OVENS)      |   |",
+            "|   |                                                                                          |   |",
+            "|   |       (  )                     (  )                  (  ) (  )             [~~~~~]       |   |",
+            "|   |        )(                       )(                    )(   )(              [~~~~~]       |   |",
+            "|   |       (__)                     (__)                  (__) (__)             [__o__]       |   |",
+            "|   |      /    \\                   /    \\                /    \\ /    \\            |     |       |   |",
+            "|   |     |______|                 |______|              |_____|_____|           |_____|       |   |",
+            "|   |     [==FIRE]                 [==FIRE]              [====GAS====]           [HOT!!]       |   |",
+            "|   |                                                                                          |   |",
+            "|   +----------------------------------                        --------------------------------+   |",
+            "|                                                                                                  |",
+            "|                                                                                                  |",
+            "|          (WIDE CHEF'S ALLEY - DANGER ZONE)                                                       |",
+            "|                                                                                                  |",
+            "|      (ROACH)                                                        (CHEF PATROL)                |",
+            "|      --o-o--                                                               _                     |",
+            "|                                                                           ( )                    |",
+            "|                                                                           _|_                    |",
+            "|                                                                          / | \\                   |",
+            "|                                                                          | | |                   |",
+            "|                                                                                                  |",
+            "|   +-----------------------------------------------------+   +--------------------------------+   |",
+            "|   |  PREP STATION (STAINLESS STEEL)                     |   |  DISH PIT & WASHING            |   |",
+            "|   |                                                     |   |                                |   |",
+            "|   |    ___________       ___________       ___________  |   |     \\______/        [|||||||]    |   |",
+            "|   |   |___________}     |___________}     |___________} |   |     [ SINK ]        [PLATES ]    |   |",
+            "|   |    (Chopping)        (Plating)         (Saucing)    |   |     [______]        [|||||||]    |   |",
+            "|   |      _||_              (    )             _||_      |   |        |                         |   |",
+            "|   |     ( vvv)            (      )            ( @@@)    |   |        | (Leaking Water)         |   |",
+            "|   |     (Veg )            (Plate)             (Meat)    |   |        |                         |   |",
+            "|   +-----------------------------------------------------+   +-------|------------------------+   |",
+            "|                                                                     |                            |",
+            "|    (TILED FLOOR)                                                    |                            |",
+            "|    +-----+-----+-----+-----+                                        |                            |",
+            "|    |     |     |     |     |                                        v                            |",
+            "|    +-----+-----+-----+-----+                                                                     |",
+            "                                                              (TO THE PIPE)                        |",
+            "                                                                                                   |"
+        ];
+
+        const LEVEL_3_MAP = [
+            "                          ||                                    ",
+            "                          ||                                    ",
+            "      +-------------------||---------------------------+        ",
+            "      |  SMALL BATHROOM   \\/  (Vent Entry)             |        ",
+            "      |                                                |        ",
+            "      |   [ BATHTUB ]             [ THE TOILET ]       |        ",
+            "      |   +---------+             ______________       |        ",
+            "      |   | |~| /  /|            |              |      |        ",
+            "      |   | |~||  | |            | [||]    (°)  |(Tank)|        ",
+            "      |   | |~||__| |            |______________|      |        ",
+            "      |   | |~|     |              _ /    \\ _          |        ",
+            "      |   | |~|(Crt)|             ( (      ) )         |        ",
+            "      |   |___|_____|              \\ \\____/ / (Bowl)   |        ",
+            "      |                             \\______/           |        ",
+            "      |    (TILED FLOOR)              ||               |        ",
+            "      |    +-----+-----+             __||__            |        ",
+            "      |    |     |     |            |______|           |        ",
+            "      |    +-----+-----+                               |        ",
+            "      |    |     |     |           [ BATH MAT ]        |        ",
+            "      |    +-----+-----+           mmmmmmmmmmmmm       |        ",
+            "      +-----------------------------       -------------+                                       ",
+            "                                   | [DOOR]|                                                    ",
+            "                                   |       |                                                    ",
+            "                                   |       |                                                    ",
+            "+----------------------------------+       +-------------------------------------+              ",
+            "|    THE BEDROOM                           |                                     |              ",
+            "|                                          |                                     |              ",
+            "|    (WARDROBE)                            '-------'    | .-------. |            |              ",
+            "|   .-----------------.                                 | | C:\\>_ | | (WORK DESK)|              ",
+            "|   |  ___________    |                                 | '-------' |            |              ",
+            "|   | |  |     |  |   |                                 | [Kb] [Ms] |            |              ",
+            "|   | |  |     |  |   |                                 |___________|            |              ",
+            "|   | |  '--.  |  |   |                                  /        \\              |              ",
+            "|   | | [==] '--' |   |                                 /__________\\             |              ",
+            "|   | '-----------'   |                                                          |              ",
+            "|   '-----------------'                                (WINDOW)                  |              ",
+            "|                                                      +-------+                 |              ",
+            "|                                                      |  * * |                  |              ",
+            "|    (QUEEN BED)                                       | * * |                   |              ",
+            "|   .---.________               (RUG)                  +-------+                 |              ",
+            "|  /   /        /|          :::::::::::::::::      | [===] |                 |              ",
+            "| /___/________/ |          ::  PATTERNED  ::      |    |  |    |",
+            "| |   |  ====  | |          ::    AREA     ::      |    |  |    |",
+            "| |___|________|/           :::::::::::::::::      | [===] |    |",
+            "|                           :::::::::::::::::      |    |  |    |",
+            "|                                                  |   /_\\ |    |",
+            "|                             (SLEEPING CAT)       |  (o o)|    |",
+            "|                              |\\__/,|   (`\\       +-------+    |",
+            "|                             _.|o o  |_   ) )     (CAT TREE)   |",
+            "|                            -(((---(((--------                 |",
+            "|                                                               |",
+            "+---------------------------------------------------------------+ "
+        ];
+
+        const TILES = {
+            PLAYER: '&',
+            FOOD: '$', 
+            FOOD_CHUNK: 'F', 
+            POISON: 'x',
+            GLUE: '%',
+            EXIT: 'E',
+            WALL: '#',
+            ENEMY: '!' 
+        };
+
+        const SEAFOOD_ART = {
+            creature: [
+                "    /¯¯¯¯\\",
+                "   ( #|\\_ü|",
+                "   ( #\\  ƒƒ",
+                "    \\ #\\",
+                "    /|||\\"
+            ],
+            shrimp: [
+                ".            ,",
+                "           .:/",
+                ".      ,,///;,   ,;/",
+                "  .   o:::::::;;///",
+                "     >::::::::;;\\\\\\",
+                "       ''\\\\\\\\\\'\" ';\\",
+                "          ';\\"
+            ],
+            fish: [
+                "  ;,//;,    ,;/",
+                " o:::::::;;///",
+                ">::::::::;;\\\\\\",
+                "  ''\\\\\\\\\\'\" ';\\"
+            ]
+        };
+        
+        const PAW_ART = [
+            " . . . . ",
+            " O O O O ",
+            " OOOOOOO ",
+            "  OOOOO  "
+        ];
+        
+        const SPRAY_ART = [
+            " : . : : ",
+            " .:::::. ",
+            " ::...:: ",
+            " ::::::. "
+        ];
+
+        const BIOMES = {
+            1: {
+                name: "WET MARKET",
+                width: 128, 
+                height: 27, 
+                floorChars: ['~', ',', '.', '"'],
+                wallChar: '#',
+                enemyChar: 'M',
+                enemyName: "WALKING HUMAN",
+                desc: "Giants are shopping. Watch for the cat!",
+                pattern: "custom",
+                mapData: LEVEL_1_MAP, // Link to map data
+                hazardType: 'paw'
+            },
+            2: {
+                name: "RESTAURANT KITCHEN",
+                width: 80,  // Updated width
+                height: 40, // Updated height
+                floorChars: ['=', '+', '-', ' '],
+                wallChar: '[',
+                enemyChar: 'a', // Ant
+                enemyName: "SCOUT ANT",
+                desc: "A maze of counters. Avoid the Chef and Ants!",
+                pattern: "custom",
+                mapData: LEVEL_2_MAP, // Link to map data
+                hazardType: 'spray'
+            },
+            3: {
+                name: "THE BEDROOM",
+                width: 80,
+                height: 52,
+                floorChars: ['(', ')', 'c', 'u'],
+                wallChar: 'I',
+                enemyChar: '☻',
+                enemyName: "YOU (THE SLEEPER)",
+                desc: "Quiet... don't wake the cat.",
+                pattern: "custom",
+                mapData: LEVEL_3_MAP, // Link to map data
+                hazardType: 'paw' 
+            }
+        };
+
+        const FLAVOR_TEXT = {
+            food: ["Slurped a chunk!", "Strange texture.", "Seafood consumed."],
+            poison: "POISON! Wretched taste.",
+            glue: "Stuck in the muck.",
+            human_hit: "YOU TOUCHED THE GIANT! PAIN!",
+            cat_warn: "MEOW! A giant shadow looms...",
+            cat_hit: "SPLAT! The cat caught you.",
+            spray_warn: "HISSS! The air smells chemical...",
+            spray_hit: "CHOKING! Poison mist descends.",
+            starve: "You starved to death.",
+            level_up: "Ascended."
+        };
+
+        class NeonScuttle {
+            constructor() {
+                this.gridEl = document.getElementById('grid-container');
+                this.viewportEl = document.getElementById('viewport'); 
+                this.logEl = document.getElementById('log-console');
+                this.gritEl = document.getElementById('grit-display');
+                this.levelEl = document.getElementById('level-display');
+                this.gameOverModal = document.getElementById('game-over-modal');
+                this.deathReasonEl = document.getElementById('death-reason');
+
+                this.level = 1;
+                this.grit = MAX_GRIT;
+                this.steps = 0; 
+                this.playerPos = { x: 1, y: 1 };
+                
+                this.map = []; 
+                this.visualMap = []; 
+                this.foodVisuals = []; 
+                this.enemies = []; 
+                
+                // Hazard Variables
+                this.stompTimer = 0;
+                this.stompTarget = null;
+                this.hazardType = null;
+                
+                this.isGameOver = false;
+
+                this.mapW = 25;
+                this.mapH = 18;
+
+                this.startLevel();
+                this.bindInput();
+            }
+
+            log(msg, type = 'normal') {
+                const div = document.createElement('div');
+                div.textContent = `> ${msg}`;
+                div.className = `log-entry ${type}`;
+                this.logEl.prepend(div);
+                if (this.logEl.children.length > 20) this.logEl.lastChild.remove();
+            }
+
+            startLevel() {
+                this.grit = MAX_GRIT;
+                this.steps = 0;
+                this.stompTimer = 0;
+                this.stompTarget = null;
+
+                const biomeIndex = ((this.level - 1) % 3) + 1;
+                this.biome = BIOMES[biomeIndex];
+                
+                this.mapW = this.biome.width;
+                this.mapH = this.biome.height;
+
+                this.gridEl.style.gridTemplateColumns = `repeat(${this.mapW}, 1fr)`;
+                this.gridEl.style.gridTemplateRows = `repeat(${this.mapH}, 1fr)`;
+                this.gridEl.style.width = 'fit-content';
+                this.gridEl.style.minWidth = `${this.mapW * 18}px`;
+                this.gridEl.style.minHeight = `${this.mapH * 18}px`;
+                
+                this.log(`ENTER: ${this.biome.name}`, 'new');
+                this.log(this.biome.desc);
+
+                this.generateLevel();
+                this.render();
+                
+                this.viewportEl.scrollLeft = 0;
+                this.viewportEl.scrollTop = 0;
+                this.updateCamera();
+            }
+
+            skipLevel() {
+                this.log("CHEAT: WARPING TO NEXT FLOOR...", 'new');
+                this.level++;
+                this.startLevel();
+            }
+
+            updateCamera() {
+                const tileSize = window.innerWidth <= 768 ? 14 : 18;
+                
+                const playerPixelX = (this.playerPos.x * tileSize) + (tileSize / 2);
+                const playerPixelY = (this.playerPos.y * tileSize) + (tileSize / 2);
+                
+                const halfViewW = this.viewportEl.clientWidth / 2;
+                const halfViewH = this.viewportEl.clientHeight / 2;
+                
+                this.viewportEl.scrollLeft = playerPixelX - halfViewW;
+                this.viewportEl.scrollTop = playerPixelY - halfViewH;
+            }
+
+            generateLevel() {
+                this.map = [];
+                this.visualMap = [];
+                this.foodVisuals = [];
+                this.enemies = [];
+
+                if (this.biome.pattern === "custom") {
+                    this.generateCustomLevel();
+                } else {
+                    this.generateProceduralLevel();
+                }
+            }
+
+            generateCustomLevel() {
+                // Get the map data array from the biome config
+                const mapSource = this.biome.mapData;
+                const h = mapSource.length;
+                const w = mapSource[0].length;
+                
+                // Resize if map dimensions differ from config
+                this.mapW = w; 
+                this.mapH = h;
+                this.gridEl.style.gridTemplateColumns = `repeat(${w}, 1fr)`;
+                this.gridEl.style.gridTemplateRows = `repeat(${h}, 1fr)`;
+
+                for (let y = 0; y < h; y++) {
+                    const row = [];
+                    const visRow = [];
+                    const foodRow = [];
+                    const strRow = mapSource[y] || "";
+                    
+                    for (let x = 0; x < w; x++) {
+                        let char = strRow[x] || " ";
+                        
+                        // ENEMY DETECTION
+                        // O = Start of stick figure head
+                        if (char === 'O' && this.level === 1) { // Level 1 Human
+                            this.enemies.push({ x: x, y: y, type: 'HUMAN', dir: 1, startX: x, patrolRange: 8 });
+                            // char = " "; // Cleanup handled below
+                        }
+                        
+                        // MODIFIED: Prevent chef spawning on levels 2 & 3
+                        // Level 2 Human Chef check ( _|_ )
+                        else if (char === '_' && strRow[x+1] === '|' && strRow[x+2] === '_' && this.level !== 2 && this.level !== 3) {
+                             // Middle of Chef
+                             this.enemies.push({ x: x+1, y: y, type: 'HUMAN', dir: 1, startX: x+1, patrolRange: 20 });
+                        }
+
+                        // MODIFIED: Cleanup static human parts only for Level 1 to avoid breaking other maps
+                        if (this.level === 1) {
+                            const humanParts = ['/', '\\', '|', '_', '(', ')', 'O'];
+                            // Simple check to remove stick figure limbs from static map
+                            // We only remove if it matches exact chars to preserve walls that might look similar
+                            // But for Level 1 map, walls are mostly | and _ too. 
+                            // We will assume the map walls are handled by the ELSE block below and human parts are inside empty areas.
+                            // However, since we are not spawning enemies in Level 2/3, we don't need to cleanup there.
+                            
+                            // Specific check for Level 1 Stick figures which are distinctive
+                            if (['/', '\\', 'O'].includes(char)) {
+                                char = " ";
+                            }
+                            // Don't clear | and _ blindly as they are walls in Level 1
+                        }
+
+                        visRow.push(char);
+                        foodRow.push(null);
+
+                        // LOGIC MAP
+                        if (char === '$' || char === 'o') { // 'o' in jars/boxes
+                            row.push('FOOD'); 
+                        } else if ([" ", ".", "~", "░", "v", ">", "<", "^", "`", ",", "·", "¸"].includes(char)) {
+                            row.push('EMPTY'); 
+                        } else {
+                            row.push('WALL');
+                        }
+                    }
+                    this.map.push(row);
+                    this.visualMap.push(visRow);
+                    this.foodVisuals.push(foodRow);
+                }
+
+                // SPAWN POINTS
+                if (this.level === 1) {
+                    this.playerPos = { x: 2, y: 13 }; 
+                    this.map[25][125] = 'EXIT';
+                } else if (this.level === 2) {
+                    // Kitchen Start (Top Center)
+                    this.playerPos = { x: 39, y: 2 }; 
+                    this.map[2][39] = 'EMPTY';
+                    this.map[3][39] = 'EMPTY'; // Ensure path
+                    
+                    // Kitchen Exit (Bottom Center)
+                    this.map[39][39] = 'EXIT'; 
+                    this.map[38][39] = 'EMPTY'; // Ensure path to exit
+                    
+                    // SPAWN ANTS (Level 2 specific)
+                    const antCount = 20;
+                    for(let i=0; i<antCount; i++) {
+                        const pos = this.findEmptyTile();
+                        if(pos) this.enemies.push({ x: pos.x, y: pos.y });
+                    }
+                } else if (this.level === 3) {
+                    // Bedroom Start (Vent Entry at top)
+                    this.playerPos = { x: 28, y: 3 }; 
+                    this.map[3][28] = 'EMPTY'; // Clear start
+                    
+                    // Bedroom Exit (Behind Cat Tree)
+                    this.map[49][72] = 'EXIT';
+                    
+                    // Add some bed bugs/mites (Standard Enemies)
+                    const bugCount = 10;
+                    for(let i=0; i<bugCount; i++) {
+                        const pos = this.findEmptyTile();
+                        if(pos) this.enemies.push({ x: pos.x, y: pos.y });
+                    }
+                }
+                
+                // Spawn giant food
+                const giantFoodCount = Math.floor((this.mapW * this.mapH) / 100);
+                const foodKeys = Object.keys(SEAFOOD_ART);
+                for(let i=0; i<giantFoodCount; i++) {
+                    const type = foodKeys[Math.floor(Math.random() * foodKeys.length)];
+                    this.placeGiantFood(type);
+                }
+            }
+
+            generateProceduralLevel() {
+                for (let y = 0; y < this.mapH; y++) {
+                    const row = [];
+                    const visRow = [];
+                    const foodRow = [];
+                    for (let x = 0; x < this.mapW; x++) {
+                        row.push('EMPTY');
+                        foodRow.push(null);
+                        
+                        let char = '.';
+                        if (this.biome.pattern === "checkerboard") {
+                            char = (x + y) % 2 === 0 ? '+' : ' ';
+                        } 
+                        else if (this.biome.pattern === "face") {
+                            char = Math.random() > 0.8 ? (Math.random() > 0.5 ? '(' : ')') : ' ';
+                        }
+
+                        visRow.push(char);
+                    }
+                    this.map.push(row);
+                    this.visualMap.push(visRow);
+                    this.foodVisuals.push(foodRow);
+                }
+
+                for (let i = 0; i < this.mapW; i++) { this.setTile(0, i, 'WALL'); this.setTile(this.mapH-1, i, 'WALL'); }
+                for (let i = 0; i < this.mapH; i++) { this.setTile(i, 0, 'WALL'); this.setTile(i, this.mapW-1, 'WALL'); }
+
+                if (this.biome.layout === "cubes") {
+                    for (let y = 2; y < this.mapH - 4; y += 5) {
+                        for (let x = 2; x < this.mapW - 4; x += 5) {
+                            if (Math.random() < 0.7) {
+                                this.drawRectWall(x, y, 3, 3, true); 
+                            }
+                        }
+                    }
+                } 
+                else if (this.biome.layout === "open_square") {
+                    this.generateFaceObstacles();
+                }
+
+                const giantFoodCount = Math.floor((this.mapW * this.mapH) / 70);
+                const foodKeys = Object.keys(SEAFOOD_ART);
+                for(let i=0; i<giantFoodCount; i++) {
+                    const type = foodKeys[Math.floor(Math.random() * foodKeys.length)];
+                    this.placeGiantFood(type);
+                }
+
+                const area = this.mapW * this.mapH;
+                const crumbCount = Math.floor(area * 0.02);
+                for(let i=0; i<crumbCount; i++) this.setRandomTile('FOOD');
+
+                for(let i=0; i<Math.floor(area * 0.005); i++) this.setRandomTile('POISON');
+                for(let i=0; i<Math.floor(area * 0.01); i++) this.setRandomTile('GLUE');
+
+                const enemyCount = 3 + Math.floor(this.level / 2) + Math.floor(area * 0.005);
+                for(let i=0; i<enemyCount; i++) {
+                    const pos = this.findEmptyTile();
+                    if(pos) {
+                        this.enemies.push({ x: pos.x, y: pos.y, id: i });
+                    }
+                }
+
+                this.map[this.mapH-2][this.mapW-2] = 'EXIT';
+                
+                this.playerPos = { x: 1, y: 1 };
+                this.map[1][1] = 'EMPTY';
+                this.map[1][2] = 'EMPTY';
+                this.map[2][1] = 'EMPTY';
+            }
+
+            placeGiantFood(type) {
+                const art = SEAFOOD_ART[type];
+                const h = art.length;
+                const w = art[0].length;
+                
+                let placed = false;
+                let attempts = 0;
+                while(!placed && attempts < 50) {
+                    const tx = Math.floor(Math.random() * (this.mapW - w - 2)) + 1;
+                    const ty = Math.floor(Math.random() * (this.mapH - h - 2)) + 1;
+                    
+                    let clear = true;
+                    for(let i=0; i<h; i++) {
+                        for(let j=0; j<w; j++) {
+                            if (this.map[ty+i][tx+j] !== 'EMPTY') clear = false;
+                        }
+                    }
+
+                    if(clear) {
+                        for(let i=0; i<h; i++) {
+                            for(let j=0; j<w; j++) {
+                                const char = art[i][j];
+                                if (char !== ' ') {
+                                    this.map[ty+i][tx+j] = 'FOOD_CHUNK';
+                                    this.foodVisuals[ty+i][tx+j] = char;
+                                }
+                            }
+                        }
+                        placed = true;
+                    }
+                    attempts++;
+                }
+            }
+
+            generateFaceObstacles() {
+                const cx = Math.floor(this.mapW / 2);
+                const cy = Math.floor(this.mapH / 2);
+                this.drawRectWall(cx - 5, cy - 5, 3, 3, false); 
+                this.drawRectWall(cx + 3, cy - 5, 3, 3, false); 
+                for(let y=cy-2; y<cy+2; y++) this.setTile(y, cx, 'WALL');
+                for(let x=cx-3; x<cx+4; x++) this.setTile(cy+4, x, 'WALL');
+            }
+
+            drawRectWall(x, y, w, h, filled) {
+                for(let i=0; i<h; i++) {
+                    for(let j=0; j<w; j++) {
+                        if (filled || (i===0 || i===h-1 || j===0 || j===w-1)) {
+                            this.setTile(y+i, x+j, 'WALL');
+                        }
+                    }
+                }
+            }
+
+            setTile(y, x, type) {
+                if (y >= 0 && y < this.mapH && x >= 0 && x < this.mapW) {
+                    this.map[y][x] = type;
+                }
+            }
+
+            setRandomTile(type) {
+                const pos = this.findEmptyTile();
+                if (pos) this.map[pos.y][pos.x] = type;
+            }
+
+            findEmptyTile() {
+                let safety = 0;
+                while(safety < 2000) {
+                    const x = Math.floor(Math.random() * (this.mapW-2)) + 1;
+                    const y = Math.floor(Math.random() * (this.mapH-2)) + 1;
+                    if (this.map[y][x] === 'EMPTY' && !(x<4 && y<4)) { 
+                        return {x, y};
+                    }
+                    safety++;
+                }
+                return null;
+            }
+
+            handleInput(dx, dy) {
+                if (this.isGameOver) return;
+
+                const newX = this.playerPos.x + dx;
+                const newY = this.playerPos.y + dy;
+                
+                if (newX < 0 || newX >= this.mapW || newY < 0 || newY >= this.mapH) return;
+
+                const targetType = this.map[newY][newX];
+
+                let moved = false;
+
+                if (targetType === 'WALL') {
+                    // Blocked
+                } else {
+                    if (targetType === 'GLUE') {
+                        if (Math.random() > 0.5) {
+                            this.log(FLAVOR_TEXT.glue);
+                            this.endTurn(true); 
+                            return;
+                        }
+                    }
+
+                    this.playerPos.x = newX;
+                    this.playerPos.y = newY;
+                    moved = true;
+
+                    if (targetType === 'FOOD') {
+                        this.grit = Math.min(MAX_GRIT, this.grit + 2); 
+                        this.map[newY][newX] = 'EMPTY';
+                        this.log(FLAVOR_TEXT.food[Math.floor(Math.random()*3)], 'info');
+                    } 
+                    else if (targetType === 'FOOD_CHUNK') {
+                        this.grit = Math.min(MAX_GRIT, this.grit + 2); 
+                        this.map[newY][newX] = 'EMPTY'; 
+                        this.log("Ate a piece of Giant Food.", 'info');
+                    }
+                    else if (targetType === 'POISON') {
+                        this.grit -= 4;
+                        this.map[newY][newX] = 'EMPTY';
+                        this.log(FLAVOR_TEXT.poison, 'danger');
+                    } else if (targetType === 'EXIT') {
+                        this.level++;
+                        this.log(FLAVOR_TEXT.level_up, 'new');
+                        this.startLevel();
+                        return;
+                    }
+                }
+
+                if (dx === 0 && dy === 0) moved = true;
+
+                if (moved) this.endTurn();
+            }
+
+            endTurn(struggled = false) {
+                this.steps++;
+                if (this.steps >= MOVES_PER_HUNGER) {
+                    this.grit -= 1;
+                    this.steps = 0;
+                }
+
+                this.updateEnemies();
+                
+                // HAZARD LOGIC
+                if (this.stompTimer > 0) {
+                    this.stompTimer--;
+                    if (this.stompTimer === 0) {
+                        this.triggerHazard();
+                    }
+                } else {
+                    if (Math.random() < 0.05) {
+                        this.startHazard();
+                    }
+                }
+
+                this.updateCamera();
+                this.checkDeath();
+                this.render();
+            }
+
+            startHazard() {
+                this.stompTimer = 2; // 2 turns warning
+                this.hazardType = this.biome.hazardType;
+                
+                const range = 5;
+                const px = this.playerPos.x;
+                const py = this.playerPos.y;
+                
+                const tx = Math.max(1, Math.min(this.mapW-6, px + (Math.floor(Math.random() * range * 2) - range)));
+                const ty = Math.max(1, Math.min(this.mapH-5, py + (Math.floor(Math.random() * range * 2) - range)));
+                
+                this.stompTarget = { x: tx, y: ty };
+                
+                if (this.hazardType === 'spray') {
+                    this.log(FLAVOR_TEXT.spray_warn, 'danger');
+                } else {
+                    this.log(FLAVOR_TEXT.cat_warn, 'danger');
+                }
+            }
+
+            triggerHazard() {
+                if (!this.stompTarget) return;
+                
+                const tx = this.stompTarget.x;
+                const ty = this.stompTarget.y;
+                
+                let w, h, art;
+                if (this.hazardType === 'spray') {
+                    w = SPRAY_ART[0].length;
+                    h = SPRAY_ART.length;
+                    art = SPRAY_ART;
+                } else {
+                    w = PAW_ART[0].length;
+                    h = PAW_ART.length;
+                    art = PAW_ART;
+                }
+                
+                if (this.playerPos.x >= tx && this.playerPos.x < tx + w &&
+                    this.playerPos.y >= ty && this.playerPos.y < ty + h) {
+                    
+                    this.grit -= 15;
+                    if (this.hazardType === 'spray') {
+                        this.log(FLAVOR_TEXT.spray_hit, 'danger');
+                    } else {
+                        this.log(FLAVOR_TEXT.cat_hit, 'danger');
+                    }
+                } else {
+                    this.log("The hazard missed.", 'normal');
+                }
+                
+                setTimeout(() => { 
+                    this.stompTarget = null; 
+                    this.render(); 
+                }, 600);
+            }
+
+            updateEnemies() {
+                this.enemies.forEach(enemy => {
+                    // HUMAN PATROL
+                    if (enemy.type === 'HUMAN') {
+                        const nx = enemy.x + enemy.dir;
+                        // Basic patrol bounds for Chef
+                        if (nx < enemy.startX - enemy.patrolRange || nx > enemy.startX + enemy.patrolRange || 
+                            nx <= 0 || nx >= this.mapW - 1) {
+                            enemy.dir *= -1; 
+                        } else {
+                            enemy.x = nx;
+                        }
+                        const px = this.playerPos.x;
+                        const py = this.playerPos.y;
+                        // Chef is tall (3 blocks high)
+                        if (px === enemy.x && (py === enemy.y || py === enemy.y + 1 || py === enemy.y + 2)) {
+                            this.grit -= 10;
+                            this.log(FLAVOR_TEXT.human_hit, 'danger');
+                        }
+                    } 
+                    // STANDARD ENEMY (ANTS)
+                    else {
+                        const dx = this.playerPos.x - enemy.x;
+                        const dy = this.playerPos.y - enemy.y;
+                        let moveX = 0;
+                        let moveY = 0;
+                        if (Math.abs(dx) > Math.abs(dy)) moveX = dx > 0 ? 1 : -1;
+                        else moveY = dy > 0 ? 1 : -1;
+                        
+                        if(Math.random() < 0.5) {
+                             const nx = enemy.x + moveX;
+                             const ny = enemy.y + moveY;
+                             if (nx > 0 && nx < this.mapW-1 && ny > 0 && ny < this.mapH-1 && this.map[ny][nx] !== 'WALL') {
+                                 enemy.x = nx;
+                                 enemy.y = ny;
+                             }
+                        }
+
+                        if (enemy.x === this.playerPos.x && enemy.y === this.playerPos.y) {
+                            this.grit -= 3;
+                            this.log(`ATTACKED by ${this.biome.enemyName}!`, 'danger');
+                        }
+                    }
+                });
+            }
+
+            checkDeath() {
+                if (this.grit <= 0) {
+                    this.isGameOver = true;
+                    this.deathReasonEl.textContent = "Vital Signs: ZERO.";
+                    this.gameOverModal.style.display = 'block';
+                }
+            }
+
+            retryLevel() {
+                this.isGameOver = false;
+                this.gameOverModal.style.display = 'none';
+                this.score = this.levelStartScore; 
+                this.log("TIMELINE RESET. TRY AGAIN.", 'info');
+                this.startLevel(); 
+            }
+
+            render() {
+                this.gridEl.innerHTML = '';
+
+                this.gritEl.textContent = `GRIT:${Math.ceil(this.grit)}`;
+                this.levelEl.textContent = `L:${this.level}`;
+                
+                if (this.grit < 5) this.gritEl.style.color = "var(--danger-red)";
+                else this.gritEl.style.color = "var(--safe-green)";
+
+                for (let y = 0; y < this.mapH; y++) {
+                    for (let x = 0; x < this.mapW; x++) {
+                        const tileDiv = document.createElement('div');
+                        tileDiv.className = 'tile';
+                        
+                        let char = this.visualMap[y][x];
+                        let className = 'floor';
+                        
+                        const type = this.map[y][x];
+                        
+                        if (x === this.playerPos.x && y === this.playerPos.y) {
+                            char = TILES.PLAYER;
+                            className = 'player';
+                        } else {
+                            const human = this.enemies.find(e => e.type === 'HUMAN' && e.x === x && (y >= e.y && y <= e.y + 2));
+                            
+                            if (human) {
+                                const offset = y - human.y;
+                                if (offset === 0) char = 'O';
+                                else if (offset === 1) char = '/|\\';
+                                else if (offset === 2) char = '/ \\';
+                                className = 'human';
+                            }
+                            else {
+                                const enemyHere = this.enemies.find(e => e.x === x && e.y === y && !e.type); 
+                                if (enemyHere) {
+                                    char = this.biome.enemyChar;
+                                    className = 'enemy';
+                                } else if (type === 'WALL') {
+                                    char = this.biome.wallChar; 
+                                    if(this.biome.pattern === "custom") char = this.visualMap[y][x];
+                                    className = 'wall';
+                                } else if (type === 'FOOD') {
+                                    char = TILES.FOOD;
+                                    className = 'food crumb';
+                                } else if (type === 'FOOD_CHUNK') {
+                                    char = this.foodVisuals[y][x];
+                                    className = 'food';
+                                } else if (type === 'POISON') {
+                                    char = TILES.POISON;
+                                    className = 'poison';
+                                } else if (type === 'GLUE') {
+                                    char = TILES.GLUE;
+                                    className = 'glue';
+                                } else if (type === 'EXIT') {
+                                    char = TILES.EXIT;
+                                    className = 'exit';
+                                }
+                            }
+                        }
+
+                        // RENDER HAZARD (Spray or Paw)
+                        if (this.stompTarget) {
+                            const hx = this.stompTarget.x;
+                            const hy = this.stompTarget.y;
+                            let w, h, art;
+                            
+                            if (this.hazardType === 'spray') {
+                                w = SPRAY_ART[0].length;
+                                h = SPRAY_ART.length;
+                                art = SPRAY_ART;
+                            } else {
+                                w = PAW_ART[0].length;
+                                h = PAW_ART.length;
+                                art = PAW_ART;
+                            }
+                            
+                            // Warning Phase
+                            if (x >= hx && x < hx + w && y >= hy && y < hy + h) {
+                                if (this.stompTimer > 0) {
+                                    // Shadow/Warning
+                                    tileDiv.classList.add('warning');
+                                } else {
+                                    // IMPACT PHASE - Draw Art
+                                    const artChar = art[y - hy][x - hx];
+                                    if (artChar !== ' ') {
+                                        char = artChar;
+                                        if (this.hazardType === 'spray') {
+                                            className = 'spray-impact';
+                                        } else {
+                                            className = 'impact';
+                                        }
+                                        tileDiv.textContent = char;
+                                    }
+                                }
+                            }
+                        }
+                        
+                        if(tileDiv.textContent !== char) tileDiv.textContent = char;
+                        
+                        className.split(' ').forEach(cls => tileDiv.classList.add(cls));
+
+                        this.gridEl.appendChild(tileDiv);
+                    }
+                }
+            }
+
+            bindInput() {
+                document.addEventListener('keydown', (e) => {
+                    if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].indexOf(e.code) > -1) {
+                        e.preventDefault();
+                    }
+                    
+                    switch(e.key) {
+                        case 'ArrowUp': case 'w': this.handleInput(0, -1); break;
+                        case 'ArrowDown': case 's': this.handleInput(0, 1); break;
+                        case 'ArrowLeft': case 'a': this.handleInput(-1, 0); break;
+                        case 'ArrowRight': case 'd': this.handleInput(1, 0); break;
+                        case 'Enter': case ' ': this.handleInput(0, 0); break;
+                    }
+                });
+
+                document.getElementById('btn-up').onclick = () => this.handleInput(0, -1);
+                document.getElementById('btn-down').onclick = () => this.handleInput(0, 1);
+                document.getElementById('btn-left').onclick = () => this.handleInput(-1, 0);
+                document.getElementById('btn-right').onclick = () => this.handleInput(1, 0);
+                document.getElementById('btn-wait').onclick = () => this.handleInput(0, 0);
+                document.getElementById('btn-skip').onclick = () => this.skipLevel();
+            }
+        }
+
+        const game = new NeonScuttle();
+    </script>
+</body>
+</html>

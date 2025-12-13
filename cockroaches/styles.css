@@ -1,0 +1,430 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    color: #fff;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+}
+
+#game-container {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Title Screen */
+#title-screen {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    z-index: 1000;
+    transition: opacity 0.5s ease;
+}
+
+#title-screen.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.title-content {
+    text-align: center;
+    animation: fadeIn 1s ease;
+}
+
+h1 {
+    font-size: 4rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #ffe66d);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 0 30px rgba(255, 107, 107, 0.5);
+}
+
+.subtitle {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+    color: #a0a0a0;
+}
+
+.start-btn {
+    padding: 15px 40px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+    border: none;
+    border-radius: 50px;
+    color: white;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 15px rgba(78, 205, 196, 0.4);
+}
+
+.start-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(78, 205, 196, 0.6);
+}
+
+.start-btn:active {
+    transform: translateY(0);
+}
+
+/* Game UI */
+#game-ui {
+    display: none;
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+#game-ui.active {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header */
+.game-header {
+    padding: 20px 40px;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid rgba(78, 205, 196, 0.3);
+}
+
+.stage-info {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.stage-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.adaptation-badge {
+    padding: 5px 15px;
+    background: rgba(78, 205, 196, 0.2);
+    border-radius: 20px;
+    font-size: 0.9rem;
+    border: 1px solid rgba(78, 205, 196, 0.5);
+}
+
+.progress-bar {
+    width: 200px;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+    transition: width 0.3s ease;
+    width: 0%;
+}
+
+/* Game Area */
+.game-area {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: #0a0a1a;
+}
+
+.stage-background {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    background-size: cover;
+    background-position: center;
+    opacity: 0.3;
+    transition: opacity 0.5s ease;
+}
+
+/* Stage 1: Nymph - Speed */
+.stage-1 .stage-background {
+    background: linear-gradient(135deg, #1a3d2e 0%, #0f3460 100%);
+}
+
+/* Stage 2: Adult - Hard Exoskeleton */
+.stage-2 .stage-background {
+    background: linear-gradient(135deg, #3d2d1b 0%, #16213e 100%);
+}
+
+/* Stage 3: Reproduction - Reproductive Power */
+.stage-3 .stage-background {
+    background: linear-gradient(135deg, #3d1b2d 0%, #1a1a2e 100%);
+}
+
+/* Stage 4: Egg - Small Size */
+.stage-4 .stage-background {
+    background: linear-gradient(135deg, #2d1b3d 0%, #1a1a2e 100%);
+}
+
+/* Interactive Elements */
+.interactive-element {
+    position: absolute;
+    cursor: pointer;
+    transition: transform 0.2s, filter 0.2s;
+    z-index: 10;
+}
+
+.interactive-element:hover {
+    transform: scale(1.1);
+    filter: brightness(1.2);
+}
+
+.interactive-element.clicked {
+    animation: pulse 0.5s ease;
+}
+
+.obstacle {
+    position: absolute;
+    background: rgba(255, 0, 0, 0.3);
+    border: 2px dashed rgba(255, 0, 0, 0.6);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    color: #ff6b6b;
+    font-weight: 600;
+    z-index: 5;
+}
+
+.obstacle.solved {
+    opacity: 0.3;
+    border-color: rgba(78, 205, 196, 0.6);
+    background: rgba(78, 205, 196, 0.2);
+}
+
+/* Cockroach Character */
+.cockroach {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #8b4513, #654321);
+    border-radius: 50% 50% 20% 20%;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    transition: all 0.3s ease;
+    z-index: 15;
+    cursor: pointer;
+}
+
+.cockroach::before {
+    content: '';
+    position: absolute;
+    top: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 8px;
+    height: 8px;
+    background: #000;
+    border-radius: 50%;
+}
+
+.cockroach.moving {
+    animation: moveCockroach 0.5s ease;
+}
+
+.cockroach.small {
+    transform: scale(0.5);
+}
+
+.cockroach.fast {
+    transition: all 0.1s ease;
+}
+
+.cockroach.armored {
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+    border: 2px solid rgba(255, 215, 0, 0.8);
+}
+
+/* Tooltip */
+.tooltip {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.9);
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    pointer-events: none;
+    z-index: 100;
+    max-width: 250px;
+    border: 1px solid rgba(78, 205, 196, 0.5);
+    display: none;
+}
+
+.tooltip.show {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+/* Dialog/Instructions */
+.dialog {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    padding: 20px 30px;
+    border-radius: 15px;
+    max-width: 600px;
+    border: 2px solid rgba(78, 205, 196, 0.5);
+    z-index: 50;
+    display: none;
+}
+
+.dialog.show {
+    display: block;
+    animation: slideUp 0.3s ease;
+}
+
+.dialog h3 {
+    color: #4ecdc4;
+    margin-bottom: 10px;
+}
+
+.dialog p {
+    line-height: 1.6;
+    color: #e0e0e0;
+}
+
+.dialog-btn {
+    margin-top: 15px;
+    padding: 10px 20px;
+    background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+    border: none;
+    border-radius: 25px;
+    color: white;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+/* Success Screen */
+.success-screen {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 200;
+}
+
+.success-screen.show {
+    display: flex;
+    animation: fadeIn 0.5s ease;
+}
+
+.success-content {
+    text-align: center;
+}
+
+.success-content h2 {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #ffe66d);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateX(-50%) translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+@keyframes moveCockroach {
+    0% { transform: translate(0, 0); }
+    50% { transform: translate(10px, -5px); }
+    100% { transform: translate(0, 0); }
+}
+
+/* Stage-specific visual elements */
+.stage-decoration {
+    position: absolute;
+    pointer-events: none;
+    opacity: 0.2;
+}
+
+.egg-cluster {
+    width: 60px;
+    height: 60px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.3), transparent);
+    border-radius: 50%;
+}
+
+.speed-lines {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 50px,
+        rgba(78, 205, 196, 0.1) 50px,
+        rgba(78, 205, 196, 0.1) 52px
+    );
+}
+
+.armor-shine {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        45deg,
+        transparent 30%,
+        rgba(255, 215, 0, 0.1) 50%,
+        transparent 70%
+    );
+    animation: shine 3s infinite;
+}
+
+@keyframes shine {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+
+
+

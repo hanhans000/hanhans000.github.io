@@ -1,0 +1,1402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>The Metamorphosis Engine</title>
+    <style>
+        @import url('https://use.typekit.net/hagrid.css');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Helvetica', sans-serif;
+            background: #ff69b4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        /* Organic grey shapes overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: 
+                radial-gradient(ellipse at 20% 30%, rgba(128, 128, 128, 0.3) 0%, transparent 40%),
+                radial-gradient(ellipse at 80% 70%, rgba(128, 128, 128, 0.25) 0%, transparent 35%),
+                radial-gradient(ellipse at 50% 50%, rgba(128, 128, 128, 0.2) 0%, transparent 50%);
+            filter: blur(20px);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+
+
+
+        /* Device frame effect */
+        .device-container {
+            width: 1920px;
+            height: 1080px;
+            max-width: 100vw;
+            max-height: 100vh;
+            aspect-ratio: 16 / 9;
+            background: #ff69b4;
+            border-radius: 0;
+            padding: 0;
+            box-shadow: none;
+            border: none;
+            position: relative;
+            display: flex;
+            flex-direction: row;
+            overflow: hidden;
+        }
+
+        /* Organic grey shapes */
+        .device-container::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: 
+                radial-gradient(ellipse at 10% 20%, rgba(128, 128, 128, 0.4) 0%, transparent 30%),
+                radial-gradient(ellipse at 90% 80%, rgba(128, 128, 128, 0.35) 0%, transparent 25%),
+                radial-gradient(ellipse at 50% 50%, rgba(128, 128, 128, 0.3) 0%, transparent 40%);
+            filter: blur(30px);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        
+        /* Scale down on smaller screens while maintaining aspect ratio */
+        @media (max-width: 1920px) {
+            .device-container {
+                width: 100vw;
+                height: 56.25vw; /* 16:9 aspect ratio */
+                max-height: 100vh;
+                padding: calc(30px * (100vw / 1920));
+                border-radius: calc(40px * (100vw / 1920));
+            }
+        }
+        
+        @media (max-height: 1080px) {
+            .device-container {
+                height: 100vh;
+                width: 177.78vh; /* 16:9 aspect ratio */
+                max-width: 100vw;
+            }
+        }
+
+
+        /* Screen + panels bold style */
+        #game-container {
+            background: #ff69b4 !important;
+            border: none !important;
+            box-shadow: none !important;
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            height: 100%;
+            padding: 40px;
+            gap: 40px;
+        }
+        
+        /* Left column */
+        .left-column {
+            flex: 0 0 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            z-index: 3;
+        }
+        
+        /* Right column */
+        .right-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            z-index: 3;
+        }
+        
+        /* Central image container */
+        .center-image {
+            flex: 0 0 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3;
+            position: relative;
+        }
+        
+        .center-image img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(4px 4px 8px rgba(0, 0, 0, 0.3));
+        }
+
+        /* Excel-like grid background */
+        #stage-display {
+            background: 
+                repeating-linear-gradient(0deg, transparent, transparent 19px, #e0e0e0 19px, #e0e0e0 20px),
+                repeating-linear-gradient(90deg, transparent, transparent 79px, #e0e0e0 79px, #e0e0e0 80px),
+                #ffffff !important;
+            border: 2px solid #d0d0d0 !important;
+            box-shadow:
+                inset 0 0 0 1px #b0b0b0,
+                0 2px 4px rgba(0, 0, 0, 0.1) !important;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Excel column headers */
+        #stage-display::before {
+            content: 'A\A B\A C\A D\A E\A F\A G\A H';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 20px;
+            background: #f2f2f2;
+            border-bottom: 1px solid #d0d0d0;
+            font-size: 10px;
+            color: #666;
+            padding-left: 20px;
+            line-height: 20px;
+            font-family: 'Helvetica', sans-serif;
+            white-space: pre;
+        }
+        
+        /* Excel row numbers */
+        #stage-display::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 20px;
+            bottom: 0;
+            width: 40px;
+            background: #f2f2f2;
+            border-right: 1px solid #d0d0d0;
+        }
+
+        #stage-title {
+            font-family: 'hagrid', serif !important;
+            color: #2d5016 !important;
+            text-shadow:
+                2px 2px 0px rgba(0, 0, 0, 0.1),
+                0 0 8px rgba(45, 80, 22, 0.3) !important;
+            font-weight: 900;
+            font-size: 32px !important;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0.9;
+            transform: perspective(100px) rotateX(5deg);
+            margin-bottom: 15px;
+        }
+
+        #stage-goal {
+            color: #2d5016 !important;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1) !important;
+            font-family: 'Helvetica', sans-serif !important;
+            font-size: 14px !important;
+            line-height: 1.6;
+        }
+        
+        /* Stage image container - Excel cell style */
+        #stage-image {
+            width: 200px;
+            height: 200px;
+            margin: 15px auto;
+            background: 
+                repeating-linear-gradient(0deg, transparent, transparent 9px, #f0f0f0 9px, #f0f0f0 10px),
+                repeating-linear-gradient(90deg, transparent, transparent 19px, #f0f0f0 19px, #f0f0f0 20px),
+                #ffffff;
+            border: 2px solid #d0d0d0;
+            border-radius: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 
+                inset 0 0 0 1px #b0b0b0,
+                2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Colored blocks decoration */
+        #stage-image::before,
+        #stage-image::after {
+            content: '';
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            background: #ffeb3b;
+            box-shadow: 2px 2px 0 rgba(0,0,0,0.1);
+        }
+        
+        #stage-image::before {
+            top: 10px;
+            left: 10px;
+            background: #ffeb3b;
+        }
+        
+        #stage-image::after {
+            bottom: 10px;
+            right: 10px;
+            background: #e91e63;
+        }
+        
+        #stage-image img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+            filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+            z-index: 1;
+        }
+        
+        /* Decorative colored blocks */
+        .colored-block {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            box-shadow: 2px 2px 0 rgba(0,0,0,0.1);
+        }
+        
+        .colored-block.yellow { background: #ffeb3b; }
+        .colored-block.pink { background: #e91e63; }
+        .colored-block.blue { background: #2196f3; }
+
+        /* Resource bars - bold style */
+        #resource-status > div > div:nth-child(2) {
+            height: 20px !important;
+            background: #000000 !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        #energy-bar {
+            background: #000000 !important;
+            box-shadow: none !important;
+        }
+        #structural-bar {
+            background: #000000 !important;
+            box-shadow: none !important;
+        }
+        #toxin-bar {
+            background: #000000 !important;
+            box-shadow: none !important;
+        }
+        #hardening-bar {
+            background: #000000 !important;
+            box-shadow: none !important;
+        }
+
+        /* Buttons bold style - black squares */
+        .game-button {
+            font-family: 'Helvetica', sans-serif !important;
+            background: #000000 !important;
+            border: none !important;
+            box-shadow: none !important;
+            color: #ffffff !important;
+            text-shadow: none !important;
+            font-weight: 700 !important;
+            border-radius: 0 !important;
+        }
+
+        /* Message box */
+        #message-box {
+            background: rgba(255, 255, 255, 0.95) !important;
+            border: 3px solid #2d5016 !important;
+            box-shadow: 
+                0 4px 12px rgba(0, 0, 0, 0.15),
+                inset 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        /* Overlay */
+        #overlay {
+            background: rgba(255, 105, 180, 0.9) !important;
+        }
+        
+        #overlay > div {
+            background: #ffffff !important;
+            border: 4px solid #000000 !important;
+            box-shadow: none !important;
+        }
+
+        /* Bold theme */
+        body, html {
+            background: linear-gradient(180deg, #fef9e7 0%, #e8e8e8 50%, #d3d3d3 100%);
+        }
+
+        /* Bold main screen */
+        #game-container {
+            background: linear-gradient(180deg, #fef9e7 0%, #e8e8e8 50%, #d3d3d3 100%) !important;
+            border: 4px solid #2d5016 !important;
+            box-shadow:
+                inset 0 0 40px rgba(0, 0, 0, 0.1),
+                0 8px 32px rgba(0, 0, 0, 0.2) !important;
+            position: relative;
+            z-index: 2;
+            pointer-events: auto;
+        }
+
+        /* Bold text */
+        #stage-title, h1 {
+            color: #2d5016 !important;
+            text-shadow: 
+                2px 2px 0px rgba(0, 0, 0, 0.1),
+                0 0 8px rgba(45, 80, 22, 0.3) !important;
+            font-family: 'hagrid', serif !important;
+            font-weight: 900 !important;
+        }
+        
+        #stage-goal, #message-box span, #resource-status span, p {
+            color: #2d5016 !important;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1) !important;
+            font-family: 'Helvetica', sans-serif !important;
+        }
+
+        /* Panels bold */
+        #stage-display, #message-box {
+            background: rgba(255, 255, 255, 0.95) !important;
+            border: 3px solid #2d5016 !important;
+            box-shadow: 
+                0 4px 12px rgba(0, 0, 0, 0.15),
+                inset 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        /* Resource bars: bold */
+        #resource-status > div > div:nth-child(2) {
+            height: 12px !important;
+            background: rgba(255, 255, 255, 0.8) !important;
+            border: 2px solid #2d5016 !important;
+            box-shadow: 
+                inset 0 2px 4px rgba(0, 0, 0, 0.15),
+                0 2px 4px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        /* Buttons: bold */
+        .game-button {
+            background: #2d5016 !important;
+            color: #ffffff !important;
+            border: 3px solid #2d5016 !important;
+            box-shadow:
+                0 4px 8px rgba(0, 0, 0, 0.2),
+                inset 0 2px 4px rgba(255, 255, 255, 0.3),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.2) !important;
+            pointer-events: auto;
+            font-family: 'Helvetica', sans-serif !important;
+            font-weight: 700 !important;
+            text-shadow: 
+                2px 2px 4px rgba(0, 0, 0, 0.5) !important;
+        }
+
+        /* Overlay modal bold */
+        #overlay > div {
+            background: linear-gradient(180deg, #fef9e7 0%, #e8e8e8 50%, #d3d3d3 100%) !important;
+            border: 4px solid #2d5016 !important;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                inset 0 0 40px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        /* Ensure layout clickable */
+        .device-container { pointer-events: auto; }
+        .surreal-floating { pointer-events: none; z-index: 1; }
+
+        /* Entry overlay */
+        #intro-overlay {
+            position: fixed;
+            inset: 0;
+            background: #ff69b4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+        }
+
+        .intro-card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 4px solid #000000;
+            border-radius: 0;
+            padding: 36px 42px;
+            max-width: 520px;
+            text-align: center;
+            box-shadow: none;
+            position: relative;
+        }
+
+        .intro-title {
+            font-family: 'hagrid', serif;
+            font-size: 42px;
+            color: #000000;
+            margin-bottom: 12px;
+            text-shadow: none;
+            position: relative;
+            z-index: 1;
+            font-weight: 900;
+            text-transform: lowercase;
+        }
+
+        .intro-text {
+            color: #000000;
+            font-size: 22px;
+            line-height: 1.5;
+            margin-bottom: 22px;
+            text-shadow: none;
+            font-family: 'Helvetica', sans-serif;
+            position: relative;
+            z-index: 1;
+        }
+
+        #start-button {
+            background: #000000;
+            color: #ffffff;
+            border: none;
+            border-radius: 0;
+            padding: 14px 26px;
+            font-size: 24px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: none;
+            transition: all 0.18s ease;
+            font-family: 'Helvetica', sans-serif;
+            text-shadow: none;
+            position: relative;
+            z-index: 1;
+        }
+
+        #start-button:hover {
+            background: #333333;
+        }
+
+        #start-button:active {
+            transform: translateY(1px);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Button hover and active effects */
+        .game-button:hover {
+            background: #333333 !important;
+        }
+
+        .game-button:active {
+            background: #666666 !important;
+        }
+
+        .game-button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            filter: grayscale(0.7);
+        }
+
+        #restart-button:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.2);
+        }
+
+        #restart-button:active {
+            transform: translateY(2px);
+        }
+
+        /* Pixelated animation for resource bars */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .resource-complete {
+            animation: pulse 1s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="device-container">
+        
+
+        <div id="game-container" style="
+            flex: 1;
+            background: #ff69b4;
+            border-radius: 0;
+            padding: 40px;
+            box-shadow: none;
+            border: none;
+            display: flex;
+            flex-direction: row;
+            position: relative;
+            overflow: hidden;
+            gap: 40px;
+        ">
+        
+        <!-- Left Column -->
+        <div class="left-column" style="
+            flex: 0 0 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            z-index: 3;
+        ">
+            <!-- Title -->
+        <div style="
+                display: flex;
+                flex-direction: column;
+            ">
+        <h1 style="
+                    font-family: 'hagrid', serif;
+                    font-size: 64px;
+                    font-weight: 900;
+                    color: #000000;
+                    text-shadow: none;
+            letter-spacing: 2px;
+                    line-height: 1.1;
+                    margin: 0;
+                    writing-mode: vertical-rl;
+                    text-orientation: mixed;
+                    transform: rotate(180deg);
+                ">being the cockroach</h1>
+            </div>
+            
+            <!-- Black squares (buttons) -->
+            <div style="
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
+                margin-top: auto;
+            ">
+                <div style="display: flex; gap: 15px;">
+                    <div style="width: 80px; height: 80px; background: #000000; border-radius: 8px;"></div>
+                </div>
+                <div style="display: flex; gap: 15px;">
+                    <div style="width: 80px; height: 80px; background: #000000; border-radius: 8px;"></div>
+                    <div style="width: 80px; height: 80px; background: #000000; border-radius: 8px;"></div>
+                </div>
+                <div style="display: flex; justify-content: center;">
+                    <div style="width: 80px; height: 80px; background: #000000; border-radius: 8px;"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Center Image -->
+        <div class="center-image" style="
+            flex: 0 0 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3;
+            position: relative;
+        ">
+            <div id="stage-image" style="
+            width: 100%;
+            height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+            ">
+                <img id="stage-image-img" src="" alt="Stage Image" style="
+                    max-width: 100%;
+                    max-height: 100%;
+                    object-fit: contain;
+                    filter: drop-shadow(4px 4px 8px rgba(0, 0, 0, 0.3));
+                ">
+            </div>
+        </div>
+        
+        <!-- Right Column -->
+        <div class="right-column" style="
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            z-index: 3;
+        ">
+            <!-- How to Play -->
+            <div style="
+                text-align: right;
+            ">
+                <h2 style="
+                    font-family: 'Helvetica', sans-serif;
+                    font-size: 24px;
+                    font-weight: 700;
+                    color: #000000;
+                    margin: 0;
+                ">how to play?</h2>
+            </div>
+
+        <!-- Stage Display -->
+        <div id="stage-display" style="
+                background: transparent;
+                border: none;
+                box-shadow: none;
+                padding: 0;
+                margin: 0;
+        ">
+            <h2 id="stage-title" style="
+                    font-family: 'hagrid', serif;
+                    font-size: 48px;
+                    font-weight: 900;
+                    color: #000000;
+                    margin-bottom: 15px;
+                    text-shadow: none;
+                    text-transform: lowercase;
+                ">stage 1</h2>
+            <p id="stage-goal" style="
+                    color: #000000;
+                    font-size: 16px;
+                    text-shadow: none;
+                    font-family: 'Helvetica', sans-serif;
+                    line-height: 1.6;
+                    background: transparent;
+                    padding: 0;
+                    border: none;
+                    margin: 0;
+            "></p>
+        </div>
+        
+            <!-- Stats -->
+            <div style="
+                margin-top: auto;
+            ">
+                <h3 style="
+                    font-family: 'Helvetica', sans-serif;
+                    font-size: 24px;
+                    font-weight: 700;
+                    color: #000000;
+                    margin-bottom: 20px;
+                ">stats</h3>
+                
+                <!-- Resource Status Display -->
+        <div id="resource-status" style="
+            display: flex;
+            flex-direction: column;
+                    gap: 15px;
+        ">
+            <!-- Resource 1: Metabolic Energy (E) -->
+                    <!-- Resource 1: Metabolic Energy (E) -->
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: #000000; font-size: 16px; font-family: 'Helvetica', sans-serif; font-weight: 700;">
+                                stat 1
+                    </span>
+                            <span style="color: #000000; font-size: 14px; font-family: 'Helvetica', sans-serif;">
+                                <span id="energy-current">0</span> / <span id="energy-target">0</span>
+                            </span>
+                </div>
+                <div style="
+                            height: 20px;
+                            background: #000000;
+                            width: 100%;
+                    position: relative;
+                            overflow: hidden;
+                ">
+                    <div id="energy-bar" style="
+                        height: 100%;
+                        width: 0%;
+                                background: #000000;
+                        transition: width 0.3s ease-in-out;
+                    "></div>
+                </div>
+            </div>
+            <!-- Resource 2: Structural Growth (S) -->
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: #000000; font-size: 16px; font-family: 'Helvetica', sans-serif; font-weight: 700;">
+                                stat 2
+                    </span>
+                            <span style="color: #000000; font-size: 14px; font-family: 'Helvetica', sans-serif;">
+                                <span id="structural-current">0</span> / <span id="structural-target">0</span>
+                            </span>
+                </div>
+                <div style="
+                            height: 20px;
+                            background: #000000;
+                            width: 100%;
+                            position: relative;
+                    overflow: hidden;
+                ">
+                    <div id="structural-bar" style="
+                        height: 100%;
+                        width: 0%;
+                                background: #000000;
+                        transition: width 0.3s ease-in-out;
+                    "></div>
+                </div>
+            </div>
+            <!-- Resource 3: Toxin Resistance (T) -->
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: #000000; font-size: 16px; font-family: 'Helvetica', sans-serif; font-weight: 700;">
+                                stat 3
+                    </span>
+                            <span style="color: #000000; font-size: 14px; font-family: 'Helvetica', sans-serif;">
+                                <span id="toxin-current">0</span> / <span id="toxin-target">0</span>
+                            </span>
+                </div>
+                <div style="
+                            height: 20px;
+                            background: #000000;
+                            width: 100%;
+                            position: relative;
+                    overflow: hidden;
+                ">
+                    <div id="toxin-bar" style="
+                        height: 100%;
+                        width: 0%;
+                                background: #000000;
+                        transition: width 0.3s ease-in-out;
+                    "></div>
+                </div>
+            </div>
+            <!-- Resource 4: Exoskeleton Hardening (H) -->
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: #000000; font-size: 16px; font-family: 'Helvetica', sans-serif; font-weight: 700;">
+                                stat 4
+                    </span>
+                            <span style="color: #000000; font-size: 14px; font-family: 'Helvetica', sans-serif;">
+                                <span id="hardening-current">0</span> / <span id="hardening-target">0</span>
+                            </span>
+                </div>
+                <div style="
+                            height: 20px;
+                            background: #000000;
+                            width: 100%;
+                            position: relative;
+                    overflow: hidden;
+                ">
+                    <div id="hardening-bar" style="
+                        height: 100%;
+                        width: 0%;
+                                background: #000000;
+                        transition: width 0.3s ease-in-out;
+                    "></div>
+                        </div>
+                </div>
+            </div>
+        </div>
+
+            <!-- Message Box and Controls -->
+            <div style="
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
+                margin-top: 20px;
+            ">
+        <!-- Feedback & Status -->
+        <div id="message-box" style="
+                    min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+                    background: transparent;
+                    border: none;
+                    box-shadow: none;
+                    padding: 10px;
+                ">
+                    <span style="color: #000000; font-size: 16px; font-family: 'Helvetica', sans-serif; font-weight: 700;">
+                        MOVES LEFT: <span id="moves-left" style="color: #000000; font-weight: bold;"></span>
+            </span>
+        </div>
+
+        <!-- Hint helper -->
+        <div id="hint-container" style="
+            display: flex;
+                    gap: 8px;
+            align-items: center;
+            justify-content: center;
+                    color: #000000;
+                    font-size: 14px;
+                    font-family: 'Helvetica', sans-serif;
+        ">
+            <button id="hint-button" style="
+                display: none;
+                        padding: 8px 16px;
+                        border-radius: 0;
+                        border: 2px solid #000000;
+                        background: #000000;
+                        color: #ffffff;
+                cursor: pointer;
+                        font-family: 'Helvetica', sans-serif;
+                        font-size: 14px;
+                        font-weight: 700;
+            ">Show Hint</button>
+                    <span id="hint-text" style="opacity: 0.9; font-family: 'Helvetica', sans-serif; font-size: 14px;"></span>
+                </div>
+            </div>
+        </div>
+        </div>
+
+        <!-- Action Buttons (Bottom Section) -->
+        <div style="
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 80px);
+            z-index: 4;
+        ">
+        <div id="controls" style="
+            display: grid;
+                grid-template-columns: 1fr 1fr 1fr 1fr;
+                gap: 15px;
+            position: relative;
+        ">
+
+            <button id="btn-energy" class="game-button" data-action="Energy" style="
+                    padding: 20px;
+                    background: #000000;
+                color: #ffffff;
+                    font-family: 'Helvetica', sans-serif;
+                    font-size: 14px;
+                    font-weight: 700;
+                    border-radius: 0;
+                    border: none;
+                    box-shadow: none;
+                cursor: pointer;
+                transition: all 0.15s ease-in-out;
+                    text-shadow: none;
+                user-select: none;
+                    text-align: center;
+                    min-height: 100px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                "></button>
+            
+            <button id="btn-structural" class="game-button" data-action="Structural" style="
+                    padding: 20px;
+                    background: #000000;
+                    color: #ffffff;
+                    font-family: 'Helvetica', sans-serif;
+                    font-size: 14px;
+                    font-weight: 700;
+                    border-radius: 0;
+                    border: none;
+                    box-shadow: none;
+                cursor: pointer;
+                transition: all 0.15s ease-in-out;
+                    text-shadow: none;
+                user-select: none;
+                    text-align: center;
+                    min-height: 100px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                "></button>
+            
+            <button id="btn-toxin" class="game-button" data-action="Toxin" style="
+                    padding: 20px;
+                    background: #000000;
+                color: #ffffff;
+                    font-family: 'Helvetica', sans-serif;
+                    font-size: 14px;
+                    font-weight: 700;
+                    border-radius: 0;
+                    border: none;
+                    box-shadow: none;
+                cursor: pointer;
+                transition: all 0.15s ease-in-out;
+                    text-shadow: none;
+                user-select: none;
+                    text-align: center;
+                    min-height: 100px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                "></button>
+            
+            <button id="btn-hardening" class="game-button" data-action="Hardening" style="
+                    padding: 20px;
+                    background: #000000;
+                color: #ffffff;
+                    font-family: 'Helvetica', sans-serif;
+                    font-size: 14px;
+                    font-weight: 700;
+                    border-radius: 0;
+                    border: none;
+                    box-shadow: none;
+                cursor: pointer;
+                transition: all 0.15s ease-in-out;
+                    text-shadow: none;
+                user-select: none;
+                    text-align: center;
+                    min-height: 100px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                "></button>
+            </div>
+        </div>
+        
+        </div>
+        <!-- End game-container -->
+
+        <!-- Win/Loss Overlay (Hidden by default) -->
+        <div id="overlay" style="
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 105, 180, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 2000;
+        ">
+            <div style="
+                background: #ffffff;
+                padding: 50px;
+                border-radius: 0;
+                text-align: center;
+                box-shadow: none;
+                border: 4px solid #000000;
+                max-width: 600px;
+            ">
+                <h2 id="final-status" style="
+                    font-family: 'hagrid', serif;
+                    font-size: 36px;
+                    font-weight: 900;
+                    margin-bottom: 20px;
+                    color: #000000;
+                    text-shadow: none;
+                    text-transform: lowercase;
+                "></h2>
+                <p id="final-message" style="
+                    margin-bottom: 30px;
+                    color: #000000;
+                    font-size: 22px;
+                    text-shadow: none;
+                    font-family: 'Helvetica', sans-serif;
+                "></p>
+                <button id="restart-button" style="
+                    padding: 16px 32px;
+                    background: #000000;
+                    color: #ffffff;
+                    font-family: 'Helvetica', sans-serif;
+                    font-size: 26px;
+                    font-weight: 700;
+                    border-radius: 0;
+                    border: none;
+                    box-shadow: none;
+                    cursor: pointer;
+                    transition: all 0.15s ease-in-out;
+                    text-shadow: none;
+                ">Restart Game</button>
+            </div>
+        </div>
+
+    </div>
+    <!-- End device-container -->
+
+    <script>
+        // --- GAME CONFIGURATION ---
+        const MAX_RESOURCE = 10; // Maximum resource value (will be clamped, but stages may target up to 6)
+        
+        // Resource Mapping: Water -> Energy, Sunlight -> Structural, Nutrients -> Toxin, Defense -> Hardening
+        
+        const STAGES = [
+            { 
+                title: "🥚 Stage 1: The Ootheca (Incubation & Protection)", 
+                goal: "Secure the resources needed for a successful hatching amidst a quiet period of danger. All actions are positive (+).", 
+                target: { Energy: 2, Structural: 2, Toxin: 2, Hardening: 2 }, 
+                maxMoves: 8,
+                image: 'https://via.placeholder.com/300x300/ff6bd6/ffffff?text=Stage+1',
+                actions: {
+                    // Cát Lành (Good Soil) - Shelter Integrity
+                    'Structural': { Energy: 0, Structural: 2, Toxin: 0, Hardening: 0 },
+                    // Hơi Ấm (Warm Air) - Hatch Viability
+                    'Energy': { Energy: 2, Structural: 0, Toxin: 0, Hardening: 0 },
+                    // Mùi Kín (Hidden Scent) - Camouflage/Stealth
+                    'Toxin': { Energy: 0, Structural: 0, Toxin: 2, Hardening: 0 },
+                    // Tiềm Năng (Potential) - Gene Pool Diversity
+                    'Hardening': { Energy: 0, Structural: 0, Toxin: 0, Hardening: 2 }
+                },
+                buttonNames: {
+                    'Structural': 'Cát Lành (Good Soil)',
+                    'Energy': 'Hơi Ấm (Warm Air)',
+                    'Toxin': 'Mùi Kín (Hidden Scent)',
+                    'Hardening': 'Tiềm Năng (Potential)'
+                }
+            },
+            { 
+                title: "🐛 Stage 2: The First Nymph (Emerging Vulnerability)", 
+                goal: "Rapidly grow and secure initial safe zones without being crushed or eaten. All actions are positive (+).", 
+                target: { Energy: 3, Structural: 3, Toxin: 3, Hardening: 3 },
+                maxMoves: 12,
+                image: 'https://via.placeholder.com/300x300/6bf3ff/ffffff?text=Stage+2',
+                actions: {
+                    // Đường Tắt (Shortcut/Path) - Movement Speed
+                    'Structural': { Energy: 0, Structural: 3, Toxin: 0, Hardening: 0 },
+                    // Miếng Ăn (A Bite of Food) - Energy/Growth
+                    'Energy': { Energy: 3, Structural: 0, Toxin: 0, Hardening: 0 },
+                    // Góc Tối (Dark Corner) - Immediate Safety
+                    'Toxin': { Energy: 0, Structural: 0, Toxin: 3, Hardening: 0 },
+                    // Cảnh Giác (Vigilance) - Reaction Time
+                    'Hardening': { Energy: 0, Structural: 0, Toxin: 0, Hardening: 3 }
+                },
+                buttonNames: {
+                    'Structural': 'Đường Tắt (Shortcut)',
+                    'Energy': 'Miếng Ăn (A Bite)',
+                    'Toxin': 'Góc Tối (Dark Corner)',
+                    'Hardening': 'Cảnh Giác (Vigilance)'
+                }
+            },
+            { 
+                title: "🛡️ Stage 3: The Molting Nymph (Growth Through Hardship)", 
+                goal: "Successfully complete molts to gain better exoskeletons, managing the high risk of exposure. Each action has trade-offs (+ and -).", 
+                target: { Energy: 2, Structural: 3, Toxin: 2, Hardening: 3 },
+                maxMoves: 10,
+                image: 'https://via.placeholder.com/300x300/9bff6b/ffffff?text=Stage+3',
+                actions: {
+                    // Lột Xác (Molting) - Toughness (+) / Mobility (-)
+                    'Structural': { Energy: 0, Structural: 3, Toxin: 0, Hardening: -1 },
+                    // Lỗ Ẩn (Hidden Hole) - Sanctuary Time (+) / Scavenging Range (-)
+                    'Toxin': { Energy: -1, Structural: 0, Toxin: 2, Hardening: 0 },
+                    // Nước Mưa (Rain Water) - Hydration (+) / Scent Trail (-)
+                    'Energy': { Energy: 2, Structural: 0, Toxin: -1, Hardening: 0 },
+                    // Hồi Sức (Recuperation) - Healing Rate (+) / Energy Reserve (-)
+                    'Hardening': { Energy: -1, Structural: 0, Toxin: 0, Hardening: 3 }
+                },
+                buttonNames: {
+                    'Structural': 'Lột Xác (Molting)',
+                    'Toxin': 'Lỗ Ẩn (Hidden Hole)',
+                    'Energy': 'Nước Mưa (Rain Water)',
+                    'Hardening': 'Hồi Sức (Recuperation)'
+                }
+            },
+            { 
+                title: "🦋 Stage 4: The Adult (Sustained Endurance & Toxicity Resistance)", 
+                goal: "Sustain life and prove resilience in the face of chemical or environmental disaster. Each action has trade-offs (+ and -).", 
+                target: { Energy: 4, Structural: 3, Toxin: 4, Hardening: 3 },
+                maxMoves: 12,
+                image: 'https://via.placeholder.com/300x300/ffd56b/ffffff?text=Stage+4',
+                actions: {
+                    // Hít Thở (Breathing/Spiracles) - Breath Hold (+) / Sustained Energy (-)
+                    'Toxin': { Energy: -1, Structural: 0, Toxin: 4, Hardening: 0 },
+                    // Kháng Độc (Poison Resistance) - Toxicity Buffer (+) / Metabolism Speed (-)
+                    'Hardening': { Energy: -1, Structural: 0, Toxin: 0, Hardening: 3 },
+                    // Bay Lượn (Flying/Gliding) - Traversal Range (+) / Evasion Speed (-)
+                    'Structural': { Energy: 0, Structural: 3, Toxin: 0, Hardening: -1 },
+                    // Săn Mồi (Hunting/Foraging) - Resource Gain (+) / Predation Risk (-)
+                    'Energy': { Energy: 4, Structural: 0, Toxin: -1, Hardening: 0 }
+                },
+                buttonNames: {
+                    'Toxin': 'Hít Thở (Breathing)',
+                    'Hardening': 'Kháng Độc (Poison Resistance)',
+                    'Structural': 'Bay Lượn (Flying)',
+                    'Energy': 'Săn Mồi (Hunting)'
+                }
+            },
+            { 
+                title: "♾️ Stage 5: The Gravid Female (Legacy and Eternal Return)", 
+                goal: "Sacrifice personal resource to ensure the optimal survival of the next generation. Each action has trade-offs (+ and -).", 
+                target: { Energy: 3, Structural: 4, Toxin: 3, Hardening: 4 },
+                maxMoves: 14,
+                image: 'https://via.placeholder.com/300x300/ff6bd6/ffffff?text=Stage+5',
+                actions: {
+                    // Oằn Mình (To Bend/Tough it Out) - Ootheca Protection (+) / Mother's Health (-)
+                    'Hardening': { Energy: -1, Structural: 0, Toxin: 0, Hardening: 4 },
+                    // Di Sản (Legacy/Heritage) - Future Ootheca Count (+) / Current Stealth (-)
+                    'Structural': { Energy: 0, Structural: 4, Toxin: -1, Hardening: 0 },
+                    // Vị Trí (Location/Placement) - Hatch Success Rate (+) / Immediate Safety (-)
+                    'Toxin': { Energy: 0, Structural: -1, Toxin: 3, Hardening: 0 },
+                    // Tái Thiết (Reconstruction/Rebuild) - Habitat Stability (+) / Time Elapsed (-)
+                    'Energy': { Energy: 3, Structural: 0, Toxin: 0, Hardening: -1 }
+                },
+                buttonNames: {
+                    'Hardening': 'Oằn Mình (Tough it Out)',
+                    'Structural': 'Di Sản (Legacy)',
+                    'Toxin': 'Vị Trí (Location)',
+                    'Energy': 'Tái Thiết (Rebuild)'
+                }
+            },
+        ];
+        
+        // --- GAME STATE ---
+        let currentStageIndex = 0;
+        // Resources are renamed in the game state
+        let currentState = { Energy: 0, Structural: 0, Toxin: 0, Hardening: 0 };
+        let moves = 0;
+        let gameActive = true;
+        let failCounts = new Array(STAGES.length).fill(0);
+
+        const HINTS = [
+            "Stage 1: All actions are positive. Use each button once to reach targets.",
+            "Stage 2: All actions are positive. Balance your resources evenly.",
+            "Stage 3: Each action has trade-offs. Plan carefully to manage both gains and losses.",
+            "Stage 4: Complex trade-offs. Balance toxicity resistance with other resources.",
+            "Stage 5: Ultimate sacrifice stage. Balance personal survival with legacy creation."
+        ];
+
+        // --- DOM REFERENCES ---
+        const stageTitleEl = document.getElementById('stage-title');
+        const stageGoalEl = document.getElementById('stage-goal');
+        const stageImageEl = document.getElementById('stage-image-img');
+        const messageBoxEl = document.getElementById('message-box');
+        const controlsEl = document.getElementById('controls');
+        const overlayEl = document.getElementById('overlay');
+        const finalStatusEl = document.getElementById('final-status');
+        const finalMessageEl = document.getElementById('final-message');
+        const restartButtonEl = document.getElementById('restart-button');
+        const introOverlayEl = document.getElementById('intro-overlay');
+        const startButtonEl = document.getElementById('start-button');
+        const deviceContainerEl = document.querySelector('.device-container');
+        const hintButtonEl = document.getElementById('hint-button');
+        const hintTextEl = document.getElementById('hint-text');
+        
+        // Resource elements use new names
+        const resourceElements = {
+            Energy: { bar: document.getElementById('energy-bar'), current: document.getElementById('energy-current'), target: document.getElementById('energy-target'), effect: document.getElementById('energy-effect') },
+            Structural: { bar: document.getElementById('structural-bar'), current: document.getElementById('structural-current'), target: document.getElementById('structural-target'), effect: document.getElementById('structural-effect') },
+            Toxin: { bar: document.getElementById('toxin-bar'), current: document.getElementById('toxin-current'), target: document.getElementById('toxin-target'), effect: document.getElementById('toxin-effect') },
+            Hardening: { bar: document.getElementById('hardening-bar'), current: document.getElementById('hardening-current'), target: document.getElementById('hardening-target'), effect: document.getElementById('hardening-effect') },
+        };
+
+        // --- UTILITY FUNCTIONS (Omitted for brevity, assumed correctly handled) ---
+        const formatChange = (value) => {
+            if (value > 0) return `+${value}`;
+            if (value < 0) return `${value}`;
+            return '';
+        };
+
+        const updateHintUI = () => {
+            if (!hintButtonEl || !hintTextEl) return;
+            hintTextEl.textContent = '';
+            if (failCounts[currentStageIndex] >= 3) {
+                hintButtonEl.style.display = 'inline-flex';
+            } else {
+                hintButtonEl.style.display = 'none';
+            }
+        };
+
+        const showMessage = (message, type = 'info') => {
+            let textColor = '#000000';
+            if (type === 'success') {
+                textColor = '#000000';
+            } else if (type === 'error') {
+                textColor = '#000000';
+            }
+            
+            messageBoxEl.innerHTML = `<span style="color: ${textColor}; font-size: 16px; text-shadow: none; font-family: 'Helvetica', sans-serif; font-weight: 700;">${message}</span>`;
+
+            setTimeout(() => {
+                if (messageBoxEl.innerHTML.includes(message)) {
+                     messageBoxEl.innerHTML = `<span style="color: #000000; font-size: 16px; text-shadow: none; font-family: 'Helvetica', sans-serif; font-weight: 700;">MOVES LEFT: <span id="moves-left" style="color: #000000; font-weight: bold;"></span></span>`;
+                }
+            }, 2000);
+        };
+
+        const updateUI = () => {
+            if (currentStageIndex >= STAGES.length) return;
+
+            const stage = STAGES[currentStageIndex];
+            // Format stage title to lowercase for infographic style
+            const titleParts = stage.title.split(':');
+            if (titleParts.length > 1) {
+                stageTitleEl.textContent = titleParts[0].toLowerCase() + ':' + titleParts[1];
+            } else {
+                stageTitleEl.textContent = stage.title.toLowerCase();
+            }
+            stageGoalEl.textContent = stage.goal;
+            
+            // Update stage image
+            if (stageImageEl && stage.image) {
+                stageImageEl.src = stage.image;
+                stageImageEl.style.display = 'block';
+            }
+            
+            const movesLeftSpan = document.getElementById('moves-left');
+            if (movesLeftSpan) {
+                movesLeftSpan.textContent = stage.maxMoves - moves;
+            }
+
+            for (const key in currentState) {
+                const value = currentState[key];
+                const targetValue = stage.target[key];
+
+                resourceElements[key].current.textContent = value;
+                resourceElements[key].target.textContent = targetValue;
+                
+                // Calculate percentage based on target, not max resource
+                const targetValue = stage.target[key];
+                const percentage = targetValue > 0 ? (value / targetValue) * 100 : 0;
+                resourceElements[key].bar.style.width = `${Math.min(100, Math.max(0, percentage))}%`;
+
+                if (value === targetValue) {
+                    resourceElements[key].current.style.color = '#000000';
+                    resourceElements[key].current.style.textShadow = 'none';
+                    resourceElements[key].bar.classList.add('resource-complete');
+                } else {
+                    // Reset colors
+                    resourceElements[key].current.style.color = '#000000';
+                    resourceElements[key].current.style.textShadow = 'none';
+                    resourceElements[key].bar.classList.remove('resource-complete');
+                }
+            }
+
+            document.querySelectorAll('.game-button').forEach(btn => {
+                const actionName = btn.dataset.action;
+                const effects = stage.actions[actionName];
+                
+                const effectStrings = Object.keys(effects)
+                    .map(resource => {
+                        const change = effects[resource];
+                        if (change !== 0) {
+                            return `${resource}: ${formatChange(change)}`;
+                        }
+                        return null;
+                    })
+                    .filter(str => str !== null);
+
+                const tooltip = effectStrings.join(', ');
+
+                // Use Vietnamese button names from stage configuration
+                const buttonText = stage.buttonNames && stage.buttonNames[actionName] 
+                    ? stage.buttonNames[actionName] 
+                    : actionName;
+
+                if (tooltip.length === 0) {
+                     btn.disabled = true;
+                     btn.textContent = `${buttonText} (INACTIVE)`;
+                } else {
+                    btn.disabled = false;
+                    btn.textContent = `${buttonText}\n(${tooltip})`;
+                }
+            });
+
+            updateHintUI();
+        };
+        
+        const checkWinCondition = () => {
+            const stage = STAGES[currentStageIndex];
+            for (const key in stage.target) {
+                if (currentState[key] !== stage.target[key]) {
+                    return false;
+                }
+            }
+            return true;
+        };
+        
+        const stageAdvance = () => {
+             const completedStage = currentStageIndex + 1;
+             currentStageIndex++;
+             if (currentStageIndex < STAGES.length) {
+                showMessage(`Stage ${completedStage} Complete! Moving to Stage ${currentStageIndex + 1}.`, 'success');
+                moves = 0; 
+                currentState = { Energy: 0, Structural: 0, Toxin: 0, Hardening: 0 }; 
+                updateHintUI();
+                updateUI();
+             } else {
+                gameWin();
+             }
+        }
+
+        const restartStage = () => {
+            moves = 0;
+            currentState = { Energy: 0, Structural: 0, Toxin: 0, Hardening: 0 };
+            showMessage(`Maximum moves reached! Stage ${currentStageIndex + 1} restarted. Try a new strategy!`, 'error');
+            failCounts[currentStageIndex] = (failCounts[currentStageIndex] || 0) + 1;
+            updateHintUI();
+            updateUI();
+        };
+
+        const gameFail = (reason) => {
+            if (reason === "Exceeded maximum allowed moves to adapt!") {
+                restartStage();
+            } else {
+                gameActive = false;
+                finalStatusEl.textContent = "critical failure! adaptation failed!";
+                finalMessageEl.textContent = `The environment was too harsh. Reason: ${reason} Try again from Stage 1.`;
+                finalStatusEl.style.color = '#000000';
+                finalStatusEl.style.textShadow = 'none';
+                overlayEl.style.display = 'flex';
+            }
+        };
+
+        const handleAction = async (action) => {
+            if (!gameActive) return;
+            
+            const stage = STAGES[currentStageIndex];
+            const effects = stage.actions[action];
+
+            moves++;
+            
+            for (const key in effects) {
+                currentState[key] = Math.max(0, Math.min(MAX_RESOURCE, currentState[key] + effects[key]));
+            }
+
+            updateUI();
+            
+            if (checkWinCondition()) {
+                stageAdvance();
+                return;
+            }
+
+            if (moves >= stage.maxMoves) {
+                gameFail("Exceeded maximum allowed moves to adapt!");
+                return;
+            }
+        };
+
+        const gameWin = () => {
+            gameActive = false;
+            finalStatusEl.textContent = "success! peak resilience achieved!";
+            finalMessageEl.textContent = "Your bug has completed its metamorphosis and reached its hardest, strongest form. Congratulations!";
+            finalStatusEl.style.color = '#000000';
+            finalStatusEl.style.textShadow = 'none';
+            overlayEl.style.display = 'flex';
+        };
+
+        const restartGame = () => {
+            currentStageIndex = 0;
+            moves = 0;
+            currentState = { Energy: 0, Structural: 0, Toxin: 0, Hardening: 0 };
+            gameActive = true;
+            overlayEl.style.display = 'none';
+            showMessage("Game restarted. Good luck!", 'info');
+            failCounts = new Array(STAGES.length).fill(0);
+            if (hintTextEl) hintTextEl.textContent = '';
+            updateHintUI();
+            updateUI();
+        };
+
+        // --- EVENT LISTENERS & INIT (Omitted for brevity, assumed correctly handled) ---
+
+        controlsEl.addEventListener('click', (event) => {
+            const button = event.target.closest('.game-button');
+            if (button && !button.disabled) {
+                const action = button.dataset.action;
+                handleAction(action);
+            }
+        });
+
+        restartButtonEl.addEventListener('click', restartGame);
+
+        hintButtonEl?.addEventListener('click', () => {
+            const hint = HINTS[currentStageIndex] || "Try balancing your resources evenly.";
+            if (hintTextEl) {
+                hintTextEl.textContent = hint;
+            }
+        });
+
+        window.onload = () => {
+            updateUI();
+        };
+
+    </script>
+</body>
+</html>

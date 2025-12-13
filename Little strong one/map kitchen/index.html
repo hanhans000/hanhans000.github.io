@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Level 2: The Spacious Kitchen</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    body {
+        background-color: #111;
+        color: #ccc; /* Default to wall color roughly */
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 14px;
+        line-height: 14px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+        overflow: hidden;
+    }
+
+    #game-container {
+        position: relative;
+        border: 2px solid #333;
+        padding: 10px;
+        background: #050505;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    }
+
+    pre {
+        margin: 0;
+        font-weight: bold;
+        cursor: default;
+        user-select: none;
+        white-space: pre;
+    }
+
+    #ui-layer {
+        margin-bottom: 10px;
+        width: 100%;
+        max-width: 900px;
+        display: flex;
+        justify-content: space-between;
+        font-size: 18px;
+        border-bottom: 1px solid #333;
+        padding-bottom: 5px;
+        color: #888;
+    }
+
+    .stat-box span { color: #fff; }
+    .stat-box.danger span { color: #ff4400; }
+    .stat-box.safe span { color: #4af; }
+    
+    /* --- ANIMATIONS & GAME ASSETS --- */
+    
+    .fire { display: inline-block; font-weight: bold; }
+    .fire::after { content: "[  ▲▲  ]"; animation: fireAnim 0.4s infinite steps(1); }
+    @keyframes fireAnim {
+        0%   { content: "[  ▲▲  ]"; color: #ff8800; text-shadow: 0 0 5px #ff4400; }
+        33%  { content: "[ ▲▲▲▲ ]"; color: #ff4400; text-shadow: 0 0 8px #ff0000; }
+        66%  { content: "[  ▲▲  ]"; color: #ffcc00; text-shadow: 0 0 5px #ff8800; }
+    }
+
+    .gas { display: inline-block; font-weight: bold; }
+    .gas::after { content: "[≈≈≈≈≈≈≈≈≈≈≈]"; animation: gasAnim 1.5s infinite steps(1); }
+    @keyframes gasAnim {
+        0%   { content: "[≈≈≈≈≈≈≈≈≈≈≈]"; color: #0088ff; text-shadow: 0 0 2px #0088ff; }
+        50%  { content: "[ ≈≈≈≈≈≈≈≈≈ ]"; color: #00ccff; text-shadow: 0 0 4px #00ccff; }
+    }
+
+    .heat { display: inline-block; font-weight: bold; }
+    .heat::after { content: "[▒▒▒▒▒▒▒]"; animation: heatAnim 2s infinite alternate; }
+    @keyframes heatAnim {
+        0%   { content: "[▒▒▒▒▒▒▒]"; color: #550000; }
+        100% { content: "[███████]"; color: #ff0000; text-shadow: 0 0 10px #aa0000; }
+    }
+
+    /* Prep Station Animations */
+    .chop { display: inline-block; color: #ccc; }
+    .chop { animation: chopAnim 0.15s infinite alternate; }
+    @keyframes chopAnim {
+        0% { transform: translateY(0); }
+        100% { transform: translateY(-3px); }
+    }
+
+    .sauce-anim { display: inline-block; color: #f44; font-weight: bold; }
+    .sauce-anim { animation: sauceAnim 1.5s infinite; }
+    @keyframes sauceAnim {
+        0% { color: #800; text-shadow: none; }
+        50% { color: #f00; text-shadow: 0 0 8px red; }
+        100% { color: #800; text-shadow: none; }
+    }
+
+    /* Smoke Animation */
+    .smoke-anim { display: inline-block; color: #888; }
+    .smoke-anim { animation: smokeFloat 2s infinite linear; }
+    @keyframes smokeFloat {
+        0% { opacity: 0.3; transform: translateY(0); text-shadow: 0 0 0 #fff; }
+        50% { opacity: 0.8; transform: translateY(-2px); text-shadow: 0 -2px 4px #fff; }
+        100% { opacity: 0.3; transform: translateY(-4px); text-shadow: 0 -4px 8px #fff; }
+    }
+
+    /* Water Leak & Drain Animation */
+    .water-leak { display: inline-block; width: 15ch; color: #4af; font-weight: bold; vertical-align: top; }
+    .water-leak::after { content: "( ~~~ ~~~ ~~~ )"; animation: waterFlow 1.0s infinite steps(1); }
+    @keyframes waterFlow {
+        0%   { content: "( ~~~ ~~~ ~~~ )"; color: #4af; }
+        25%  { content: "(  ~   ~   ~  )"; color: #4ee; text-shadow: 0 0 5px #0ff; }
+        50%  { content: "( ~ ~ ~ ~ ~ ~ )"; color: #4af; }
+        75%  { content: "(~~  ~~  ~~  ~)"; color: #4ee; text-shadow: 0 0 5px #0ff; }
+    }
+
+    .drain-pipe { display: inline-block; color: #4af; font-weight: bold; text-shadow: 0 0 5px blue; }
+    .drain-pipe { animation: pipeFlow 1.5s infinite linear; }
+    @keyframes pipeFlow {
+        0% { opacity: 0.4; color: #4af; }
+        50% { opacity: 1; color: #aff; text-shadow: 0 0 8px cyan; }
+        100% { opacity: 0.4; color: #4af; }
+    }
+
+    .wall    { color: #666; }
+    .metal   { color: #889; }
+    .food    { color: #dd8; }
+    .veg     { color: #4f4; }
+    .meat    { color: #f44; }
+    .water   { color: #4af; }
+    .roach   { color: #d94; font-weight: bold; }
+    .zone    { color: #888; font-style: italic; }
+    .npc     { color: #fff; font-weight: bold; }
+    .tile    { color: #333; }
+    .bottle  { color: #ff0; text-shadow: 0 0 3px #ff8800; font-weight: bold; }
+    .hook    { color: #555; }
+    
+    /* Dynamic Entities */
+    .player  { color: #fff; background-color: #33ff33; font-weight: 900; z-index: 10; position: relative; }
+    .enemy   { color: #f00; font-weight: 900; text-shadow: 0 0 5px red; }
+
+</style>
+</head>
+<body>
+
+<div id="ui-layer">
+    <div class="stat-box">LEVEL: <span id="lvl-display">2 - KITCHEN</span></div>
+    <div class="stat-box">GRIT: <span id="grit-display">40</span></div>
+    <div class="stat-box">STATUS: <span id="status-display">SNEAKING</span></div>
+</div>
+
+<div id="game-container">
+    <pre id="game-stage"></pre>
+</div>
+
+<script>
+// --- CONFIGURATION ---
+const TICK_RATE = 200; 
+const MOVE_COST_RATE = 3; 
+const START_GRIT = 40;
+
+// --- THE MAP ---
+const rawMap = [
+"                          ||                                                                       ",
+"                          ||                                                                       ",
+"+-------------------------||-----------------------------------------------------------------------+",
+"|    (WALK-IN FRIDGE)     ||                        (DRY STORAGE WAREHOUSE)                        |",
+"|    +----------------+   ||   +---------------------------------------------------------------+   |",
+"|    |  ?   ?   ?     |   ||   |                                                               |   |",
+"|    |  |   |   |     |   ||   |                          )_(        _[_]_                         |   |",
+"|    | (S) (S) (S)    |   ||   |                         .'-'.      /_:_\\                          |   |",
+"|    | (S) (S) (S)    |   ||   |   /-\\         /-\\       |:::|      )_:_(       {:}       {:}      |   |",
+"|    |  U   U   U     |   ||   |  ( R )       ( F )      |:::|      |:._|       {S}       {M}      |   |",
+"|    | [|^^|]  [(@)]  |   ||   |   \\_/         \\_/       '-.-'      `-.-'       {_}       {_}      |   |",
+"|    | [====]  [===]  |   ||   |  [====]     [=====]     [===]     [===]     [=====]     [===]   |",
+"|    |                |   ||   |===============================================================|   |",
+"|    |      _   ____  |   ||   |                           mmm        mmm          mmm             |   |",
+"|    |     (_) (____) |   ||   |    __          __         )-(        )-(          )-(             |   |",
+"|    |     (_)  |@@|  |   ||   |   (  )        (  )       (   )      (   )        (   )            |   |",
+"|    |     (_)  \\__/  |   ||   |   (__)        (__)       |   |      |   |        |   |            |   |",
+"|    |      _    U    |   ||   |   (  )        (  )       |   |      |   |        |   |            |   |",
+"|    | [~@@~]  [<>< ] |   ||   |   (__)        (__)       |___|      |___|        |___|            |   |",
+"|    | [====]  [====] |   ||   |   (____)      (____)      [|X|]      [|/|]      (oooo)        |   |",
+"|    +-------(0)------+   ||   +---------------------------------------------------------------+   |",
+"|    +-----+-----+-----+  ||   +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+       |",
+"|    |     |     |     |  ||   |     |     |     |     |     |     |     |     |     |     |       |",
+"|    +-----+-----+-----+  ||   +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+       |",
+"|   +---------------------++-------------------------------------------------------------------+   |",
+"|   |  THE HOT LINE (COOKING STATION)                                                          |   |",
+"|   |                                                                                          |   |",
+"|   |   (WOK STATION 1)          (WOK STATION 2)           (STOVE TOP)            (OVENS)      |   |",
+"|   |                                                                                          |   |",
+"|   |       (  )                     (  )                   (  ) (  )             [~~~~~]      |   |",
+"|   |        )(                       )(                     )(   )(              [~~~~~]      |   |",
+"|   |       (__)                     (__)                   (__) (__)             [__o__]      |   |",
+"|   |      /    \\                   /    \\                 /    \\ /    \\            |     |      |   |",
+"|   |     |______|                 |______|               |_____|_____|            |_____|      |   |",
+"|   |     [==FIRE]                 [==FIRE]               [====GAS====]            [HOT!!]      |   |",
+"|   |                                                                                          |   |",
+"|   +------------------------------------------------------------------------------------------+   |",
+"|          (WIDE CHEF'S ALLEY - DANGER ZONE)                                                       |",
+"|    +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+               |",
+"|    |     |     |     |     |     |     |     |     |     |     |     |     |     |               |",
+"|    +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+               |",
+"|    |     |     |     |     |     |     |     |     |     |     |     |     |     |               |",
+"|    +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+               |",
+"|    |     |     |     |     |     |     |     |     |     |     |     |     |     |               |",
+"|    +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+               |",
+"|    |     |     |     |     |     |     |     |     |     |     |     |     |     |               |",
+"|    +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+               |",
+"|   +-----------------------------------------------------+   +--------------------------------+   |",
+"|   |  PREP STATION (STAINLESS STEEL)                     |   |  DISH PIT & WASHING            |   |",
+"|   |                                                     |   |                                |   |",
+"|   |    ___________       ___________       ___________  |   |    \\______/       [|||||||]    |   |",
+"|   |   |___________}     |___________}     |___________} |   |     [ SINK ]       [PLATES ]    |   |",
+"|   |    (Chopping)        (Plating)         (Saucing)    |   |     [______]       [|||||||]    |   |",
+"|   |      _||_              (    )             _||_      |   |        |                         |   |",
+"|   |     ( vvv)            (      )           ( @@@)     |   |        | ( ~~~ ~~~ ~~~ )         |   |",
+"|   |     (Veg )            (Plate)            (Meat)     |   |        |                         |   |",
+"|   +-----------------------------------------------------+   +-------|------------------------+   |",
+"|                                                                     |                            |",
+"|    +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+----+-----+-----+-----+-----+    |",
+"|    |     |     |     |     |     |     |     |     |     |     |    |     |     |     |     |    |",
+"|    +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+----+-----+-----+-----+-----+    v",
+"|    |     |     |     |     |     |     |     |     |     |     |    |     |     |     |     |  (TO THE PIPE)",
+"+---------------------------------------------------------------------|                            |"
+];
+
+// --- GAME STATE ---
+let grid = [];
+let player = { x: 7, y: 42, char: '@', steps: 0, grit: START_GRIT };
+let enemies = []; 
+let gameOver = false;
+
+// --- INITIALIZATION ---
+function init() {
+    grid = rawMap.map(row => row.split(''));
+    document.addEventListener('keydown', handleInput);
+    
+    // Touch Controls
+    let touchStartX = 0; let touchStartY = 0;
+    document.addEventListener('touchstart', e => {
+        touchStartX = e.changedTouches[0].screenX;
+        touchStartY = e.changedTouches[0].screenY;
+    }, {passive: false});
+    document.addEventListener('touchend', e => {
+        const diffX = e.changedTouches[0].screenX - touchStartX;
+        const diffY = e.changedTouches[0].screenY - touchStartY;
+        if (Math.abs(diffX) > Math.abs(diffY)) movePlayer(diffX > 0 ? 1 : -1, 0);
+        else movePlayer(0, diffY > 0 ? 1 : -1);
+    }, {passive: false});
+
+    setInterval(gameLoop, TICK_RATE);
+    render();
+}
+
+// --- CORE MECHANICS ---
+function handleInput(e) {
+    if (gameOver) return;
+    let dx = 0; let dy = 0;
+    if (e.key === 'ArrowUp' || e.key === 'w') dy = -1;
+    if (e.key === 'ArrowDown' || e.key === 's') dy = 1;
+    if (e.key === 'ArrowLeft' || e.key === 'a') dx = -1;
+    if (e.key === 'ArrowRight' || e.key === 'd') dx = 1;
+
+    if (dx !== 0 || dy !== 0) {
+        e.preventDefault();
+        movePlayer(dx, dy);
+    }
+}
+
+function movePlayer(dx, dy) {
+    const newX = player.x + dx;
+    const newY = player.y + dy;
+    const tile = getTile(newX, newY);
+    
+    const solidChars = ['|', '+', '=', '[', ']', '{', '}', ')', '(', '/', '\\', '_', '.', ':', ';', '~', '-', 'p', 'q', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', "'", 'm', '?', '@'];
+    const passable = [' ', 'v', 'o', 'x', 'v'];
+    
+    let isSolid = solidChars.includes(tile);
+    
+    // ZONES
+    // 1. Middle Alley Tiled Floor
+    if (newY >= 40 && newY <= 48) {
+        if (newX > 4 && newX < 85) {
+             if (tile === '+' || tile === '|' || tile === '-') isSolid = false;
+        }
+    }
+
+    // 2. Bottom Tiled Floor Area
+    if (newY >= 52 && newY <= 56) {
+        if (newX > 4 && newX < 90) { 
+            if (tile === '+' || tile === '|' || tile === '-') isSolid = false;
+        }
+    }
+
+    // 3. Fridge Entrance Tiles
+    if (newY >= 22 && newY <= 24) {
+        // Fridge (Left)
+        if (newX > 4 && newX < 26) {
+             if (tile === '+' || tile === '|' || tile === '-') isSolid = false;
+        }
+        // Dry Storage Entrance (Right)
+        if (newX > 35 && newX < 90) {
+             if (tile === '+' || tile === '|' || tile === '-') isSolid = false;
+        }
+    }
+    
+    if (tile === 'v' || tile === 'o') isSolid = false;
+    
+    if (isSolid && !passable.includes(tile)) return;
+    if (tile === '#') return;
+
+    if (checkHazard(newX, newY)) {
+        player.grit -= 10;
+        updateStatus("OUCH! HEAT!", "danger");
+    }
+
+    player.x = newX;
+    player.y = newY;
+    player.steps++;
+    if (player.steps % MOVE_COST_RATE === 0) player.grit--;
+
+    if (newY >= 58 && newX >= 70) {
+        gameOver = true;
+        updateStatus("LEVEL COMPLETE! YOU ESCAPED!", "safe");
+        document.getElementById('game-container').style.borderColor = "gold";
+    }
+
+    render();
+}
+
+function checkHazard(x, y) {
+    if (y >= 33 && y <= 35 && x < 80) return true; 
+    return false;
+}
+
+function gameLoop() {
+    if (gameOver) return;
+    if (player.grit <= 0) {
+        player.grit = 0;
+        gameOver = true;
+        updateStatus("THE DREAM ENDS (STARVED)", "danger");
+    }
+
+    render();
+}
+
+function getTile(x, y) {
+    if (y < 0 || y >= grid.length || x < 0 || x >= grid[0].length) return '#';
+    return grid[y][x];
+}
+
+function updateStatus(msg, type) {
+    const el = document.getElementById('status-display');
+    const box = el.parentElement;
+    el.innerText = msg;
+    box.className = "stat-box " + (type || "");
+    
+    if (type === "danger") {
+        document.body.style.backgroundColor = "#220000";
+        setTimeout(() => document.body.style.backgroundColor = "#111", 200);
+    }
+}
+
+// --- VISUAL ENGINE ---
+function render() {
+    const displayGrid = JSON.parse(JSON.stringify(grid)); 
+    
+    // Draw Player
+    if (displayGrid[player.y] && displayGrid[player.y][player.x]) {
+        displayGrid[player.y][player.x] = `<span class="player">@</span>`;
+    }
+    
+    // Inject Drain Pipe Animation
+    for(let i=46; i<=57; i++) {
+        try {
+            if (displayGrid[i][70] === '|') {
+                displayGrid[i][70] = `<span class="drain-pipe">|</span>`;
+            }
+        } catch(err) {}
+    }
+    
+    // --- COLORING SCANNERS ---
+
+    // 1. Dry Storage Shelf 1 (Top) - Sacks & Bottles
+    // Rows 5-11
+    for(let y=5; y<=11; y++) {
+        for(let x=43; x<=89; x++) { // Wide scan for top shelf
+            if (!displayGrid[y] || !displayGrid[y][x]) continue;
+            const char = displayGrid[y][x];
+            
+            // Sacks (Rice/Flour) - Beige
+            if (['/', '\\', '(', ')', 'R', 'F', '_', '-'].includes(char) && x < 63) {
+                 displayGrid[y][x] = `<span class="food">${char}</span>`;
+            }
+            // Bottles (Item 1 & 2) - Yellow
+            else if (['.', '-', ':', '|', "'", '_', ')', '(', '/'].includes(char) && x >= 63 && x < 81) {
+                 displayGrid[y][x] = `<span class="bottle">${char}</span>`;
+            }
+            // Spices - Green/Red
+            else if (['{', '}', ':', 'S', 'M', '_'].includes(char) && x >= 81) {
+                 displayGrid[y][x] = `<span class="veg">${char}</span>`;
+            }
+        }
+    }
+
+    // 2. Dry Storage Shelf 2 (Bottom) - Cans, Boxes, Jars
+    // Rows 13-19 (Scans from y=13 to cover jar tops)
+    for(let y=13; y<=19; y++) {
+        for(let x=43; x<=92; x++) {
+            if (!displayGrid[y] || !displayGrid[y][x]) continue;
+            const char = displayGrid[y][x];
+            
+            // Cans - Metal/Blue
+            if (['(', ')', '_'].includes(char) && x < 62) {
+                 displayGrid[y][x] = `<span class="metal">${char}</span>`;
+            }
+            // Bottles/Jars (Item 3, 4, 5) - Yellow
+            else if (x >= 62) {
+                 displayGrid[y][x] = `<span class="bottle">${char}</span>`;
+            }
+        }
+    }
+
+    // 3. Fridge Contents (Meat/Cheese)
+    for(let y=5; y<=18; y++) {
+        for(let x=6; x<=21; x++) {
+            if (!displayGrid[y] || !displayGrid[y][x]) continue;
+            const char = displayGrid[y][x];
+            
+            // Meat Patterns
+            if (['S', 'U', '@', '/', '\\'].includes(char) || (char === '|' && y > 6 && y < 16)) {
+               displayGrid[y][x] = `<span class="meat">${char}</span>`;
+            }
+            // Hooks
+            if (['?', '|'].includes(char) && y <= 6) {
+               displayGrid[y][x] = `<span class="hook">${char}</span>`;
+            }
+            // Cheese/Food
+            if (['_', '(', ')'].includes(char) && y > 12) {
+               displayGrid[y][x] = `<span class="food">${char}</span>`; 
+            }
+        }
+    }
+
+    let output = displayGrid.map(row => row.join('')).join('\n');
+
+    // --- SYNTAX HIGHLIGHTING & ANIMATION INJECTION ---
+    
+    output = output.replace(/\[==FIRE\]/g, '<span class="fire"></span>');
+    output = output.replace(/\[====GAS====\]/g, '<span class="gas"></span>');
+    output = output.replace(/\[HOT!!\]/g, '<span class="heat"></span>');
+
+    output = output.replace(/_\|\|_/g, '<span class="chop">_||_</span>');
+    output = output.replace(/\( @@@\)/g, '(<span class="sauce-anim"> @@@</span>)');
+
+    output = output.replace(/\[====\]/g, '<span class="metal">[====]</span>');
+    output = output.replace(/\[===\]/g, '<span class="metal">[===]</span>');
+    output = output.replace(/\[=====\]/g, '<span class="metal">[=====]</span>');
+    
+    output = output.replace(/\[\|\^\^\|\]/g, '<span class="food">[|^^|]</span>'); 
+    output = output.replace(/\[\(@\)\]/g, '<span class="veg">[(@)]</span>'); 
+    output = output.replace(/\[\~@@\~\]/g, '<span class="meat">[~@@~]</span>'); 
+    output = output.replace(/\[<>< \]/g, '<span class="food">[<>< ]</span>'); 
+
+    const foodItems = ["RICE", "FLOUR", "SPICE", "MSG", "CANS", "BOX", "PLATES"];
+    foodItems.forEach(item => {
+        const regex = new RegExp(`\\[${item}\\]`, 'g');
+        output = output.replace(regex, `<span class="food">[${item}]</span>`);
+    });
+    
+    output = output.replace(/\[VEG\]/g, '<span class="veg">[VEG]</span>');
+    output = output.replace(/\(Veg \)/g, '<span class="veg">(Veg )</span>');
+    output = output.replace(/\( vvv\)/g, '(<span class="veg"> vvv</span>)');
+    
+    output = output.replace(/\[MEAT\]/g, '<span class="meat">[MEAT]</span>');
+    output = output.replace(/\(Meat\)/g, '<span class="meat">(Meat)</span>');
+
+    // Animated Water Puddle
+    output = output.replace(/\( ~~~ ~~~ ~~~ \)/g, '<span class="water-leak"></span>');
+    
+    // Smoke/Steam Animation
+    output = output.replace(/\(  \)/g, '<span class="smoke-anim">(  )</span>'); 
+    output = output.replace(/\)\(/g, '<span class="smoke-anim">)(</span>'); 
+
+    output = output.replace(/\(CHEF PATROL\)/g, '<span class="npc">(CHEF PATROL)</span>');
+    
+    // Walls and Tiles
+    output = output.replace(/\+/g, '<span class="wall">+</span>');
+    
+    document.getElementById('game-stage').innerHTML = output;
+    document.getElementById('grit-display').innerText = player.grit;
+    
+    if (player.grit < 10) document.getElementById('grit-display').parentElement.className = "stat-box danger grit-warning";
+}
+
+init();
+</script>
+
+</body>
+</html>
