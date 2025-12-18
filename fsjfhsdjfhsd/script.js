@@ -7,15 +7,14 @@ document.addEventListener("DOMContentLoaded", function () {
   const lightButton = document.getElementById("lightButton");
   const waterButton = document.getElementById("waterButton");
   const tactileButton = document.getElementById("tactileButton");
-  const progressBar = document.getElementById("progress-bar"); // Progress bar showing interaction completeness
-  const stageDisplay = document.getElementById("stage"); // Displays current growth stage
-  const plantImage = document.getElementById("plant"); // Plant image that updates with growth stages
-  const deathModal = document.getElementById("deathModal"); // Modal triggered if plant "dies"
-  const resetButton = document.getElementById("resetButton"); // Reset game button
-  const completionModal = document.getElementById("completionModal"); // Modal for end of game (max stage reached)
+  const progressBar = document.getElementById("progress-bar"); 
+  const stageDisplay = document.getElementById("stage"); 
+  const plantImage = document.getElementById("plant"); 
+  const deathModal = document.getElementById("deathModal"); 
+  const resetButton = document.getElementById("resetButton");
+  const completionModal = document.getElementById("completionModal");
   const closeCompletionModal = document.getElementById("closeCompletionModal");
 
-   // ASCII art for each stage
   const asciiArts = [
     `<pre>
 #o#

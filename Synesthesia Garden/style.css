@@ -1,0 +1,165 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #e0f2f7; 
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.game-container {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    width: 100%;
+    max-width: 700px;
+    text-align: center;
+}
+
+h1 { color: #4a4a4a; margin-bottom: 10px; }
+.description { color: #555; margin-bottom: 15px; font-style: italic; line-height: 1.4; }
+
+/* Stressor/Tracker Styling */
+.current-conditions {
+    text-align: left;
+    margin-bottom: 15px;
+    border: 1px solid #cceeff;
+    border-radius: 8px;
+    padding: 10px;
+    background-color: #f0f8ff;
+}
+.current-conditions h3 { margin-top: 0; margin-bottom: 5px; color: #2b6cb0; }
+.tracker-data, .target-data { display: flex; flex-wrap: wrap; justify-content: space-around; margin-bottom: 10px; }
+.tracker-data div, .target-data div { padding: 5px 10px; border-radius: 4px; font-size: 1.0em; font-weight: bold; color: #333; }
+.target-data div { font-weight: normal; font-style: italic; font-size: 0.9em; color: #666; }
+
+/* Tool/Button Styling */
+.catalysts-available {
+    text-align: left;
+    margin-bottom: 20px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 10px;
+    background-color: #fcfcfc;
+}
+.catalysts-available h3 { margin-top: 0; margin-bottom: 10px; color: #6a5acd; }
+
+.catalyst-actions-row {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+.btn-mode {
+    padding: 10px 15px;
+    background-color: #ccc;
+    color: #333;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+.btn-mode.active {
+    background-color: #6a5acd; /* Primary Action Color */
+    color: white;
+}
+
+.tool-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr); /* Exactly 5 columns */
+    gap: 10px;
+    justify-content: center;
+}
+
+.catalyst-item {
+    background-color: #f5f5f5;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    height: 100%; /* Ensure uniform height */
+}
+
+.catalyst-item h4 { margin: 0 0 5px 0; font-size: 1.1em; }
+.catalyst-item p { margin: 0; font-size: 0.8em; min-height: 30px; }
+
+.btn-tool-action {
+    margin-top: auto; /* Push button to the bottom */
+    width: 100%;
+    padding: 8px 5px;
+    font-size: 0.85em;
+    background-color: #6a5acd; /* Default Tool color */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.catalyst-item.decoded .btn-tool-action { 
+    background-color: #2e8b57; /* Green when decoded */
+}
+
+.catalyst-item.used { 
+    opacity: 0.4; 
+    pointer-events: none; 
+    background-color: #e0e0e0;
+}
+.catalyst-item.unavailable { 
+    visibility: hidden; /* Hide unused tool columns */
+}
+
+
+.game-controls {
+    margin-top: 20px;
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+.game-controls button {
+    padding: 12px 20px;
+    background-color: #6a5acd;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#checkEnvButton { background-color: #ff9800; }
+#advanceButton { background-color: #2e8b57; }
+#restartButton { background-color: #f44336; }
+
+/* Output Styling */
+.game-output {
+    background-color: #f8f8f8;
+    border: 1px solid #c8e6c9; 
+    border-radius: 8px;
+    padding: 15px;
+    min-height: 150px;
+    max-height: 300px;
+    overflow-y: auto;
+    text-align: left;
+    margin-bottom: 20px;
+    white-space: pre-wrap; 
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.9em;
+    color: #444;
+}
+
+.game-output .highlight { font-weight: bold; color: #2e8b57; }
+.moves-left { margin-top: 10px; font-weight: bold; color: #6a5acd; }
+
+/* Hide unnecessary elements at the start */
+.catalyst-actions-row, .tool-grid {
+    display: flex; /* Override hidden status for tool containers */
+}

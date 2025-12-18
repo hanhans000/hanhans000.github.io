@@ -1,0 +1,3391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lil' Strong One</title>
+    <!-- Fonts: Keep VT323 for game elements, new fonts for UI -->
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link href="https://fonts.cdnfonts.com/css/im-fell-dw-pica" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Dancing+Script:wght@700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Arvo:wght@400;700&display=swap');
+        @font-face {
+            font-family: 'Archetype';
+            src: url('https://fonts.googleapis.com/css2?family=Arvo:wght@400;700') format('woff2');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Aaux Next Ultra';
+            src: url('https://fonts.googleapis.com/css2?family=Oswald:wght@700') format('woff2');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Receipt Narrow';
+            src: url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono') format('woff2');
+            font-weight: normal;
+            font-style: normal;
+        }
+    </style>
+    <style>
+        :root {
+            /* GLOBAL BASE */
+            --bg-color: #000000;
+            --grid-bg: #000000;
+            
+            /* DYNAMIC THEME COLORS (Defaults) */
+            --dominant-color: #ffe600; /* Yellow default */
+            --secondary-color: #ffffff;
+            --danger-color: #ff3333;
+            --safe-color: #00ff66;
+            
+            /* Fonts */
+            --font-pixel: 'VT323', monospace;              /* KEEP FOR GAME ELEMENTS (tiles, grid, characters) */
+            --font-ui-1: 'Arvo', serif;                    /* Archetype alternative for UI */
+            --font-ui-2: 'Oswald', sans-serif;             /* Aaux Next Ultra alternative for UI */
+            --font-ui-3: 'IM Fell DW Pica', serif;         /* IM FELL DW Pica Italic for UI */
+            --font-ui-4: 'Share Tech Mono', monospace;     /* Receipt Narrow alternative for UI */
+            
+            /* Entity Colors (Will update with theme) */
+            --floor-dim: #333333;
+        }
+        
+        /* STAGE 1 THEME: "The Union" (Yellow Sticker) */
+        body.theme-1 {
+            --dominant-color: #FFE600; /* Bright Sticker Yellow */
+            --secondary-color: #ffffff;
+            --danger-color: #FF2200;
+            --floor-dim: #332200;
+            --deco-text: #AA9900;
+        }
+
+        /* STAGE 2 THEME: "Digitized Horror" (Purple/Pink Sticker) */
+        body.theme-2 {
+            --dominant-color: #D600FF; /* Neon Purple */
+            --secondary-color: #FF0099; /* Hot Pink accents */
+            --danger-color: #FF0000;
+            --floor-dim: #220033;
+            --deco-text: #9900CC;
+        }
+
+        /* STAGE 3 THEME: "Roach Dance" (Hot Pink Sticker) */
+        body.theme-3 {
+            --dominant-color: #FF0055; /* Intense Pink */
+            --secondary-color: #FF99CC;
+            --danger-color: #FFFFFF; /* High contrast danger */
+            --floor-dim: #330011;
+            --deco-text: #CC0044;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--dominant-color);
+            font-family: var(--font-ui-4); /* Receipt Narrow for UI */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* --- CRT EFFECT --- */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                rgba(0,0,0,0),
+                rgba(0,0,0,0) 50%,
+                rgba(0,0,0,0.3) 50%,
+                rgba(0,0,0,0.3)
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        .vignette {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            box-shadow: inset 0 0 150px rgba(0,0,0,0.8);
+            pointer-events: none;
+            z-index: 11;
+        }
+
+        /* --- UI LAYOUT --- */
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            max-width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        header {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            border-bottom: 4px double var(--dominant-color);
+            padding-bottom: 5px;
+            flex-shrink: 0;
+            position: relative;
+        }
+        
+        .title {
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+            font-size: 32px;
+            line-height: 1;
+        }
+        
+        .title-lil {
+            font-family: var(--font-title-bold);
+            font-size: 30px;
+            font-weight: 900;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #0066ff; /* Deep blue like image */
+            text-shadow: 
+                3px 3px 0px #000,
+                1px 1px 2px rgba(0, 0, 0, 0.8),
+                0 0 15px rgba(0, 102, 255, 0.6);
+            position: relative;
+            filter: contrast(1.2);
+        }
+        
+        .title-lil::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #000;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+        
+        .title-strong {
+            font-family: var(--font-title-script);
+            font-size: 42px;
+            font-weight: 700;
+            font-style: italic;
+            color: #000;
+            text-shadow: 
+                2px 2px 0px rgba(0, 0, 0, 0.9),
+                0 0 8px rgba(255, 20, 147, 0.4);
+            transform: rotate(-2deg);
+            display: inline-block;
+            margin: 0 2px;
+            filter: contrast(1.1);
+        }
+        
+        .title-one {
+            font-family: var(--font-title-bold);
+            font-size: 30px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #000;
+            text-shadow: 
+                3px 3px 0px rgba(0, 102, 255, 0.4),
+                1px 1px 2px rgba(0, 0, 0, 0.8);
+            filter: contrast(1.2);
+        }
+
+        .stat-box {
+            display: flex;
+            gap: 15px;
+            font-family: var(--font-ui-4); /* Receipt Narrow style */
+            font-size: 20px;
+            align-items: center;
+        }
+
+        .stat {
+            font-weight: bold;
+        }
+
+        #volume-display {
+            font-size: 14px;
+            font-weight: 500;
+            opacity: 0.8;
+        }
+
+        /* FULL SCREEN BUTTON */
+        #btn-fullscreen {
+            background: transparent;
+            border: 1px solid var(--dominant-color);
+            color: var(--dominant-color);
+            font-family: var(--font-pixel);
+            font-size: 18px;
+            cursor: pointer;
+            padding: 0 5px;
+            margin-left: 10px;
+            height: 24px;
+            line-height: 22px;
+            z-index: 102; /* Above modal overlay */
+            position: relative;
+        }
+        #btn-fullscreen:hover {
+            background: var(--dominant-color);
+            color: var(--bg-color);
+        }
+
+        /* --- LAYOUT WRAPPER --- */
+        #layout-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-grow: 1;
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* The Middle Row */
+        #mid-row {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: stretch;
+            flex-grow: 1; 
+            width: 100%;
+            max-height: 100%;
+            overflow: hidden; 
+        }
+
+        /* --- SCROLL WRAPPER --- */
+        #viewport {
+            display: block; 
+            width: fit-content;
+            max-width: 100%;
+            max-height: 100%;
+            margin: 0; 
+            border: 2px solid var(--dominant-color);
+            overflow: auto;
+            position: relative;
+            scrollbar-width: thin;
+            scrollbar-color: var(--dominant-color) var(--bg-color);
+            flex-shrink: 1;
+        }
+
+        /* --- THE GRID --- */
+        #grid-container {
+            position: relative;
+            background-color: var(--grid-bg);
+            /* Double border for that "sticker" look */
+            border: 2px solid var(--bg-color); 
+            outline: 2px solid var(--dominant-color);
+            display: grid;
+            gap: 0px; 
+            width: fit-content; 
+            margin: 0;
+        }
+
+        .tile {
+            width: 20px; /* Slightly larger for VT323 readability */
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px; /* Large pixel font */
+            font-family: var(--font-pixel); /* KEEP FOR GAME CHARACTERS */
+            cursor: default;
+            line-height: 20px;
+            position: relative; 
+            white-space: pre;
+        }
+
+        /* --- ENTITY COLORS --- */
+        .tile.floor { color: var(--floor-dim); z-index: 1; font-weight: normal; }
+        
+        .tile.wall { 
+            color: var(--dominant-color); 
+            background-color: var(--floor-dim);
+            font-weight: bold;
+            z-index: 5;
+        }
+
+        .tile.player { 
+            color: var(--bg-color); 
+            background-color: var(--safe-color);
+            font-weight: 900;
+            z-index: 10; 
+            border-radius: 2px;
+        }
+
+        .tile.enemy {
+            color: var(--bg-color);
+            background-color: var(--danger-color);
+            font-weight: bold;
+            z-index: 8;
+        }
+        
+        .tile.ant {
+            color: var(--danger-color);
+            font-weight: 900;
+            z-index: 8;
+            text-shadow: 1px 1px 0 #000;
+        }
+
+        .tile.mouse {
+            color: var(--dominant-color); /* Match theme */
+            background-color: #222;
+            font-weight: bold;
+            z-index: 9;
+        }
+        
+        .tile.human {
+            color: var(--secondary-color);
+            font-weight: bold;
+            z-index: 9;
+        }
+
+        /* Scooter Style */
+        .tile.scooter {
+            color: var(--secondary-color);
+            font-weight: 900;
+            z-index: 15;
+            background-color: rgba(255,255,255, 0.1);
+        }
+
+        .tile.food { 
+            color: var(--dominant-color); 
+            font-weight: bold;
+            z-index: 5;
+            animation: blink 1s infinite; /* All food blinks */
+        }
+        
+        .tile.food.crumb {
+             animation: blink 1s infinite;
+        }
+
+        .tile.poison { 
+            color: var(--danger-color); 
+            opacity: 0.7;
+            z-index: 5;
+        }
+
+        .tile.glue { 
+            color: var(--secondary-color); 
+            opacity: 0.5;
+            text-decoration: line-through;
+            z-index: 2;
+        }
+        
+        .tile.hiding-spot {
+            color: var(--dominant-color);
+            background-color: #111;
+            border: 1px dashed var(--dominant-color);
+            z-index: 2;
+        }
+
+        .tile.furniture {
+            color: var(--floor-dim); 
+            background-color: var(--dominant-color);
+            z-index: 4;
+        }
+
+        .tile.bed {
+            color: var(--bg-color);
+            background-color: var(--dominant-color);
+            font-weight: bold;
+            z-index: 6;
+        }
+
+        .tile.exit { 
+            background-color: var(--safe-color);
+            color: black;
+            font-weight: bold;
+            z-index: 5;
+        }
+
+        /* --- SCOOTER OVERLAY --- */
+        .scooter-sprite {
+            position: absolute;
+            color: #000; /* Black Text */
+            background-color: var(--dominant-color); /* Solid Block Background */
+            font-weight: 900;
+            z-index: 20;
+            pointer-events: none;
+            white-space: pre;
+            font-family: var(--font-pixel);
+            line-height: 1;
+            
+            /* --- SCOOTER HIGHLIGHT (Requested Block Style) --- */
+            opacity: 0.85;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.5);
+        }
+
+        /* --- HAZARD OVERLAYS --- */
+        .tile.warning {
+            background-color: var(--danger-color);
+            opacity: 0.4;
+            color: var(--white);
+            animation: blink-fast 0.5s infinite;
+        }
+        
+        .tile.warning.spray-warn {
+            background-color: #00FF00; /* Green Warning for Spray */
+        }
+
+        .tile.impact {
+            background-color: var(--secondary-color);
+            color: var(--danger-color);
+            font-weight: 900;
+            animation: shake 0.2s;
+            z-index: 20; 
+        }
+        
+        /* Blocked Impact (Hiding) */
+        .tile.impact.blocked {
+            background-color: transparent !important;
+            color: #555 !important; /* Greyed out */
+            opacity: 0.6;
+            animation: none; /* No shake */
+            z-index: 15; /* Below normal impact */
+            border: 1px dashed #333;
+        }
+        
+        .tile.spray-impact {
+            background-color: rgba(0, 255, 0, 0.4);
+            color: #ccff00;
+            font-weight: bold;
+            animation: blink-fast 0.2s infinite;
+            z-index: 20;
+        }
+        
+        /* --- LOG CONSOLE --- */
+        #log-console {
+            width: 100%;
+            max-width: 800px;
+            height: 100px; 
+            background-color: #050505;
+            border-top: 4px double var(--dominant-color);
+            padding: 10px;
+            font-size: 16px;
+            overflow-y: auto;
+            color: #ff8ec7;
+            font-family: var(--font-chat); /* Clean sans-serif for chat */
+            font-weight: 400;
+            margin-bottom: 5px;
+            white-space: pre-wrap;
+            flex-shrink: 0;
+            
+            /* Stack messages from bottom */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+        
+        .log-entry { 
+            margin-bottom: 3px; 
+            border-bottom: 1px dotted #333;
+            padding-bottom: 2px;
+        }
+        .log-entry.new { color: var(--safe-color); }
+        .log-entry.danger { color: var(--danger-color); font-weight: bold; }
+        .log-entry.info { color: var(--dominant-color); }
+
+        /* --- SKIP BUTTON (Sticker Style) --- */
+        #btn-skip {
+            width: 100%;
+            max-width: 300px;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #fff;
+            border: 2px dashed #000;
+            color: #000;
+            font-family: var(--font-serif);
+            font-weight: 900;
+            font-size: 16px;
+            cursor: pointer;
+            text-transform: uppercase;
+            flex-shrink: 0;
+            
+            /* Sticker aesthetics */
+            transform: rotate(-1deg);
+            box-shadow: 3px 3px 0px var(--dominant-color);
+            transition: transform 0.1s;
+        }
+        #btn-skip:hover {
+            transform: rotate(1deg) scale(1.02);
+            background: var(--dominant-color);
+            color: #000;
+        }
+        #btn-skip:active {
+            background: #ccc;
+        }
+
+        /* --- CONTROLS --- */
+        #mobile-controls {
+            display: none; 
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            width: 100%;
+            max-width: 300px;
+            flex-shrink: 0;
+            margin-bottom: 10px;
+        }
+
+        .control-btn {
+            background: #222;
+            border: 2px solid var(--dominant-color);
+            color: var(--dominant-color);
+            padding: 10px;
+            border-radius: 0;
+            text-align: center;
+            font-size: 24px;
+            font-family: var(--font-ui-4); /* Receipt Narrow style */
+            touch-action: manipulation;
+        }
+        
+        .control-btn:active { background: var(--dominant-color); color: black; }
+
+        @media (max-width: 768px) {
+            #mobile-controls { display: grid; }
+            .tile { width: 14px; height: 14px; font-size: 14px; line-height: 14px; } 
+        }
+
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        @keyframes blink-fast { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        @keyframes shake { 0% { transform: translate(1px, 1px); } 50% { transform: translate(-1px, -1px); } 100% { transform: translate(0, 0); } }
+        @keyframes neon-flicker {
+            0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { text-shadow: 0 0 5px currentColor, 0 0 10px currentColor; opacity: 1; }
+            20%, 24%, 55% { text-shadow: none; opacity: 0.5; }
+        }
+
+        /* --- MODALS (Game Over, Start, Win) --- */
+        .modal-overlay {
+            display: none; /* Hidden by default */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            text-align: center;
+            font-family: var(--font-ui-4); /* Receipt Narrow style */
+            white-space: pre;
+            overflow: hidden; /* Prevent scrolling */
+        }
+        
+        .modal-content {
+            border: 6px double var(--dominant-color);
+            padding: 20px;
+            background: transparent; /* No background highlight */
+            max-width: 90%;
+            max-height: 85vh;
+            overflow: visible; /* general default; specific modals can override */
+        }
+        
+        #modal-title {
+            font-family: var(--font-ui-2); /* Aaux Next Ultra style */
+            font-size: 32px;
+            text-transform: uppercase;
+            margin: 0 0 10px 0;
+        }
+
+        .modal-art {
+            color: var(--dominant-color);
+            font-weight: bold;
+            margin: 20px 0;
+            font-size: 14px;
+            line-height: 1.1;
+        }
+        
+        .modal-art.float {
+            animation: float-up-down 4s steps(8, end) infinite;
+        }
+
+        /* Extra drip animation under the cockroach on HATCH */
+        .modal-drip {
+            color: var(--dominant-color);
+            font-family: var(--font-pixel);
+            font-size: 16px;
+            line-height: 1;
+            height: 5em;
+            overflow: hidden;
+            margin-top: -30px; /* pull egg even tighter under roach belly */
+            white-space: pre;
+        }
+
+        .modal-drip.active {
+            animation: drip-fall 0.9s ease-out forwards;
+        }
+        
+        @keyframes drip-fall {
+            0%   { transform: translateY(-5px); opacity: 0; }
+            20%  { opacity: 1; }
+            100% { transform: translateY(60px); opacity: 0; }
+        }
+        
+        @keyframes float-up-down {
+            0% { transform: translateY(0px); }
+            12.5% { transform: translateY(-14px); }  /* Up one line (font-size 14px) */
+            25% { transform: translateY(-28px); }    /* Up two lines */
+            37.5% { transform: translateY(-14px); }  /* Down one line */
+            50% { transform: translateY(0px); }      /* Back to start */
+            62.5% { transform: translateY(14px); }   /* Down one line */
+            75% { transform: translateY(28px); }     /* Down two lines */
+            87.5% { transform: translateY(14px); }   /* Up one line */
+            100% { transform: translateY(0px); }      /* Back to start */
+        }
+        
+        #modal-text {
+            font-family: var(--font-ui-3); /* IM FELL DW Pica Italic style */
+            font-size: 24px;
+            color: var(--secondary-color);
+            transform: rotate(-2deg);
+            font-style: italic;
+        }
+        
+        #modal-text.reborn-text {
+            transform: none;
+            font-size: 26px;
+            line-height: 1.6;
+            color: var(--secondary-color);
+        }
+        
+        #modal-text.reborn-text .word-died {
+            font-family: var(--font-ui-4); /* Receipt Narrow style */
+            font-size: 34px;
+            color: #ff3333;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: 2px 2px 0px rgba(255, 51, 51, 0.6), 0 0 15px rgba(255, 51, 51, 0.4);
+            font-weight: bold;
+        }
+        
+        #modal-text.reborn-text .word-reborn {
+            font-family: var(--font-ui-3); /* IM FELL DW Pica Italic style */
+            font-size: 38px;
+            color: var(--dominant-color);
+            text-shadow: 0 0 15px currentColor, 2px 2px 0px rgba(0, 0, 0, 0.5);
+            transform: rotate(-4deg);
+            display: inline-block;
+            margin: 0 5px;
+            font-style: italic;
+        }
+        
+        #modal-text.reborn-text .word-cockroach {
+            font-family: var(--font-ui-1); /* Archetype style */
+            font-size: 32px;
+            font-weight: 900;
+            color: var(--dominant-color);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 3px 3px 0px rgba(0, 0, 0, 0.9), 0 0 10px currentColor;
+            display: inline-block;
+        }
+        
+        #modal-text.reborn-text .word-connector {
+            font-family: var(--font-ui-4); /* Receipt Narrow style */
+            font-size: 20px;
+            color: var(--secondary-color);
+            margin: 0 3px;
+        }
+
+        button.modal-btn {
+            background: var(--dominant-color);
+            color: black;
+            border: none;
+            padding: 10px 20px;
+            font-family: var(--font-ui-2); /* Aaux Next Ultra style */
+            font-weight: bold;
+            font-size: 24px;
+            margin-top: 20px;
+            cursor: pointer;
+            text-transform: uppercase;
+            border: 2px solid white;
+        }
+        
+        button.modal-btn:hover {
+            transform: scale(1.1);
+        }
+
+        /* --- DECORATIVE SCENES --- */
+        .scene-container {
+            font-family: var(--font-pixel);
+            font-size: 16px;
+            line-height: 1.0em;
+            color: var(--deco-text);
+            font-weight: bold;
+            background: #050505;
+            overflow: hidden;
+            position: relative;
+            flex-shrink: 0;
+            text-align: left;
+        }
+
+        #street-scene, #market-scene {
+            width: 100vw;
+            text-align: center;
+            margin-left: -10px;
+            margin-right: -10px;
+        }
+        
+        /* RESTORED HEIGHTS */
+        #street-scene {
+            height: 240px; 
+            border-bottom: 2px solid var(--dominant-color);
+            margin-bottom: 10px;
+        }
+
+        #market-scene {
+            height: 160px; 
+            border-top: 2px solid var(--dominant-color);
+            margin-top: 10px;
+            margin-bottom: 5px;
+        }
+
+        #left-scene, #right-scene {
+            height: 100%; 
+            min-width: 140px; 
+            max-width: 140px;
+            display: none; 
+            flex-direction: column;
+            justify-content: flex-start;
+            border-right: 2px solid var(--dominant-color);
+        }
+        
+        #right-scene {
+            border-right: none;
+            border-left: 2px solid var(--dominant-color);
+        }
+
+        .map {
+            display: inline-block;
+            white-space: pre;
+            position: relative; 
+            left: 0;
+            top: 10px;
+            transition: transform 0.2s ease-out; 
+        }
+        
+        .map.vertical {
+            top: 0;
+            display: block;
+        }
+
+        /* --- ANIMATIONS & ASSETS --- */
+        
+        /* Water Ripple */
+        .water { display: inline-block; font-weight: bold; }
+        .water::after { content: "~~~~~~~~"; animation: rippleAnim 2s infinite linear; }
+        @keyframes rippleAnim {
+            0%   { color: #0088ff; }
+            50%  { color: #00ffff; text-shadow: 0 0 3px #0088ff; }
+            100% { color: #0088ff; }
+        }
+
+        /* Swimming Fish */
+        .fish { display: inline-block; font-weight: bold; color: #add8e6; }
+        .fish::after { content: "><(((('>"; animation: swimAnim 1s infinite ease-in-out alternate; }
+        @keyframes swimAnim {
+            0%   { transform: translateY(0); }
+            100% { transform: translateY(-3px); }
+        }
+
+        /* Blood Pulse */
+        .blood { display: inline-block; font-weight: bold; }
+        .blood::after { content: "~BLOOD~"; animation: bloodAnim 3s infinite ease-in-out; }
+        @keyframes bloodAnim {
+            0%   { color: #550000; }
+            50%  { color: #aa0000; text-shadow: 0 0 5px #550000; }
+            100% { color: #550000; }
+        }
+
+        /* Blood Drop */
+        .drop { display: inline-block; color: #ff0000; font-weight: bold; animation: dropAnim 0.8s infinite linear; }
+        @keyframes dropAnim {
+            0% { transform: translateY(0); opacity: 1; }
+            80% { opacity: 1; }
+            100% { transform: translateY(10px); opacity: 0; }
+        }
+
+        /* Flopping Fish */
+        .flopper { display: inline-block; color: #88ccff; font-weight: bold; animation: flopAnim 0.15s infinite alternate; }
+        @keyframes flopAnim {
+            0% { transform: rotate(-30deg) translateY(0); }
+            50% { transform: rotate(0deg) translateY(-2px); }
+            100% { transform: rotate(30deg) translateY(0); }
+        }
+
+        /* Neon Sign */
+        .neon { color: var(--secondary-color); font-weight: bold; animation: neonAnim 0.1s infinite alternate; }
+        @keyframes neonAnim {
+            0%   { opacity: 1; }
+            100% { opacity: 0.8; }
+        }
+
+        /* Vegetable Sway */
+        .veg { display: inline-block; color: #4f4; transform-origin: bottom center; animation: swayAnim 3s infinite ease-in-out; }
+        @keyframes swayAnim {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(5deg); }
+        }
+
+        /* Ice Sparkle */
+        .ice { color: #cceeff; animation: sparkleAnim 1.5s infinite alternate; }
+        .ice-static { color: #cceeff; font-weight: bold; text-shadow: 0 0 2px #fff; } 
+        @keyframes sparkleAnim {
+            0% { text-shadow: 0 0 0 #fff; opacity: 0.8; }
+            100% { text-shadow: 0 0 4px #fff; opacity: 1; color: #fff; }
+        }
+
+        /* Crab Fight */
+        .crab-left { display: inline-block; color: #d66; animation: fightLeft 0.5s infinite cubic-bezier(.36,.07,.19,.97) alternate; }
+        .crab-right { display: inline-block; color: #d66; animation: fightRight 0.5s infinite cubic-bezier(.36,.07,.19,.97) alternate; }
+
+        @keyframes fightLeft {
+            0% { transform: translateX(0) rotate(0deg); }
+            40% { transform: translateX(0) rotate(-5deg); }
+            100% { transform: translateX(4px) rotate(15deg); color: #ff0000; }
+        }
+
+        @keyframes fightRight {
+            0% { transform: translateX(0) rotate(0deg); }
+            40% { transform: translateX(0) rotate(5deg); }
+            100% { transform: translateX(-4px) rotate(-15deg); color: #ff0000; } 
+        }
+
+        .spice { display: inline-block; animation: spiceAnim 4s infinite linear; }
+        @keyframes spiceAnim {
+            0% { color: #ffaa00; }
+            33% { color: #d2691e; }
+            66% { color: #8b4500; }
+            100% { color: #ffaa00; }
+        }
+
+        .durian { color: #ccaa00; font-weight: bold; animation: stinkAnim 2s infinite ease-in-out; }
+        @keyframes stinkAnim {
+            0% { text-shadow: 0 0 0 #ccaa00; }
+            50% { text-shadow: 0 0 8px #554400; color: #ffeeaa; }
+            100% { text-shadow: 0 0 0 #ccaa00; }
+        }
+
+        .sewer { color: #333; font-weight: bold; text-shadow: 0 1px 0 #555; }
+        .steam { display: inline-block; color: #666; opacity: 0; animation: steamAnim 4s infinite linear; }
+        @keyframes steamAnim {
+            0% { transform: translateY(0) scale(1); opacity: 0; }
+            20% { opacity: 0.6; }
+            100% { transform: translateY(-8px) scale(1.5); opacity: 0; }
+        }
+
+        .street-layer {
+            width: 100%;
+            height: 200px;
+            position: relative;
+            overflow: hidden;
+            border-top: 2px dashed #333;
+            margin-top: 10px;
+            color: #555;
+        }
+        
+        .scooter {
+            display: inline-block;
+            color: #5599ff; /* Moped Color */
+            font-weight: bold;
+            position: absolute;
+            top: 20px;
+            transform: scaleX(-1); /* Flip horizontally to face Right */
+            animation: driveLeft 12s linear infinite;
+        }
+
+        @keyframes driveLeft {
+            from { left: 100%; } /* Start off-screen Right */
+            to { left: -600px; } /* Move off-screen Left */
+        }
+
+        .dragon { color: #ff00ff; font-weight: bold; }
+        .melon  { color: #00aa00; font-weight: bold; }
+        .melon-in { color: #ff3333; }
+
+        /* --- STAGE 2 KITCHEN ANIMATIONS --- */
+        .fire { display: inline-block; font-weight: bold; }
+        .fire::after { content: "[  ▲▲  ]"; animation: fireAnim 0.4s infinite steps(1); }
+        @keyframes fireAnim {
+            0%   { content: "[  ▲▲  ]"; color: #ff8800; text-shadow: 0 0 5px #ff4400; }
+            33%  { content: "[ ▲▲▲▲ ]"; color: #ff4400; text-shadow: 0 0 8px #ff0000; }
+            66%  { content: "[  ▲▲  ]"; color: #ffcc00; text-shadow: 0 0 5px #ff8800; }
+        }
+
+        .gas { display: inline-block; font-weight: bold; }
+        .gas::after { content: "[≈≈≈≈≈≈≈≈≈≈≈]"; animation: gasAnim 1.5s infinite steps(1); }
+        @keyframes gasAnim {
+            0%   { content: "[≈≈≈≈≈≈≈≈≈≈≈]"; color: #0088ff; text-shadow: 0 0 2px #0088ff; }
+            50%  { content: "[ ≈≈≈≈≈≈≈≈≈ ]"; color: #00ccff; text-shadow: 0 0 4px #00ccff; }
+        }
+
+        .heat { display: inline-block; font-weight: bold; }
+        .heat::after { content: "[▒▒▒▒▒▒▒]"; animation: heatAnim 2s infinite alternate; }
+        @keyframes heatAnim {
+            0%   { content: "[▒▒▒▒▒▒▒]"; color: #550000; }
+            100% { content: "[███████]"; color: #ff0000; text-shadow: 0 0 10px #aa0000; }
+        }
+
+        .chop { display: inline-block; color: #ccc; }
+        .chop { animation: chopAnim 0.15s infinite alternate; }
+        @keyframes chopAnim {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-3px); }
+        }
+
+        .sauce-anim { display: inline-block; color: #f44; font-weight: bold; }
+        .sauce-anim { animation: sauceAnim 1.5s infinite; }
+        @keyframes sauceAnim {
+            0% { color: #800; text-shadow: none; }
+            50% { color: #f00; text-shadow: 0 0 8px red; }
+            100% { color: #800; text-shadow: none; }
+        }
+
+        .smoke-anim { display: inline-block; color: #888; }
+        .smoke-anim { animation: smokeFloat 2s infinite linear; }
+        @keyframes smokeFloat {
+            0% { opacity: 0.3; transform: translateY(0); text-shadow: 0 0 0 #fff; }
+            50% { opacity: 0.8; transform: translateY(-2px); text-shadow: 0 -2px 4px #fff; }
+            100% { opacity: 0.3; transform: translateY(-4px); text-shadow: 0 -4px 8px #fff; }
+        }
+
+        .water-leak { display: inline-block; width: 15ch; color: #4af; font-weight: bold; vertical-align: top; }
+        .water-leak::after { content: "( ~~~ ~~~ ~~~ )"; animation: waterFlow 1.0s infinite steps(1); }
+        @keyframes waterFlow {
+            0%   { content: "( ~~~ ~~~ ~~~ )"; color: #4af; }
+            25%  { content: "(  ~   ~   ~  )"; color: #4ee; text-shadow: 0 0 5px #0ff; }
+            50%  { content: "( ~ ~ ~ ~ ~ ~ )"; color: #4af; }
+            75%  { content: "(~~  ~~  ~~  ~)"; color: #4ee; text-shadow: 0 0 5px #0ff; }
+        }
+
+        .drain-pipe { display: inline-block; color: #4af; font-weight: bold; text-shadow: 0 0 5px blue; }
+        .drain-pipe { animation: pipeFlow 1.5s infinite linear; }
+        @keyframes pipeFlow {
+            0% { opacity: 0.4; color: #4af; }
+            50% { opacity: 1; color: #aff; text-shadow: 0 0 8px cyan; }
+            100% { opacity: 0.4; color: #4af; }
+        }
+
+        .l3-neon { color: var(--dominant-color); font-weight: bold; text-shadow: 0 0 5px var(--dominant-color); }
+        
+        .l3-water { 
+            color: #00aaff; 
+            text-shadow: 0 0 5px #0ff; 
+            animation: pulseWater 1.5s infinite alternate; 
+        } 
+        .l3-plunge { color: #f00; text-shadow: 0 0 8px red; }
+
+        .l3-rug { 
+            color: var(--secondary-color); 
+            opacity: 0.6; 
+            animation: subtleGlow 4s infinite alternate; 
+        } 
+
+        .l3-bed { color: #fff; background-color: #222; text-shadow: 0 0 5px #fff; } 
+        .l3-bed-frame { color: #555; }
+        
+        .l3-monitor { color: #3f3; text-shadow: 0 0 5px #0ff; animation: monitorFlicker 0.2s infinite alternate; }
+        @keyframes monitorFlicker { 0% { opacity: 1; } 100% { opacity: 0.9; color: #3f3; } }
+
+        .l3-cat { color: var(--secondary-color); text-shadow: 0 0 8px var(--secondary-color); }
+        .cat-art { 
+            color: var(--secondary-color); 
+            animation: catBreath 3s ease-in-out infinite; 
+        }
+
+        .l3-mouse { 
+            color: var(--dominant-color); /* Orange/Brown for a mouse */
+            text-shadow: 0 0 5px var(--dominant-color); 
+            display: inline-block;
+            animation: mouseWiggle 0.5s infinite alternate;
+        }
+
+        @keyframes pulseWater { 
+            0% { opacity: 0.8; } 
+            100% { opacity: 1; text-shadow: 0 0 8px #0ff; }
+        }
+        @keyframes subtleGlow {
+            0% { opacity: 0.6; } 
+            50% { opacity: 0.75; }
+            100% { opacity: 0.6; }
+        }
+        @keyframes catBreath {
+            0% { transform: scaleY(1); opacity: 0.9; } 
+            50% { transform: scaleY(0.98); opacity: 1; }
+            100% { transform: scaleY(1); opacity: 0.9; }
+        }
+        @keyframes mouseWiggle {
+            0% { transform: translateY(0px); } 
+            100% { transform: translateY(-0.5px); }
+        }
+
+        /* --- ASSETS --- */
+        .wall    { color: #444; }
+        .sign    { color: #fff; background-color: #333; padding: 0 2px; }
+        .banana  { color: #ff0; font-weight: bold; } /* Bright Yellow */
+        .meat    { color: #f44; }
+        .mud     { color: #654; } /* The ground texture */
+        .fruit   { color: #fa0; } /* Orange/Citrus color */
+        
+        .staff-only { color: #fff; background-color: #aa0000; font-weight: bold; padding: 0 2px; }
+        .curtain { color: #88ccff; opacity: 0.7; }
+        .dark-alley { background-color: #111; color: #333; }
+        .crate { color: #8b4513; }
+
+    </style>
+</head>
+<body>
+
+    <div class="scanlines"></div>
+    <div class="vignette"></div>
+
+    <div id="game-container">
+        <header>
+            <div class="title">
+                <span class="title-lil">Lil'</span>
+                <span class="title-strong">Strong</span>
+                <span class="title-one">One</span>
+            </div>
+            <div class="stat-box">
+                <div class="stat" id="level-display">L:1</div>
+                <div class="stat" id="grit-display" style="color:var(--safe-green)">GRIT:40</div>
+                <div class="stat" id="volume-display">VOL:100</div>
+                <button id="btn-fullscreen">[⛶]</button>
+            </div>
+        </header>
+
+        <!-- FLEX CONTAINER FOR LAYOUTS -->
+        <div id="layout-wrapper">
+            
+            <!-- STAGE 1 & 2 TOP DECO -->
+            <div id="street-scene" class="scene-container" style="display:none;">
+                <div class="map"></div>
+            </div>
+
+            <!-- MAIN ROW (Includes Side Decos for Stage 2 & 3) -->
+            <div id="mid-row">
+                
+                <!-- LEFT DECO -->
+                <div id="left-scene" class="scene-container">
+                    <div class="map vertical"></div>
+                </div>
+
+                <div id="viewport">
+                    <div id="grid-container"></div>
+                </div>
+
+                <!-- RIGHT DECO -->
+                <div id="right-scene" class="scene-container">
+                    <div class="map vertical"></div>
+                </div>
+            </div>
+
+            <!-- STAGE 1 & 2 BOTTOM DECO -->
+            <div id="market-scene" class="scene-container" style="display:none;">
+                <div class="map"></div>
+            </div>
+
+        </div>
+
+        <div id="log-console">
+            <div class="log-entry">> SYSTEM REBOOT...</div>
+        </div>
+
+        <button id="btn-skip">
+            SKIP LEVEL
+            <span style="display:block; font-size:10px; font-weight:normal;">[FORCE_OVERRIDE_00]</span>
+        </button>
+
+        <div id="mobile-controls">
+            <div></div>
+            <button class="control-btn" id="btn-up">▲</button>
+            <div></div>
+            <button class="control-btn" id="btn-left">◀</button>
+            <button class="control-btn" id="btn-wait">●</button>
+            <button class="control-btn" id="btn-right">▶</button>
+            <div></div>
+            <button class="control-btn" id="btn-down">▼</button>
+            <div></div>
+        </div>
+    </div>
+
+    <!-- MAIN MODAL OVERLAY -->
+    <div id="modal-overlay" class="modal-overlay">
+        <div class="modal-content">
+            <h2 id="modal-title" style="color:var(--danger-color)">TITLE</h2>
+            <div id="modal-art" class="modal-art"></div>
+            <!-- Drip area sits directly under the cockroach art -->
+            <div id="modal-drip" class="modal-drip"></div>
+            <p id="modal-text" style="color:white"></p>
+            <button id="modal-btn" class="modal-btn">ACTION</button>
+        </div>
+    </div>
+
+    <script>
+        // --- CONSTANTS ---
+        const MAX_GRIT = 40.0;
+        const MOVES_PER_HUNGER = 3; 
+        const TILE_SIZE = 22; 
+        
+        // --- AUDIO CONFIG ---
+        // PASTE YOUR AUDIO LINKS HERE IN THE QUOTES
+        const AUDIO_SOURCES = {
+            1: "", // Stage 1 Music URL
+            2: "", // Stage 2 Music URL
+            3: ""  // Stage 3 Music URL
+        };
+        
+        const TILES = {
+            PLAYER: '&',
+            FOOD: '$', 
+            FOOD_CHUNK: 'F', 
+            POISON: 'x',
+            GLUE: '%',
+            EXIT: 'E',
+            WALL: '#',
+            ENEMY: '!',
+            HIDING_SPOT: 'H',
+            MOUSE: 'm',
+            BED: 'B',
+            FURNITURE: 'F'
+        };
+
+        // --- STAGE DECORATIONS ---
+        const STAGE_DECO = {
+            1: { // WET MARKET (Horizontal)
+                top: `      (STREET ENTRANCE)
+             ||
+_____________||_________________________________________________________________________________________________________________________________________________________
+________________________________________________________________________________________________________________________________________________________________________
+   .---.                     .---.                                                                                                                                      |
+  ( <span class="sign">$</span> )  [<span class="sign">FRESH CATCH</span>]    ( <span class="sign">$</span> )                                                                                                                            (SERVICE ENTRANCE) |
+   '---'  +-------------+    '---'                                                                                                                                 _____|_____
+    ||    |  /·.¸       |     ||        [<span class="neon">FISH $15</span>]             [<span class="neon">CRAB $28</span>]            [<span class="neon">PORK $12</span>]                                                                | <span class="staff-only">STAFF ONLY</span>|
+    ||    | /¸...¸:·    |     ||        +--------------+        +--------------+       <span class="wall">.---.   .---.   .---.</span>                                                        | ___________ |
+    ||    |             |     ||        | ~  <span class="fish"></span> ~|          |  <span class="crab-left">(V)</span>      <span class="crab-right">(V)</span>  |       <span class="meat">(   ( ) (   ( ) (   ( )</span>                                                        | <span class="curtain">| | | | | |</span> |
+   _||_   | <span class="ice"><span class="flopper">><></span> <span class="flopper">><></span> <span class="flopper">><></span></span> |    _||_      | ~  <span class="fish"></span> ~|          |  <span class="crab-left">(@@)</span>     <span class="crab-right">(@@)</span> |       <span class="meat"> \ <span class="drop">,</span> )   \\ <span class="drop">.</span> )   \\ <span class="drop">'</span> )</span>                                                        | <span class="curtain">| | | | | |</span> |
+  /____\\  +-------------+    /____\\    +--------------+         +--------------+       <span class="meat"> ) (      ) (      ) (</span>                                                        | <span class="curtain">| | | | | |</span> |
+                                                                                      <span class="wall">| |      | |      | |</span>                                                        | <span class="curtain">: : : : : :</span> |
+  <span class="mud">░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░\`-´░░░░░\`-´░░░░░\`-´░░░░░░░</span>                                                        | <span class="curtain">. . . . . .</span> |
+  <span class="mud">░░</span> <span class="sewer"> .===. </span>  <span class="mud">░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░</span>                                                        |              |
+  <span class="mud">░░</span> <span class="sewer"> ||||| </span><span class="steam">~</span>   <span class="mud">░░</span>                                   <span class="mud">░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░</span> <span class="blood"></span> <span class="mud">░░░░░░░░░░░░░░░░░░░░░░░</span>                                                        |  <span class="crate">[CRATES]</span>   |
+  <span class="mud">░░</span> <span class="sewer"> '===' </span>    <span class="mud">░░</span>                                   <span class="mud">░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░</span> <span class="meat">~~~~~~~</span> <span class="mud">░░░░░░░░░░░░░░░░░░░░░░░</span>                                                        |  <span class="crate">[||||||]</span>   |
+  <span class="mud">░░</span> <span class="sewer"> '===' </span>    <span class="mud">░░</span>                                   <span class="mud">░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░</span> <span class="meat">~~~~~~~</span> <span class="mud">░░░░░░░░░░░░░░░░░░░░░░░</span>                                                        |  <span class="crate">[||||||]</span>   |
+  <span class="mud">░░░░░░░░░░░░░░</span>                      <span class="mud">░░░░░░</span> <span class="ice">~SLIPPERY~</span> <span class="mud">░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░</span>                                                        |__<span class="crate">[||||||]</span>___|`,
+                
+                bottom: `         (VEGETABLES)                 (DURIANS)            (BANANAS)                (SPICES & DRY GOODS)            (LOCAL GREENS)            (CITRUS MOUNTAIN)                    \\
+   <span class="veg">vvv    vvv    vvv</span>                 <span class="durian"> ^,^    ^,^</span>          <span class="banana"> //    \\\\</span>                <span class="spice">^^^       ^^^</span>                  <span class="veg">{{{{{{{}}}}</span>               <span class="fruit"> o  o  o </span>                    \\
+  <span class="veg">       </span>   <span class="veg">      (   ) (   )   (   )</span>                <span class="durian">(* *) (* *)</span>        <span class="banana">((      ))</span>                <span class="spice">^^^^^     ^^^^^</span>                  <span class="veg">{{{{{{}}}</span>                <span class="fruit">o o  o o </span>                        \\  (TO KITCHEN)
+   <span class="veg">    \\ /    \\ /    \\ /</span>                <span class="durian"> \`~\'    \`~\'</span>        <span class="banana">((((    ))))</span>             <span class="spice">^^^^^^^   ^^^^^^^</span>                  <span class="veg">{{{{{{{}}</span>               <span class="fruit">o  o  o  o</span>                          >
+   <span class="veg">    _Y_    _Y_    _Y_</span>                [<span class="neon">$18/KG </span>]          [<span class="neon">$3/BUN </span>]               <span class="spice">[=======][=======]</span>                 <span class="wall">[=======]</span>               <span class="wall">[==========]</span>                         /
+           +---------------+             (DRAGONFRUIT)        (WATERMELONS)           | <span class="neon">$5/100g</span>|| <span class="neon">$12/kg</span> |                 |<span class="neon">$4/BDL </span>|               | <span class="neon">$6/BAG   </span> |                         /
+  | <span class="neon">$2 / KILO !!!</span> |                <span class="dragon"> ,^,    ,^,</span>         <span class="melon"> /'''\\ </span>             +-------++-------+                 +-------+               +----------+                       /
+  +---------------+               <span class="dragon"><, ,> <, ,></span>         <span class="melon">(::<span class="melon-in">:::</span>:)</span>                                                                                                       /
+                                   <span class="dragon"> \`~\'    \`~\'</span>         <span class="melon"> \\___/ </span>                                                                                                        /
+                                  [<span class="neon">$2/EA  </span>]          [<span class="neon">$5/EA  </span>]                                                                                                        /
+____________________________________________________________________________________________________________________________________________________________________/`
+            },
+            2: { // RESTAURANT KITCHEN (Square - Compact 30x30 art to fix spawn glitch)
+                top: `                          <span class="drain-pipe">||</span>                                                             
+                          <span class="drain-pipe">||</span>                                                             
++-------------------------<span class="drain-pipe">||</span>-----------------------------------------------------------------------+
+|    <span class="ice-static">(WALK-IN FRIDGE)</span>     <span class="drain-pipe">||</span>                         <span class="spice">(DRY STORAGE WAREHOUSE)</span>                         |
+|    <span class="ice-static">+----------------+</span>   <span class="drain-pipe">||</span>   <span class="wall">+---------------------------------------------------------------+</span>   |
+|    <span class="ice-static">|  <span class="meat">?</span>    <span class="meat">?</span>    <span class="meat">?</span>   |</span>   <span class="drain-pipe">||</span>   <span class="wall">|</span>                                    <span class="spice">mmm</span>                           <span class="wall">|</span>   |
+|    <span class="ice-static">|  <span class="wall">     |</span>    <span class="wall">|</span>    <span class="wall">|</span>   |</span>   <span class="drain-pipe">||</span>   <span class="wall">|</span>                         <span class="spice">)_(</span>        <span class="spice">)-(</span>                           <span class="wall">|</span>   |
+|    <span class="ice-static">| <span class="meat">   (S) (S) (S)</span>    |</span>   <span class="drain-pipe">||</span>   <span class="wall">|</span>                         <span class="spice">.'-'.</span>       <span class="spice">(   )</span>                           <span class="wall">|</span>   |
+|    <span class="ice-static">| <span class="meat">        (S) (S) (S)</span>    |</span>   <span class="drain-pipe">||</span>   <span class="wall">|</span>   <span class="spice">/-\\</span>        <span class="spice">/-\\</span>        <span class="spice">|:::|</span>       <span class="spice">|   |</span>        <span class="spice">{:}</span>        <span class="spice">{:}</span>       <span class="wall">|</span>   |
+|    <span class="ice-static">|  <span class="meat">        U</span>    <span class="meat">U</span>    <span class="meat">U</span>   |</span>   <span class="drain-pipe">||</span>   <span class="wall">|</span>  <span class="spice">( R )</span>      <span class="spice">( F )</span>       <span class="spice">|:::|</span>       <span class="spice"> |   |</span>        <span class="spice">{S}</span>        <span class="spice">{M}</span>       <span class="wall">|</span>   |
+|    <span class="ice-static">| <span class="white">          [|^^|]</span>  <span class="meat">[(@)]</span>  |</span>   <span class="drain-pipe">||</span>   <span class="wall">|</span>   <span class="spice">\\_/</span>          <span class="spice">\\_/</span>        <span class="spice">'-.-'</span>       <span class="spice">\|___|</span>        <span class="spice">{_}</span>        <span class="spice">{_}</span>       <span class="wall">|</span>   |
+|    <span class="ice-static">| <span class="wall">   [====]</span>  <span class="wall">[===]</span>  |</span>   <span class="drain-pipe">||</span>   <span class="wall">|</span>  <span class="spice">[====]</span>       <span class="spice">[=====]</span>       <span class="spice">[===]</span>       <span class="spice">[===]</span>       <span class="spice">[=====]</span>       <span class="spice">[===]</span>    <span class="wall">|</span>
+|    <span class="ice-static">|                |</span>   <span class="drain-pipe">||</span>   <span class="wall">|===============================================================|</span>   |
+|    <span class="ice-static">|       _    ____ |</span>   <span class="drain-pipe">||</span>   <span class="wall">|</span>                           <span class="meat">mmm</span>         <span class="meat">mmm</span>            <span class="meat">mmm</span>             <span class="wall">|</span>   |
+|    <span class="ice-static">|      (_) (____) |</span>   <span class="drain-pipe">||</span>   <span class="wall">|</span>     <span class="wall">__</span>            <span class="wall">__</span>          <span class="meat">)-(</span>         <span class="meat">)-(</span>            <span class="meat">)-(</span>               <span class="wall">|</span>   |
+|    <span class="ice-static">|      (_)  |@@|  |</span>   <span class="drain-pipe">||</span>   <span class="wall">|</span>    <span class="wall">(  )</span>          <span class="wall">(  )</span>        <span class="meat">(   )</span>       <span class="meat">(   )</span>          <span class="meat">(   )</span>               <span class="wall">|</span>   |
+|    <span class="ice-static">|      (_)  \\__/ |</span>   <span class="drain-pipe">||</span>   <span class="wall">|</span>    <span class="wall">(__)</span>          <span class="wall">(__)</span>        <span class="meat">|   |</span>       <span class="meat">|   |</span>          <span class="meat">|   |</span>               <span class="wall">|</span>   |
+|    <span class="ice-static">|       _    U    |</span>   <span class="drain-pipe">||</span>   <span class="wall">|</span>    <span class="wall">(  )</span>          <span class="wall">(  )</span>        <span class="meat">|   |</span>       <span class="meat">|   |</span>          <span class="meat">|   |</span>               <span class="wall">|</span>   |
+|    <span class="ice-static">| <span class="meat">[~@@~]</span>  <span class="fish">[<>< ]</span> |</span>   <span class="drain-pipe">||</span>   <span class="wall">|</span>    <span class="wall">(__)</span>          <span class="wall">(__)</span>        <span class="meat">|___|</span>       <span class="meat">|___|</span>          <span class="meat">|___|</span>               <span class="wall">|</span>   |
+|    <span class="ice-static">| <span class="wall">[====]</span>  <span class="wall">[====]</span> |</span>   <span class="drain-pipe">||</span>   <span class="wall">|</span>    <span class="wall">(____)</span>        <span class="wall">(____)</span>        <span class="danger">[|X|]</span>       <span class="danger">[|/|]</span>        <span class="danger">(oooo)</span>        <span class="wall">|</span>   |
+|    +-------(0)------+   <span class="drain-pipe">||</span>   +---------------------------------------------------------------+   |
+|    +-----+-----+-----+  <span class="drain-pipe">||</span>   +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+       |
+|    |     |     |     |  <span class="drain-pipe">||</span>   |     |     |     |     |     |     |     |     |     |     |       |
+|    +-----+-----+-----+  <span class="drain-pipe">||</span>   +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+       |
+|   +---------------------++-------------------------------------------------------------------+   |
+|   |   <span class="neon">THE HOT LINE (COOKING STATION)</span>                                                         |   |
+|   |                                                                                          |   |
+|   |    (WOK STATION 1)           (WOK STATION 2)             (STOVE TOP)             (OVENS)       |   |
+|   |          <span class="smoke-anim">}</span>                          <span class="smoke-anim">}</span>                          <span class="smoke-anim">}</span>                                   |   |
+|   |        (  )                      (  )                    (  ) (  )              [~~~~~]       |   |
+|   |         )(                        )(                      )(    )(                [~~~~~]       |   |
+|   |        (__)                      (__)                    (__) (__)               [__o__]       |   |
+|   |       /    \\                    /    \\                  /    \\ /    \\             |    |       |   |
+|   |      |______|                  |______|                |_____|_____|             |_____|       |   |
+|   |      <span class="fire"></span>                  <span class="fire"></span>                 <span class="gas"></span>             <span class="heat"></span>       |   |
+|   |                                                                                          |   |
+|   +------------------------------------------------------------------------------------------+   |
+`, 
+                bottom: `|   +-----------------------------------------------------+   +--------------------------------+   |
+|   |    (WOK STATION 1)           (WOK STATION 2)             (STOVE TOP)             (OVENS)       |   |
+|   |          <span class="smoke-anim">}</span>                          <span class="smoke-anim">}</span>                          <span class="smoke-anim">}</span>                                   |   |
+|   |        (  )                      (  )                    (  ) (  )              [~~~~~]       |   |
+|   |         )(                        )(                      )(    )(                [~~~~~]       |   |
+|   |        (__)                      (__)                    (__) (__)               [__o__]       |   |
+|   |       /    \\                    /    \\                  /    \\ /    \\             |    |       |   |
+|   |      |______|                  |______|                |_____|_____|             |_____|       |   |
+|   |      <span class="fire"></span>                  <span class="fire"></span>                 <span class="gas"></span>             <span class="heat"></span>       |   |
+|   |                                                                                          |   |
+|   +------------------------------------------------------------------------------------------+   |
+|                                                                     |                             |
+|    +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+----+-----+-----+-----+-----+     |
+|    |     |     |     |     |     |     |     |     |     |     |    |     |     |     |     |    |
+|    +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+----+-----+-----+-----+-----+    v
+|    |     |     |     |     |     |     |     |     |     |     |    |     |     |     |     |   (TO THE PIPE)
++---------------------------------------------------------------------<span class="drain-pipe">|</span>                            |`,
+                left: `|<span class="sign"> PANTRY </span>|
+|<span class="wall">========</span>|
+|<span class="spice">(JARS)</span>  |
+| <span class="spice">(..)</span>   |
+| <span class="spice">(..)</span>   |
+|<span class="wall">========</span>|
+|<span class="wall">========</span>|
+|<span class="meat">(SAUCE)</span> |
+|  <span class="meat">{  }</span>  |
+|  <span class="meat">{__}</span>  |
+|<span class="wall">========</span>|
+|<span class="ice-static">[COOL]</span>  |
+|<span class="ice-static">[ZONE]</span>  |
+|<span class="ice-static">[====]</span>  |
+|        |
+|<span class="exit">[EXIT]</span>  |`,
+                right: `|<span class="sign"> OFFICE </span>|
+|<span class="wall"> [FILE] </span>|
+|<span class="wall"> [CAB.] </span>|
+|        |
+| <span class="wall">[DESK]</span> |
+| <span class="wall">______</span> |
+| <span class="wall">|    |</span> |
+| <span class="wall">|____|</span> |
+|        |
+| <span class="sign">[PLAN]</span> |
+| <span class="sign">[====]</span> |
+|        |
+| <span class="banana">(KEYS)</span> |
+|  <span class="banana">0-@</span>   |
+|        |
+|<span class="wall">[LOCK]</span>  |
+|<span class="wall">[ERS ]</span>  |
+|<span class="wall">| || |</span>  |
+|<span class="wall">|_||_|</span>  |`
+            },
+            3: { // BEDROOM (Vertical - Tightly fitted side decorations)
+                left: `(KITCHEN)
+     <span class="drain-pipe">||</span>
+     <span class="drain-pipe">||</span>
+<span class="drain-pipe">+======+</span>
+<span class="drain-pipe">| SEWR |</span>
+<span class="drain-pipe">|▓▓||▓▓|</span>
+<span class="drain-pipe">|▓▓||▓▓|</span>
+<span class="drain-pipe">|▓▓vv▓▓|</span>
+<span class="drain-pipe">+======+</span>
+     <span class="drain-pipe">||</span>
+     <span class="drain-pipe">||</span>
+     <span class="drain-pipe">vv</span>
++---<span class="drain-pipe">||</span>-+
+| BATH |
+|      |
+| [TUB]|
+|+----+|
+|||<span class="l3-water">W</span>|//|
+|||<span class="l3-water">W</span>||||
+|||<span class="l3-water">W</span>||||
+|||<span class="l3-water">W</span>| ||
+|||<span class="l3-water">W</span>|(C|
+|||___||
+|      |
+|[SINK]|
+|+----+|
+||<span class="l3-water">~~~</span>||
+||<span class="l3-water">~~~</span>||
+|+----+|
+|      |
+|[SOAP]|
+|+----+|
+|| <span class="l3-water">o</span> ||
+|+----+|
+|      |
+|[TOWEL|
+|+----+|
+||<span class="l3-rug">~~~~</span>||
+|+----+|
+|      |
+| (TL) |
+|+--+--+
+||  |  |
+|+--+--+
+||  |  |
+|+--+--+
+|      |
+|[MIRR]|
+|+----+|
+||<span class="l3-water">~~~</span>||
+|+----+|
+|      |
+|[TP]  |
+|+----+|
+||<span class="l3-rug">ooo</span>||
+|+----+|
+|      |
+|[BIN] |
+|+----+|
+|| || ||
+|+----+|
+|      |
+|[DOOR]|
+|      |
++------+
+|      |
+|(HALL)|
+|      |
+| <span class="l3-cat">/\\/\\</span> |
+| <span class="l3-cat">(oo)</span> |
+| <span class="l3-cat">>^ <</span> |
+|      |
+|[SHOE]|
+|+----+|
+|| || ||
+|+----+|
+|      |
+|[UMBR]|
+|+----+|
+||  |  ||
+|+----+|
+|      |
+|[COAT]|
+|+----+|
+|| || ||
+|+----+|
+|      |
+|[LAMP]|
+|+----+|
+|| <span class="l3-neon">*</span> ||
+|+----+|
+|      |
+|[PICT]|
+|+----+|
+||[  ]||
+|+----+|
+|      |
++------+
+`,
+                right: `+------+
+|(VENT)|
+| [||] |
+| [||] |
+|      |
+|      |
+|[TOIL]|
+| ____ |
+||    ||
+||[||]||
+||____||
+| _/ \\_|
+|((   ))
+| \\_V_/|
+|  \\_/ |
+|  ||  |
+| _||_ |
+||____||
+|      |
+|[MAT] |
+|<span class="l3-rug">MMMMMM</span>|
+|      |
+|[SHWR]|
+|+----+|
+||<span class="l3-water">|||</span>||
+||<span class="l3-water">|||</span>||
+|+----+|
+|      |
+|[CABI]|
+|+----+|
+|| || ||
+|+----+|
+|      |
+|[TOWEL|
+|+----+|
+||<span class="l3-rug">~~~~</span>||
+|+----+|
+|      |
+|[SOAP]|
+|+----+|
+|| <span class="l3-water">o</span> ||
+|+----+|
+|      |
+|[BIN] |
+|+----+|
+|| || ||
+|+----+|
+|      |
+|[SCALE|
+|+----+|
+|| 0  ||
+|+----+|
+|      |
++------+
+|      |
+|(BEDR)|
+|      |
+|[WARD]|
+|+----+|
+|| || ||
+|+----+|
+|      |
+|[DRES]|
+|+----+|
+|| || ||
+|+----+|
+|      |
+|[NIGHT|
+|+----+|
+|| || ||
+|+----+|
+|      |
+|[CLOCK|
+|+----+|
+|||12:00||
+|+----+|
+|      |
+|[LAMP]|
+|+----+|
+|| <span class="l3-neon">*</span> ||
+|+----+|
+|      |
+|[BOOK]|
+|+----+|
+|| || ||
+|+----+|
+|      |
+|[PLANT|
+|+----+|
+|| <span class="l3-neon">^</span> ||
+|+----+|
+|      |
+| <span class="l3-neon">ZzZ</span>  |
+|      |
+|[WARD]|
+|.----.|
+|| __ ||
+|||  |||
+|||  |||
+||'--'||
+|'----'|
+|      |
+|[DESK]|
+| ____ |
+||<span class="l3-monitor">C:>_</span>||
+||____||
+| /  \\ |
+|/____\\|
+|      |
+|      |
+|      |
++------+
+`
+            }
+        };
+
+        const SEAFOOD_ART = {
+            creature: [
+                "    /¯¯¯¯\\",
+                "   ( #|\\_ü|",
+                "   ( #\\  ƒƒ",
+                "    \\ #\\",
+                "    /|||\\"
+            ],
+            shrimp: [
+                ".            ,",
+                "            .:/",
+                ".        ,,///;,   ,;/",
+                "    .    o:::::::;;///",
+                "       >::::::::;;\\\\\\",
+                "        ''\\\\\\\\\\'\" ';\\",
+                "            ';\\"
+            ],
+            fish: [
+                "  ;,//;,    ,;/",
+                " o:::::::;;///",
+                ">::::::::;;\\\\\\",
+                "  ''\\\\\\\\\\'\" ';\\"
+            ]
+        };
+        
+        const SCOOTER_ART = [
+            "   __o",
+            " _ \\<_",
+            "(_)/(_)"
+        ];
+
+        const PAW_ART = [
+            " . . . . ",
+            " O O O O ",
+            " OOOOOOO ",
+            "  OOOOO  "
+        ];
+        
+        // Updated to look like a shoe sole silhouette
+        const BOOT_ART = [
+            "  .---.  ",
+            " / .-. \\ ",
+            " | | | | ",
+            " | | | | ",
+            " \\ `-' / ",
+            "  `---'  "
+        ];
+
+        // Smaller, more concentrated spray
+        const SPRAY_ART = [
+            " . . ",
+            " ... ",
+            " ... ",
+            " . . "
+        ];
+        
+        const VACUUM_ART = [
+            "  /--\\  ",
+            " ( () ) ",
+            " (    ) ",
+            "  \\--/  "
+        ];
+        
+        // Custom Bed Art (User Provided)
+        const BED_ART = [
+            "     _    ()                  ",
+            "() .'_`'.||                   ",
+            "||/.| ||\\ |                   ",
+            "| /|| || ||         _    ()   ",
+            "|| || || ||    () .'_`'.||    ",
+            "|| || || ||    ||/.| ||\\ |    ",
+            "|| || |I-'`-._ | /|| || ||    ",
+            "||_I'`_.-||-._`'| || || ||    ",
+            "m._ <'_  ||   `|| || || ||    ",
+            "i| `-._`-'|    || || |I-'|    ",
+            "c)     `-._`-._||_I'`_.-||    ",
+            "           `-._` _.-'    ()   ",
+            "                ||        `      "
+        ];
+        
+        // Custom Mouse Art (User Provided) - Padded to ensure equal width (10 chars) for rendering
+        const MOUSE_ART = [
+            "(o)(o)--. ",
+            " \\../ ( ) ",
+            " m\\/m--m'-"
+        ];
+        
+        // ASCII ART for Modals
+        const EGGS_ART_ASCII = [
+            "            ,  .'''''.  ...    ''''',  .'          ",
+            "            ','     ,.MMMM;.;'      '.            ",
+            "             ;;    ;MMMMMMMMM;     ;;'            ",
+            "            :'M:  ;MMMMMMMMMMM;.  :M':            ",
+            "            : M:  MMMMMMMMMMMMM:  :M  .           ",
+            "           .' M:  MMMMMMMMMMMMM:  :M. ;           ",
+            "           ; :M'  :MMMMMMMMMMMM'  'M: :           ",
+            "           : :M: .;\"MMMMMMMMM\":;. ,M: :           ",
+            "           :  ::,MMM;.M\":::M.;MMM ::' :           ",
+            "         ,.;    ;MMMMMM;:MMMMMMMM:    :,.         ",
+            "         MMM.;.,MMMMMMMM;MMMMMMMM;.,;.MMM         ",
+            "         M':''':MMMMMMMMM;MMMMMMMM: \"': M         ",
+            "         M.:   ;MMMMMMMMMMMMMMMMMM;   : M         ",
+            "         :::   MMMMMMMMMMM;MMMMMMMM   ::M         ",
+            "        ,'';   MMMMMMMMMMMM:MMMMMMM   :'\".        ",
+            "      ,'   :   MMMMMMMMMMMM:MMMMMMM   :   '.      ",
+            "     '     :  'MMMMMMMMMMMMM:MMMMMM   ;     '     ",
+            "     ,.....;.. MMMMMMMMMMMMM:MMMMMM ..:....;.     ",
+            "     :MMMMMMMM MMMMMMMMMMMMM:MMMMMM MMMMMMMM:     ",
+            "     :MM\"\"\":\"\" MMMMMMMMMMMMM:MMMMMM \"\": \"'MM:     ",
+            "      MM:   :  MMMMMMMMMMMMM:MMMMMM  ,'  :MM      ",
+            "      'MM   :  :MMMMMMMMMMMM:MMMMM:  :   ;M:      ",
+            "       :M;  :  'MMMMMMMMMMMMMMMMMM'  :  ;MM       ",
+            "       :MM. :   :MMMMMMMMMM;MMMMM:   :  MM:       ",
+            "        :M: :    MMMMMMMMM'MMMMMM'   : :MM'       ",
+            "        'MM :    \"MMMMMMM:;MMMMM\"   ,' ;M\"        ",
+            "         'M  :    \"\"\"\"\":;;;\"\"\"\"\"    :  M:         ",
+            "         ;'  :     \"MMMMMMMM;.\"     :  \"\".        ",
+            "       ,;    :      :MMMMMMM:;.     :    '.       ",
+            "      :'     :    ,MM''\"\"\"\"'':M:    :     ';      ",
+            "     ;'      :    ;M'         MM.   :       ;.    ",
+            "   ,'        :    \"            \"'   :        '.   ",
+            "   '        :'                       '        ''  ",
+            " .          :                        '          ' ",
+            "'          ;                          ;          '",
+            "          ;                            '          "
+        ].join('\n');
+        
+        const LOVERS_ART_ASCII = [
+            "   _  _          _  _  ",
+            "  ( \\/ )        ( \\/ ) ",
+            "   \\  /          \\  /  ",
+            "    /  \\          /  \\  ",
+            "  (    )        (    ) ",
+            "   \\  /          \\  /  ",
+            "    \\/            \\/    "
+        ].join('\n');
+        
+        // Headless cockroach ASCII art (body only, no head)
+        const HEADLESS_COCKROACH_ART = [
+            "         :::   MMMMMMMMMMM;MMMMMMMM   ::M         ",
+            "        ,'';   MMMMMMMMMMMM:MMMMMMM   :'\".        ",
+            "      ,'   :   MMMMMMMMMMMM:MMMMMMM   :   '.      ",
+            "     '     :  'MMMMMMMMMMMMM:MMMMMM   ;     '     ",
+            "     ,.....;.. MMMMMMMMMMMMM:MMMMMM ..:....;.     ",
+            "     :MMMMMMMM MMMMMMMMMMMMM:MMMMMM MMMMMMMM:     ",
+            "     :MM\"\"\":\"\" MMMMMMMMMMMMM:MMMMMM \"\": \"'MM:     ",
+            "      MM:   :  MMMMMMMMMMMMM:MMMMMM  ,'  :MM      ",
+            "      'MM   :  :MMMMMMMMMMMM:MMMMM:  :   ;M:      ",
+            "       :M;  :  'MMMMMMMMMMMMMMMMMM'  :  ;MM       ",
+            "       :MM. :   :MMMMMMMMMM;MMMMM:   :  MM:       ",
+            "        :M: :    MMMMMMMMM'MMMMMM'   : :MM'       ",
+            "        'MM :    \"MMMMMMM:;MMMMM\"   ,' ;M\"        ",
+            "         'M  :    \"\"\"\"\":;;;\"\"\"\"\"    :  M:         ",
+            "         ;'  :     \"MMMMMMMM;.\"     :  \"\".        ",
+            "       ,;    :      :MMMMMMM:;.     :    '.       ",
+            "      :'     :    ,MM''\"\"\"\"'':M:    :     ';      ",
+            "     ;'      :    ;M'         MM.   :       ;.    ",
+            "   ,'        :    \"            \"'   :        '.   ",
+            "   '        :'                       '        ''  ",
+            " .          :                        '          ' ",
+            "'          ;                          ;          '",
+            "          ;                            '          "
+        ].join('\n');
+
+        // Reproduce ending ASCII art (bedroom swarm)
+        const REPRODUCE_ART_ASCII = [
+            "                                          +%                                                                    ",
+            "                                          +**                                                                   ",
+            "                                           +#*                                                                  ",
+            "                                            =+                                                                  ",
+            "                                             =*                                                                 ",
+            "                                             =+**                                                               ",
+            "                                              -*#@                                                              ",
+            "                                               -**%@                                                            ",
+            "                                                =**%@@                                                          ",
+            "                                                =-** @@                                                         ",
+            "                                                 ::-  @@@                                                       ",
+            "                                                  :-=   @@@                                                     ",
+            "                                                   =-    @@@                                                    ",
+            "                                                    ++     @@                                                   ",
+            "                                                     .      @@@@@@@                                             ",
+            "                                                     %+    @@@#@@@@@%                                           ",
+            "                                                     ##*   @%@@@@%%@@@                                          ",
+            "                                                      ++  %#@+*%%@%@%%@                                         ",
+            "                                                     -#@@@#%@*+%*+%#*=*@@ @                                     ",
+            "                                                      +@#%%%%#%#+:=+*=#**@%@@                                   ",
+            "                                                        #+#+#@@*++--=*@#*+*@@@#                                ",
+            "                                                        %*#@%#+**#*+#%**+  *@@@@@##%@                          ",
+            "                                                        %@@@@*+:+***#*#%%    *%#-*#%#                          ",
+            "                                                  @@    @%*=-=++++=---+=##%@@# #@                               ",
+            "                                                #%**##%%%@%=-+++++=-=##*+*++=%%+ %%                             ",
+            "                                                ####+=+++*###**=+*%#*++*#++ .=%+  *#                            ",
+            "                                                *%%%***#%#%#***+++**+%@@#*    %#-   #*                          ",
+            "                                               %@@%+#**++*%*-+++++*--==%%*     @@-   *#                         ",
+            "                                              @@%@@*  =****@*+*++*++==#@%=      @#     @+                       ",
+            "                                            @@%* @@    @%*#@%*=@%#*#####%%%%@*   #@-    +*                      ",
+            "                                           @@@%-+@@    @%%%@@@@@@@@%*=-++++=+####  %%.   +*                     ",
+            "                                          @@@# #*#     @@@@#@@@%#@@@%@@%**===+*#%%  =+@+   ++                   ",
+            "                                        @@%@#  @-@@    @@%@@@@@@@@@@@@@@%---.=.-#@*   =     ++                  ",
+            "                                        @@+#    :+%@*@@@@@@%%@@@@@@%%@%**++++++%@@           ++                 ",
+            "                                      %@@         #+@%@@@@@%%@@@@@@@@%# =#%##*#@%              **               ",
+            "                                    %@@@          @@%**###**#%@@@@##*%+#%%%@%%%%#               *+              ",
+            "                                   %@@ @@   #@@@@@@@@#+=+++++#%@@@++#+%*=*%%*@@@%%               -+             ",
+            "                                  *@     %@%#*##%@@@@@%+++++++++#%*#+=     +%@@#                                ",
+            "                                  #        =. %@@@@@@@@@@@#*++*#@@#+       @@@*                                 ",
+            "                                             =%@@@@@@@@@=*+*@@@@@%+        *@#                                  ",
+            "                                            ##@@@@@@@%%%%==%@@@%@@         @%                                   ",
+            "                                           ###@@@@@@-#=.   *@@@@@@@@@     %@@                                   ",
+            "                                           ++@@@@@@=@:     +@@@@@#++%@#   @@@                                   ",
+            "                                  @@@@@@# ##%@@@@@%%#      %@@@@@%*+.#%@   @@                                   ",
+            "                                %@@#***#%@@%@@@@@@@=    - %@@@@#*     #%#  @@                                   ",
+            "                                @@@%%#****+@@@@@@@@    .+#%@@@@        #-  %*                                   ",
+            "                               @@@@    *#%%@@@@@@@+   -*@%%@@@- #@     =%*-:+                                   ",
+            "                              %%@%      +%@@@@@@@#:.-==%%##@@# #*%@      *: -                                   ",
+            "                             @@@*       *@@@@@@@+:..=+#@@@@@%:+*%@@.      *%*                                   ",
+            "                             @@#        #@@@@@@@%* :%#@%@@@@+ .%@@          #+                                  ",
+            "                           =@@#        #%@@@@@@@@#+@@@@@@@%@.*@@-            *+                                ",
+            "                         -  @@*        @@@@@@@@@@@@@@@@@@@%-%@==              ==                               ",
+            "                         =#@@#         @@@@@@@@@@@@@@@@@@%*@@=                +=                               ",
+            "                       %@@%           @@@@@@@@@@@@@@@@@@@%@@.                                                   ",
+            "                @  #@@@@              @@@@@@@@@@@@@@@@@@@@@                                                     ",
+            "                @@@@                  @@@@@@@@@@@@@@@@@@@                                                       ",
+            "                                      #%@@@@@@@@@@@@@@@                                                         ",
+            "                                  @@%#*#%%%%%%%%@@@@*@                                                          ",
+            "                               .*%%*=-:-#%%#%%%#%%%:@                                                           ",
+            "                                        -+#%#%%%#*=@                                                            "
+        ].join('\\n');
+        
+        // Walkable floor decorations for Stage 3
+        const FLOOR_DECO_CHARS = ['L', 'J', '(', ')', '[', ']', '?', 's', 'S', '~']; 
+
+        const BIOMES = {
+            1: {
+                name: "WET MARKET",
+                width: 84, 
+                height: 18, 
+                floorChars: ['~', ',', '.', '"'],
+                wallChar: '#',
+                enemyChar: 'B',
+                enemyName: "GIANT BEETLE",
+                desc: "Giants are shopping. Watch for SCOOTERS and CATS!",
+                pattern: "puddles",
+                layout: "horizontal",
+                hazardType: 'paw' 
+            },
+            2: {
+                name: "RESTAURANT KITCHEN",
+                width: 30, // Square layout
+                height: 30, // Square layout
+                floorChars: ['=', '+', '-', ' '],
+                wallChar: '[',
+                enemyChar: 'a', // Ant
+                enemyName: "SCOUT ANT",
+                desc: "Avoid the CHEMICAL SPRAY and HEAVY BOOTS!",
+                pattern: "checkerboard",
+                layout: "cubes",
+                hazardType: 'boot_spray'
+            },
+            3: {
+                name: "THE BEDROOM",
+                width: 32, // Widened to fit new Bed Art
+                height: 60, 
+                floorChars: ['(', ')', 'c', 'u'],
+                wallChar: 'I',
+                enemyChar: '☻',
+                enemyName: "YOU (THE SLEEPER)",
+                desc: "The VACUUM is cleaning the top half! Run to the Bed!",
+                pattern: "face",
+                layout: "open_square",
+                hazardType: 'vacuum' 
+            }
+        };
+
+        const FLAVOR_TEXT = {
+            food: ["Slurped a chunk!", "Strange texture.", "Seafood consumed."],
+            poison: "POISON! Wretched taste.",
+            glue: "Stuck in the muck.",
+            human_hit: "YOU TOUCHED THE GIANT! PAIN!",
+            cat_warn: "MEOW! A giant shadow looms...",
+            cat_hit: "SPLAT! The cat caught you.",
+            boot_warn: "STOMP... STOMP... Heavy steps nearby!",
+            boot_hit: "CRUNCH! The boot came down.",
+            spray_warn: "HISSS! The air smells chemical...",
+            spray_hit: "CHOKING! Poison mist descends.",
+            vacuum_warn: "VROOOOM! Suction detected!",
+            vacuum_hit: "SUCKED UP! Into the dust bag.",
+            scooter_warn: "HONK HONK! Motor engine revs...",
+            scooter_hit: "ROADKILL! The scooter ran you over.",
+            starve: "You starved to death.",
+            level_up: "Ascended."
+        };
+
+        // Basic MIDI mapping for Arturia MiniLab 3
+        // NOTE: Note/CC numbers may vary by preset; check console logs and adjust.
+        const MIDI_CONFIG = {
+            // Pads (note numbers are typical for MiniLab, adjust if needed)
+            padLeft: 36,   // Pad 1
+            padUp: 37,     // Pad 2
+            padDown: 38,   // Pad 3
+            padRight: 39,  // Pad 4
+            padAction: 40,       // Pad 5: main action (modal button / skip level)
+            padResetLevel: 41,   // Pad 6: reset current level
+            padResetGame: 42,    // Pad 7: reset whole game
+            padToggleFullscreen: 43, // Pad 8: fullscreen toggle
+            // Volume controls (CC numbers are examples; adjust to match your MiniLab mapping)
+            volKnobCC: 74,   // Knob 1
+            volFaderCC: 73   // Fader 1
+        };
+
+        class NeonScuttle {
+            constructor() {
+                this.gridEl = document.getElementById('grid-container');
+                this.viewportEl = document.getElementById('viewport'); 
+                this.logEl = document.getElementById('log-console');
+                this.gritEl = document.getElementById('grit-display');
+                this.levelEl = document.getElementById('level-display');
+                this.volumeEl = document.getElementById('volume-display');
+                this.layoutWrapper = document.getElementById('layout-wrapper');
+                
+                // Modal elements
+                this.modalOverlay = document.getElementById('modal-overlay');
+                this.modalTitle = document.getElementById('modal-title');
+                this.modalArt = document.getElementById('modal-art');
+                this.modalDrip = document.getElementById('modal-drip');
+                this.modalText = document.getElementById('modal-text');
+                this.modalBtn = document.getElementById('modal-btn');
+
+                // Audio Context
+                this.audio = new Audio();
+                this.audio.loop = true;
+                this.currentSong = null;
+                this.masterVolume = 1.0;
+                this.audio.volume = this.masterVolume;
+
+                this.level = 1;
+                this.grit = MAX_GRIT;
+                this.steps = 0; 
+                this.playerPos = { x: 1, y: 1 };
+                
+                this.map = []; 
+                this.visualMap = []; 
+                this.foodVisuals = []; 
+                this.enemies = []; 
+                this.scooters = [];
+                
+                // Hazard Variables
+                this.stompTimer = 0;
+                this.stompTarget = null;
+                this.hazardType = null;
+                
+                this.isGameOver = false;
+
+                this.mapW = 25;
+                this.mapH = 18;
+
+                // Show Start Screen instead of starting immediately
+                this.showStartScreen();
+                this.bindInput();
+                this.bindMIDI();
+                this.updateVolumeDisplay();
+            }
+            
+            showModal(title, text, art, btnText, callback) {
+                this.modalTitle.textContent = title;
+                this.modalText.textContent = text;
+                this.modalArt.textContent = art;
+                this.modalBtn.textContent = btnText;
+
+                // Reset any special sizing from custom modals
+                this.modalArt.style.fontSize = '';
+                this.modalArt.style.lineHeight = '';
+                this.modalArt.style.margin = '';
+                const contentEl = document.querySelector('.modal-content');
+                if (contentEl) {
+                    contentEl.style.overflowY = '';
+                }
+                
+                // Make modal overlay more transparent so game is visible
+                this.modalOverlay.style.background = 'rgba(0, 0, 0, 0.7)';
+                
+                this.modalBtn.onclick = () => {
+                    this.modalOverlay.style.display = 'none';
+                    this.modalOverlay.style.background = 'rgba(0, 0, 0, 0.95)'; // Restore for other modals
+                    if (callback) callback();
+                };
+                
+                this.modalOverlay.style.display = 'flex';
+            }
+            
+            showStartScreen() {
+                // Initialize and render the game first so it's visible behind the modal
+                this.level = 1;
+                this.updateTheme();
+                this.playMusic();
+                
+                const biomeIndex = ((this.level - 1) % 3) + 1;
+                this.biome = BIOMES[biomeIndex];
+                this.updateDecorations(biomeIndex);
+                
+                this.mapW = this.biome.width;
+                this.mapH = this.biome.height;
+                
+                // FORCE GRID CLEAR before render to avoid artifacts
+                this.gridEl.innerHTML = '';
+                this.gridEl.style.gridTemplateColumns = `repeat(${this.mapW}, 1fr)`;
+                this.gridEl.style.gridTemplateRows = `repeat(${this.mapH}, 1fr)`;
+                this.gridEl.style.width = 'fit-content';
+                this.gridEl.style.minWidth = `${this.mapW * 18}px`;
+                this.gridEl.style.minHeight = `${this.mapH * 18}px`;
+                
+                this.generateLevel();
+                this.render();
+                this.viewportEl.scrollLeft = 0;
+                this.viewportEl.scrollTop = 0;
+                this.updateCamera();
+                
+                // Hide title for reborn screen
+                this.modalTitle.textContent = "";
+                this.modalTitle.style.display = "none";
+                
+                // Create styled text with different fonts
+                this.modalText.innerHTML = '<span class="word-died">you have died</span><span class="word-connector"> and </span><span class="word-reborn">reborn</span><span class="word-connector"> as a </span><span class="word-cockroach">cockroach</span>';
+                this.modalText.className = "reborn-text";
+                
+                // Set ASCII art with floating animation
+                this.modalArt.textContent = EGGS_ART_ASCII;
+                this.modalArt.classList.add("float");
+
+                // Reset drip area
+                if (this.modalDrip) {
+                    this.modalDrip.textContent = '';
+                    this.modalDrip.classList.remove('active');
+                }
+                
+                this.modalBtn.textContent = "HATCH";
+                
+                // Make modal overlay more transparent so game is visible
+                this.modalOverlay.style.background = 'rgba(0, 0, 0, 0.7)';
+                
+                this.modalBtn.onclick = () => {
+                    // Trigger a small drip falling from beneath the cockroach
+                    if (this.modalDrip) {
+                        this.modalDrip.textContent =
+`     __
+   _/..\\_
+  /::::::\\
+  \\::::::/
+   \\:..:/`;
+                        this.modalDrip.classList.remove('active');
+
+                        // Force reflow so animation can restart
+                        void this.modalDrip.offsetWidth;
+                        this.modalDrip.classList.add('active');
+                    }
+
+                    // Wait for the drip animation, then start the level
+                    setTimeout(() => {
+                        this.modalOverlay.style.display = 'none';
+                        this.modalOverlay.style.background = 'rgba(0, 0, 0, 0.95)'; // Restore for other modals
+                        this.modalTitle.style.display = "block"; // Restore for other modals
+                        this.modalText.className = ""; // Reset class
+                        this.modalArt.classList.remove("float"); // Remove float class
+                        if (this.modalDrip) {
+                            this.modalDrip.textContent = '';
+                            this.modalDrip.classList.remove('active');
+                        }
+                        // Properly start the level (resets grit, steps, etc.)
+                        this.startLevel();
+                    }, 700);
+                };
+                
+                this.modalOverlay.style.display = 'flex';
+            }
+            
+            showEndScreen() {
+                // Custom reproduce ending modal so we fully control the art
+                this.modalTitle.textContent = "";
+                this.modalTitle.style.display = "none";
+
+                // Massive swarm art (big roach)
+                this.modalArt.textContent = REPRODUCE_ART_ASCII;
+                this.modalArt.classList.remove("float", "wiggle");
+                // Make the roach large but still fit
+                this.modalArt.style.fontSize = '9px';
+                this.modalArt.style.lineHeight = '0.9';
+                this.modalArt.style.margin = '4px 0 12px';
+
+                // Clear any drip from start screen
+                if (this.modalDrip) {
+                    this.modalDrip.textContent = '';
+                    this.modalDrip.classList.remove('active');
+                }
+
+                // Ending text
+                this.modalText.className = "";
+                this.modalText.style.fontFamily = 'var(--font-ui-3)';
+                this.modalText.style.fontSize = '24px';
+                this.modalText.style.fontStyle = 'italic';
+                this.modalText.style.color = 'var(--secondary-color)';
+                this.modalText.style.transform = 'none';
+                this.modalText.textContent = "You found the bed.\nThe swarm continues.";
+
+                this.modalBtn.textContent = "HATCH ANOTHER LINE";
+
+                this.modalOverlay.style.background = 'rgba(0, 0, 0, 0.9)';
+
+                // Allow scrolling if art is taller than viewport
+                const contentEl = document.querySelector('.modal-content');
+                if (contentEl) {
+                    contentEl.style.overflowY = 'auto';
+                }
+
+                this.modalBtn.onclick = () => {
+                    // Close reproduce screen and go back to reborn intro
+                    this.modalOverlay.style.display = 'none';
+                    this.modalOverlay.style.background = 'rgba(0, 0, 0, 0.95)';
+                    this.modalTitle.style.display = "block";
+                    this.modalText.className = "";
+                    this.modalText.style.fontFamily = '';
+                    this.modalText.style.fontSize = '';
+                    this.modalText.style.fontStyle = '';
+                    this.modalText.style.color = '';
+                    this.modalText.style.transform = '';
+
+                    this.level = 1;
+                    this.showStartScreen();
+                };
+
+                this.modalOverlay.style.display = 'flex';
+            }
+            
+            showDeathScreen() {
+                // Custom death screen with headless cockroach
+                this.modalTitle.textContent = "";
+                this.modalTitle.style.display = "none";
+                
+                // Create styled text
+                this.modalText.textContent = "Lost my head? Just a flesh wound. I'll be fine.";
+                this.modalText.className = "";
+                this.modalText.style.fontFamily = 'var(--font-ui-3)';
+                this.modalText.style.fontSize = '26px';
+                this.modalText.style.fontStyle = 'italic';
+                this.modalText.style.color = 'var(--dominant-color)';
+                this.modalText.style.transform = 'none';
+                
+                // Set headless cockroach art with wiggle animation
+                this.modalArt.textContent = HEADLESS_COCKROACH_ART;
+                this.modalArt.classList.add("wiggle");
+                
+                // Button text for retrying this stage
+                const stageNames = { 1: "WET MARKET", 2: "THE STREET", 3: "THE BEDROOM" };
+                const stageName = stageNames[this.level] || "THIS STAGE";
+                this.modalBtn.textContent = `TRY AGAIN: ${stageName}`;
+                
+                // Make modal overlay more transparent so game is visible
+                this.modalOverlay.style.background = 'rgba(0, 0, 0, 0.7)';
+                
+                this.modalBtn.onclick = () => {
+                    this.modalOverlay.style.display = 'none';
+                    this.modalOverlay.style.background = 'rgba(0, 0, 0, 0.95)'; // Restore for other modals
+                    this.modalTitle.style.display = "block"; // Restore for other modals
+                    this.modalText.className = ""; // Reset class
+                    this.modalText.style.fontFamily = '';
+                    this.modalText.style.fontSize = '';
+                    this.modalText.style.fontStyle = '';
+                    this.modalText.style.color = '';
+                    this.modalText.style.transform = '';
+                    this.modalArt.classList.remove("wiggle"); // Remove wiggle class
+                    this.retryLevel();
+                };
+                
+                this.modalOverlay.style.display = 'flex';
+            }
+            
+            updateTheme() {
+                // Remove existing themes
+                document.body.className = ''; // Clear all classes
+                
+                // Add current theme
+                const themeIndex = ((this.level - 1) % 3) + 1;
+                document.body.classList.add(`theme-${themeIndex}`);
+            }
+            
+            playMusic() {
+                const themeIndex = ((this.level - 1) % 3) + 1;
+                const songUrl = AUDIO_SOURCES[themeIndex];
+                
+                if (this.currentSong !== songUrl) {
+                    this.currentSong = songUrl;
+                    if (songUrl) {
+                        this.audio.src = songUrl;
+                        this.audio.play().catch(e => console.log("Audio waiting for user interaction"));
+                    } else {
+                        this.audio.pause();
+                    }
+                }
+            }
+
+            log(msg, type = 'normal') {
+                const div = document.createElement('div');
+                div.textContent = `> ${msg}`;
+                div.className = `log-entry ${type}`;
+                
+                // Append to bottom instead of top
+                this.logEl.appendChild(div);
+                
+                if (this.logEl.children.length > 20) this.logEl.firstChild.remove();
+                
+                // Auto-scroll to bottom
+                this.logEl.scrollTop = this.logEl.scrollHeight;
+            }
+
+            updateVolumeDisplay() {
+                if (!this.volumeEl) return;
+                const pct = Math.round(this.masterVolume * 100);
+                this.volumeEl.textContent = `VOL:${pct}`;
+            }
+
+            startLevel() {
+                this.grit = MAX_GRIT;
+                this.steps = 0;
+                this.totalSteps = 0; 
+                this.stompTimer = 0;
+                this.stompTarget = null;
+                this.scooters = [];
+                this.scooterTimer = 0; 
+
+                // UPDATE THEME HERE
+                this.updateTheme();
+                
+                // PLAY MUSIC
+                this.playMusic();
+
+                const biomeIndex = ((this.level - 1) % 3) + 1;
+                this.biome = BIOMES[biomeIndex];
+                
+                this.updateDecorations(biomeIndex);
+                
+                this.mapW = this.biome.width;
+                this.mapH = this.biome.height;
+                
+                // FORCE GRID CLEAR before render to avoid artifacts
+                this.gridEl.innerHTML = '';
+                this.gridEl.style.gridTemplateColumns = `repeat(${this.mapW}, 1fr)`;
+                this.gridEl.style.gridTemplateRows = `repeat(${this.mapH}, 1fr)`;
+                this.gridEl.style.width = 'fit-content';
+                this.gridEl.style.minWidth = `${this.mapW * 18}px`;
+                this.gridEl.style.minHeight = `${this.mapH * 18}px`;
+                
+                this.log(`ENTER: ${this.biome.name}`, 'new');
+                this.log(this.biome.desc);
+
+                this.generateLevel();
+                
+                if (this.level === 1) {
+                    this.spawnScooter();
+                    this.scooterTimer = 8; 
+                }
+
+                this.render();
+                
+                this.viewportEl.scrollLeft = 0;
+                this.viewportEl.scrollTop = 0;
+                this.updateCamera();
+            }
+
+            skipLevel() {
+                this.log("CHEAT: WARPING TO NEXT FLOOR...", 'new');
+                this.level++;
+                if(this.level > 3) this.level = 1;
+                this.startLevel();
+            }
+
+            updateDecorations(biomeIndex) {
+                const streetContainer = document.getElementById('street-scene');
+                const marketContainer = document.getElementById('market-scene');
+                const leftContainer = document.getElementById('left-scene');
+                const rightContainer = document.getElementById('right-scene');
+                
+                const streetMap = streetContainer.querySelector('.map');
+                const marketMap = marketContainer.querySelector('.map');
+                const leftMap = leftContainer.querySelector('.map');
+                const rightMap = rightContainer.querySelector('.map');
+
+                const art = STAGE_DECO[biomeIndex] || { top: '', bottom: '', left: '', right: '' };
+
+                // Handle layout modes (Vertical vs Standard)
+                if (biomeIndex === 3) {
+                    this.layoutWrapper.classList.add('vertical-mode');
+                    streetContainer.style.display = 'none';
+                    marketContainer.style.display = 'none';
+                    leftContainer.style.display = 'flex';
+                    rightContainer.style.display = 'flex';
+                    
+                    leftMap.innerHTML = art.left || '';
+                    rightMap.innerHTML = art.right || '';
+                } else {
+                    this.layoutWrapper.classList.remove('vertical-mode');
+                    
+                    // Always show containers if content exists
+                    if (art.top) {
+                        streetContainer.style.display = 'block';
+                        streetMap.innerHTML = art.top;
+                    } else {
+                        streetContainer.style.display = 'none';
+                    }
+
+                    if (art.bottom) {
+                        marketContainer.style.display = 'block';
+                        marketMap.innerHTML = art.bottom;
+                    } else {
+                        marketContainer.style.display = 'none';
+                    }
+
+                    if (art.left) {
+                        leftContainer.style.display = 'flex';
+                        leftMap.innerHTML = art.left;
+                    } else {
+                        leftContainer.style.display = 'none';
+                    }
+
+                    if (art.right) {
+                        rightContainer.style.display = 'flex';
+                        rightMap.innerHTML = art.right;
+                    } else {
+                        rightContainer.style.display = 'none';
+                    }
+                }
+            }
+
+            updateCamera() {
+                const tileSize = window.innerWidth <= 768 ? 14 : 18;
+                
+                const playerPixelX = (this.playerPos.x * tileSize) + (tileSize / 2);
+                const playerPixelY = (this.playerPos.y * tileSize) + (tileSize / 2);
+                
+                const halfViewW = this.viewportEl.clientWidth / 2;
+                const halfViewH = this.viewportEl.clientHeight / 2;
+                
+                this.viewportEl.scrollLeft = playerPixelX - halfViewW;
+                this.viewportEl.scrollTop = playerPixelY - halfViewH;
+                
+                // --- PARALLAX SCROLL FOR SCENES ---
+                const maxGameScrollX = this.gridEl.offsetWidth - this.viewportEl.clientWidth;
+                const maxGameScrollY = this.gridEl.offsetHeight - this.viewportEl.clientHeight;
+                
+                let scrollRatioX = 0;
+                let scrollRatioY = 0;
+                
+                if (maxGameScrollX > 0) scrollRatioX = this.viewportEl.scrollLeft / maxGameScrollX;
+                if (maxGameScrollY > 0) scrollRatioY = this.viewportEl.scrollTop / maxGameScrollY;
+
+                // Horizontal Parallax (Top/Bottom)
+                const streetEl = document.querySelector('#street-scene .map');
+                if (streetEl && streetEl.parentNode.style.display !== 'none') {
+                    const maxStreetScroll = streetEl.scrollWidth - streetEl.parentNode.clientWidth;
+                    if (maxStreetScroll > 0) {
+                        streetEl.style.transform = `translateX(-${scrollRatioX * maxStreetScroll}px)`;
+                    } else {
+                        streetEl.style.transform = 'translateX(0px)';
+                    }
+                }
+
+                const marketEl = document.querySelector('#market-scene .map');
+                if (marketEl && marketEl.parentNode.style.display !== 'none') {
+                    const maxMarketScroll = marketEl.scrollWidth - marketEl.parentNode.clientWidth;
+                    if (maxMarketScroll > 0) {
+                        marketEl.style.transform = `translateX(-${scrollRatioX * maxMarketScroll}px)`;
+                    } else {
+                        marketEl.style.transform = 'translateX(0px)';
+                    }
+                }
+                
+                // Vertical Parallax (Left/Right)
+                const leftEl = document.querySelector('#left-scene .map');
+                if (leftEl && leftEl.parentNode.style.display !== 'none') {
+                    const maxLeftScroll = leftEl.scrollHeight - leftEl.parentNode.clientHeight;
+                    if (maxLeftScroll > 0) {
+                        leftEl.style.transform = `translateY(-${scrollRatioY * maxLeftScroll}px)`;
+                    } else {
+                        leftEl.style.transform = 'translateY(0px)';
+                    }
+                }
+                
+                const rightEl = document.querySelector('#right-scene .map');
+                if (rightEl && rightEl.parentNode.style.display !== 'none') {
+                    const maxRightScroll = rightEl.scrollHeight - rightEl.parentNode.clientHeight;
+                    if (maxRightScroll > 0) {
+                        rightEl.style.transform = `translateY(-${scrollRatioY * maxRightScroll}px)`;
+                    } else {
+                        rightEl.style.transform = 'translateY(0px)';
+                    }
+                }
+            }
+
+            generateLevel() {
+                this.map = [];
+                this.visualMap = [];
+                this.foodVisuals = [];
+                this.enemies = [];
+
+                this.generateProceduralLevel();
+            }
+
+            generateProceduralLevel() {
+                // Initialize map with empty tiles
+                for (let y = 0; y < this.mapH; y++) {
+                    const row = [];
+                    const visRow = [];
+                    const foodRow = [];
+                    for (let x = 0; x < this.mapW; x++) {
+                        row.push('EMPTY');
+                        foodRow.push(null);
+                        
+                        let char = '.';
+                        if (this.biome.pattern === "puddles") {
+                            const noise = Math.sin(x * 0.2) + Math.cos(y * 0.5); 
+                            char = noise > 0.5 ? '~' : (noise > 0 ? ',' : '.');
+                        } 
+                        else if (this.biome.pattern === "checkerboard") {
+                            char = (x + y) % 2 === 0 ? '+' : ' ';
+                        } 
+                        else if (this.biome.pattern === "face") {
+                            char = Math.random() > 0.8 ? (Math.random() > 0.5 ? '(' : ')') : ' ';
+                        }
+
+                        visRow.push(char);
+                    }
+                    this.map.push(row);
+                    this.visualMap.push(visRow);
+                    this.foodVisuals.push(foodRow);
+                }
+                
+                // Borders
+                for (let i = 0; i < this.mapW; i++) { this.setTile(0, i, 'WALL'); this.setTile(this.mapH-1, i, 'WALL'); }
+                for (let i = 0; i < this.mapH; i++) { this.setTile(i, 0, 'WALL'); this.setTile(i, this.mapW-1, 'WALL'); }
+
+                // --- STAGE 3 SPECIFIC GENERATION ---
+                const themeIndex = ((this.level - 1) % 3) + 1;
+                
+                if (themeIndex === 3) {
+                      // 1. Add Floor Decorations (Walkable "Mess")
+                      // Socks, toys, papers scattered around
+                      const messCount = 40;
+                      for(let i=0; i<messCount; i++) {
+                          const rx = Math.floor(Math.random() * (this.mapW - 2)) + 1;
+                          const ry = Math.floor(Math.random() * (this.mapH - 2)) + 1;
+                          
+                          // Only place if empty
+                          if (this.map[ry][rx] === 'EMPTY') {
+                              // Pick random decoration char
+                              const deco = FLOOR_DECO_CHARS[Math.floor(Math.random() * FLOOR_DECO_CHARS.length)];
+                              this.visualMap[ry][rx] = deco;
+                              // We DO NOT change this.map[ry][rx] to WALL, so it remains walkable
+                          }
+                      }
+
+                      this.drawRectWall(2, this.mapH - 5, this.mapW - 4, 4, true, 'BED');
+                      this.enemies.push({ x: Math.floor(this.mapW/2), y: 5, type: 'MOUSE', dir: 1 });
+                      this.playerPos = { x: Math.floor(this.mapW/2), y: 2 };
+                      this.map[this.playerPos.y][this.playerPos.x] = 'EMPTY';
+                      
+                      // Add custom bed visual logic
+                      const bedHeight = BED_ART.length;
+                      const bedWidth = BED_ART[0].length;
+                      
+                      const bedY = this.mapH - bedHeight - 1; 
+                      const bedX = Math.floor((this.mapW - bedWidth) / 2); 
+                      
+                      for(let r = 0; r < bedHeight; r++) {
+                          const rowStr = BED_ART[r];
+                          for(let c = 0; c < rowStr.length; c++) {
+                              const char = rowStr[c];
+                              const tx = bedX + c;
+                              const ty = bedY + r;
+                              
+                              if (tx >= 0 && tx < this.mapW && ty >= 0 && ty < this.mapH) {
+                                  if (char !== ' ') {
+                                       this.map[ty][tx] = 'BED';
+                                       this.visualMap[ty][tx] = char;
+                                  }
+                              }
+                          }
+                      }
+                      
+                      // Spawn Mouse at Top
+                      this.enemies.push({ x: Math.floor(this.mapW/2), y: 5, type: 'MOUSE', dir: 1 });
+                      
+                      // Set Player Start at Top (Run away!)
+                      this.playerPos = { x: Math.floor(this.mapW/2), y: 2 };
+                      this.map[this.playerPos.y][this.playerPos.x] = 'EMPTY';
+
+                } else {
+                    // Standard Generation for 1 & 2
+                    if (this.biome.layout === "cubes") {
+                        // INCREASED DENSITY FOR STAGE 2 (Even more blocking)
+                        // Create islands of safety
+                        for (let y = 2; y < this.mapH - 4; y += 4) { // Tighter grid (was 5)
+                            for (let x = 2; x < this.mapW - 4; x += 4) { // Tighter grid (was 5)
+                                if (Math.random() < 0.90) { // Very High Density
+                                    if (themeIndex === 2) {
+                                           // More hiding spots!
+                                           this.drawRectWall(x, y, 3, 3, false, 'HIDING_SPOT');
+                                    } else {
+                                           this.drawRectWall(x, y, 3, 3, true); 
+                                    }
+                                }
+                            }
+                        }
+                        // Add some chaos walls
+                        for(let i=0; i<15; i++) this.setRandomTile('WALL');
+                    } 
+                    else if (this.biome.layout === "open_square") {
+                        this.generateFaceObstacles();
+                    } else if (this.biome.layout === "horizontal") {
+                         for (let i = 0; i < (this.mapW * this.mapH) * 0.18; i++) this.setRandomTile('WALL');
+                    }
+                    
+                    this.playerPos = { x: 1, y: 1 };
+                    this.map[1][1] = 'EMPTY';
+                    this.map[1][2] = 'EMPTY';
+                    this.map[2][1] = 'EMPTY';
+                    this.map[this.mapH-2][this.mapW-2] = 'EXIT';
+                }
+
+                const giantFoodCount = Math.floor((this.mapW * this.mapH) / 70);
+                const foodKeys = Object.keys(SEAFOOD_ART);
+                for(let i=0; i<giantFoodCount; i++) {
+                    const type = foodKeys[Math.floor(Math.random() * foodKeys.length)];
+                    this.placeGiantFood(type);
+                }
+
+                const area = this.mapW * this.mapH;
+                
+                // --- INCREASED FOOD FOR STAGE 1 & 2 ---
+                // 5% density for Stage 1, 15% for Stage 2 (Kitchen)
+                let foodDensity = 0.02;
+                if (themeIndex === 1) foodDensity = 0.05;
+                if (themeIndex === 2) foodDensity = 0.15; 
+
+                const crumbCount = Math.floor(area * foodDensity);
+                
+                for(let i=0; i<crumbCount; i++) this.setRandomTile('FOOD');
+
+                for(let i=0; i<Math.floor(area * 0.005); i++) this.setRandomTile('POISON');
+                for(let i=0; i<Math.floor(area * 0.01); i++) this.setRandomTile('GLUE');
+
+                let enemyCount = 3 + Math.floor(this.level / 2) + Math.floor(area * 0.005);
+                
+                // More Humans in Stage 1
+                if (themeIndex === 1) enemyCount = Math.floor(enemyCount * 2.0);
+
+                // MORE Ants in Stage 2 to see them get crushed!
+                if (themeIndex === 2) enemyCount = Math.floor(enemyCount * 2.2);
+
+                // Add standard enemies (except stage 3 which has specific setup)
+                if (themeIndex !== 3) {
+                    for(let i=0; i<enemyCount; i++) {
+                        const pos = this.findEmptyTile();
+                        if(pos) {
+                            // Stage 2 has 1x3 Ants (Snake-like)
+                            if (themeIndex === 2) {
+                                // Create segments for 1x3 ant
+                                const segments = [
+                                    {x: pos.x, y: pos.y},         // Head
+                                    {x: pos.x - 1, y: pos.y},     // Body 1
+                                    {x: pos.x - 2, y: pos.y}      // Body 2
+                                ];
+                                this.enemies.push({ 
+                                    id: i, 
+                                    type: 'ANT_1x3', 
+                                    segments: segments
+                                });
+                            } else {
+                                this.enemies.push({ x: pos.x, y: pos.y, id: i });
+                            }
+                        }
+                    }
+                }
+            }
+
+            placeGiantFood(type) {
+                const art = SEAFOOD_ART[type];
+                const h = art.length;
+                const w = art[0].length;
+                
+                let placed = false;
+                let attempts = 0;
+                while(!placed && attempts < 50) {
+                    const tx = Math.floor(Math.random() * (this.mapW - w - 2)) + 1;
+                    const ty = Math.floor(Math.random() * (this.mapH - h - 2)) + 1;
+                    
+                    let clear = true;
+                    for(let i=0; i<h; i++) {
+                        for(let j=0; j<w; j++) {
+                            if (this.map[ty+i][tx+j] !== 'EMPTY') clear = false;
+                        }
+                    }
+
+                    if(clear) {
+                        for(let i=0; i<h; i++) {
+                            for(let j=0; j<w; j++) {
+                                const char = art[i][j];
+                                if (char !== ' ') {
+                                    this.map[ty+i][tx+j] = 'FOOD_CHUNK';
+                                    this.foodVisuals[ty+i][tx+j] = char;
+                                }
+                            }
+                        }
+                        placed = true;
+                    }
+                    attempts++;
+                }
+            }
+
+            generateFaceObstacles() {
+                const cx = Math.floor(this.mapW / 2);
+                const cy = Math.floor(this.mapH / 2);
+                this.drawRectWall(cx - 5, cy - 5, 3, 3, false); 
+                this.drawRectWall(cx + 3, cy - 5, 3, 3, false); 
+                for(let y=cy-2; y<cy+2; y++) this.setTile(y, cx, 'WALL');
+                for(let x=cx-3; x<cx+4; x++) this.setTile(cy+4, x, 'WALL');
+            }
+
+            drawRectWall(x, y, w, h, filled, type = 'WALL') {
+                for(let i=0; i<h; i++) {
+                    for(let j=0; j<w; j++) {
+                        if (x+j < this.mapW && y+i < this.mapH) {
+                            if (filled || (i===0 || i===h-1 || j===0 || j===w-1)) {
+                                this.setTile(y+i, x+j, type);
+                            } else if (type === 'HIDING_SPOT') {
+                                 // Fill inside for hiding spots to make them usable
+                                 this.setTile(y+i, x+j, type);
+                            }
+                        }
+                    }
+                }
+            }
+
+            setTile(y, x, type) {
+                if (y >= 0 && y < this.mapH && x >= 0 && x < this.mapW) {
+                    this.map[y][x] = type;
+                }
+            }
+
+            setRandomTile(type) {
+                const pos = this.findEmptyTile();
+                if (pos) this.map[pos.y][pos.x] = type;
+            }
+
+            findEmptyTile() {
+                let safety = 0;
+                while(safety < 2000) {
+                    const x = Math.floor(Math.random() * (this.mapW-2)) + 1;
+                    const y = Math.floor(Math.random() * (this.mapH-2)) + 1;
+                    if (this.map[y][x] === 'EMPTY' && !(x<4 && y<4)) { 
+                        return {x, y};
+                    }
+                    safety++;
+                }
+                return null;
+            }
+
+            handleInput(dx, dy) {
+                if (this.isGameOver) return;
+                // If modal is showing, block input
+                if (this.modalOverlay.style.display === 'flex') return;
+                
+                const newX = this.playerPos.x + dx;
+                const newY = this.playerPos.y + dy;
+                
+                if (newX < 0 || newX >= this.mapW || newY < 0 || newY >= this.mapH) return;
+
+                const targetType = this.map[newY][newX];
+
+                let moved = false;
+
+                if (targetType === 'WALL' || targetType === 'FURNITURE') {
+                    // Blocked
+                } else {
+                    if (targetType === 'GLUE') {
+                        if (Math.random() > 0.5) {
+                            this.log(FLAVOR_TEXT.glue);
+                            this.endTurn(true); 
+                            return;
+                        }
+                    }
+                    
+                    // WIN CONDITION FOR STAGE 3
+                    if (targetType === 'BED') {
+                         // Reproduce ending: show special modal instead of hard reset
+                         this.isGameOver = false;
+                         this.showEndScreen();
+                         return;
+                    }
+
+                    this.playerPos.x = newX;
+                    this.playerPos.y = newY;
+                    moved = true;
+
+                    if (targetType === 'FOOD') {
+                        this.grit = Math.min(MAX_GRIT, this.grit + 2); 
+                        this.map[newY][newX] = 'EMPTY';
+                        this.log(FLAVOR_TEXT.food[Math.floor(Math.random()*3)], 'info');
+                    } 
+                    else if (targetType === 'FOOD_CHUNK') {
+                        this.grit = Math.min(MAX_GRIT, this.grit + 2); 
+                        this.map[newY][newX] = 'EMPTY'; 
+                        this.log("Ate a piece of Giant Food.", 'info');
+                    }
+                    else if (targetType === 'POISON') {
+                        this.grit -= 4;
+                        this.map[newY][newX] = 'EMPTY';
+                        this.log(FLAVOR_TEXT.poison, 'danger');
+                    } else if (targetType === 'EXIT') {
+                        this.level++;
+                        if (this.level > 3) this.level = 1;
+                        this.log(FLAVOR_TEXT.level_up, 'new');
+                        this.startLevel();
+                        return;
+                    }
+                    else if (targetType === 'HIDING_SPOT') {
+                        this.log("Safe under the table.", 'info');
+                    }
+                }
+
+                if (dx === 0 && dy === 0) moved = true;
+
+                if (moved) this.endTurn();
+            }
+
+            endTurn(struggled = false) {
+                this.steps++;
+                this.totalSteps++; 
+
+                if (this.steps >= MOVES_PER_HUNGER) {
+                    this.grit -= 1;
+                    this.steps = 0;
+                }
+
+                this.updateEnemies();
+                
+                // HAZARD LOGIC
+                // Stage 2: Boot + Spray mix
+                if (this.biome.hazardType === 'boot_spray') {
+                    const roll = Math.random();
+                    // 25% Boot (Stomp)
+                    if (roll < 0.25) { 
+                        this.startHazard('boot');
+                    }
+                    // Reduced Spray Frequency: 7% (was higher)
+                    // Checks if roll is between 0.25 and 0.32
+                    else if (roll < 0.32) {
+                        this.startHazard('spray');
+                    }
+                } 
+                // Stage 3: Vacuum
+                else if (this.biome.hazardType === 'vacuum') {
+                    if (Math.random() < 0.3) {
+                        this.startHazard('vacuum');
+                    }
+                }
+                // Stage 1: Paw
+                else {
+                    if (this.stompTimer > 0) {
+                        this.stompTimer--;
+                        if (this.stompTimer === 0) {
+                            this.triggerHazard();
+                        }
+                    } else {
+                        if (Math.random() < 0.1) { 
+                            this.startHazard('paw');
+                        }
+                    }
+                }
+                
+                // Universal Timer Decrement
+                if (this.stompTimer > 0) {
+                    this.stompTimer--;
+                    if (this.stompTimer === 0) {
+                        this.triggerHazard();
+                    }
+                }
+
+                this.updateScooters(); 
+
+                this.updateCamera();
+                this.checkDeath();
+                this.render();
+            }
+
+            startHazard(overrideType) {
+                if (this.stompTarget) return;
+
+                this.stompTimer = 2; 
+                this.activeHazardType = overrideType || this.biome.hazardType;
+
+                const range = 5;
+                const px = this.playerPos.x;
+                const py = this.playerPos.y;
+                
+                let minX = 1, maxX = this.mapW - 6;
+                let minY = 1, maxY = this.mapH - 5;
+
+                if (this.activeHazardType === 'vacuum') {
+                    maxY = Math.floor(this.mapH / 2);
+                }
+
+                const tx = Math.max(minX, Math.min(maxX, px + (Math.floor(Math.random() * range * 2) - range)));
+                let ty = Math.max(minY, Math.min(maxY, py + (Math.floor(Math.random() * range * 2) - range)));
+                
+                if (this.activeHazardType === 'vacuum') {
+                    if (py > maxY) ty = Math.floor(Math.random() * maxY);
+                    else ty = Math.min(maxY, Math.max(1, py + (Math.floor(Math.random() * 4) - 2)));
+                }
+
+                this.stompTarget = { x: tx, y: ty };
+                
+                if (this.activeHazardType === 'spray') this.log(FLAVOR_TEXT.spray_warn, 'danger');
+                else if (this.activeHazardType === 'boot') this.log(FLAVOR_TEXT.boot_warn, 'danger');
+                else if (this.activeHazardType === 'vacuum') this.log(FLAVOR_TEXT.vacuum_warn, 'danger');
+                else this.log(FLAVOR_TEXT.cat_warn, 'danger');
+            }
+
+            triggerHazard() {
+                if (!this.stompTarget) return;
+                
+                const tx = this.stompTarget.x;
+                const ty = this.stompTarget.y;
+                
+                let w, h, art;
+                if (this.activeHazardType === 'spray') {
+                    w = SPRAY_ART[0].length; h = SPRAY_ART.length; art = SPRAY_ART;
+                } else if (this.activeHazardType === 'boot') {
+                    w = BOOT_ART[0].length; h = BOOT_ART.length; art = BOOT_ART;
+                } else if (this.activeHazardType === 'vacuum') {
+                    w = VACUUM_ART[0].length; h = VACUUM_ART.length; art = VACUUM_ART;
+                } else {
+                    w = PAW_ART[0].length; h = PAW_ART.length; art = PAW_ART;
+                }
+                
+                // 1. DAMAGE PLAYER
+                if (this.playerPos.x >= tx && this.playerPos.x < tx + w &&
+                    this.playerPos.y >= ty && this.playerPos.y < ty + h) {
+                    
+                    const tile = this.map[this.playerPos.y][this.playerPos.x];
+                    let isSafe = false;
+
+                    if (tile === 'HIDING_SPOT') {
+                        if (this.activeHazardType === 'spray') {
+                            this.log("The GAS seeps under the table!", 'danger');
+                            isSafe = false;
+                        } else {
+                            this.log("Saved by the cover!", 'safe');
+                            isSafe = true;
+                        }
+                    } 
+
+                    if (!isSafe) {
+                        if (this.activeHazardType === 'boot') {
+                            this.grit -= 8; // REDUCED DAMAGE
+                            this.log(FLAVOR_TEXT.boot_hit, 'danger');
+                        }
+                        else if (this.activeHazardType === 'spray') {
+                            this.grit -= 20; 
+                            this.log(FLAVOR_TEXT.spray_hit, 'danger');
+                        }
+                        else if (this.activeHazardType === 'vacuum') {
+                            this.grit -= 20;
+                            this.log(FLAVOR_TEXT.vacuum_hit, 'danger');
+                        }
+                        else {
+                            this.grit -= 15; 
+                            this.log(FLAVOR_TEXT.cat_hit, 'danger');
+                        }
+                    }
+                } else {
+                    const dist = Math.abs(this.playerPos.x - tx) + Math.abs(this.playerPos.y - ty);
+                    if (dist < 10) this.log("The hazard missed.", 'normal');
+                }
+
+                // 2. DAMAGE ENEMIES (Friendly Fire)
+                // Filter out enemies that are caught in the hazard zone
+                const initialCount = this.enemies.length;
+                this.enemies = this.enemies.filter(enemy => {
+                    let hit = false;
+                    
+                    if (enemy.type === 'ANT_1x3') {
+                        // Check if any segment is hit
+                        for(let seg of enemy.segments) {
+                            if (seg.x >= tx && seg.x < tx + w && seg.y >= ty && seg.y < ty + h) {
+                                hit = true; 
+                                break;
+                            }
+                        }
+                    } else if (enemy.type === 'MOUSE') {
+                        // Mouse Boss might take damage or ignore (Let's make boss immune or take grit logic later)
+                        // For now, let's keep boss safe to avoid easy win, or maybe just teleport it
+                        const mw = MOUSE_ART[0].length;
+                        const mh = MOUSE_ART.length;
+                        // Simple center check for boss
+                        if (enemy.x + mw/2 >= tx && enemy.x + mw/2 < tx + w && enemy.y + mh/2 >= ty && enemy.y + mh/2 < ty + h) {
+                            // Boss just gets annoyed
+                            this.log("The Mouse dodged the attack!", 'info'); 
+                            return true;
+                        }
+                    } else {
+                        // Single tile enemies
+                        if (enemy.x >= tx && enemy.x < tx + w && enemy.y >= ty && enemy.y < ty + h) {
+                            hit = true;
+                        }
+                    }
+
+                    if (hit) {
+                        this.log(`${enemy.type || 'Enemy'} was crushed!`, 'success');
+                        return false; // Remove enemy
+                    }
+                    return true; // Keep enemy
+                });
+                
+                setTimeout(() => { 
+                    this.stompTarget = null; 
+                    this.render(); 
+                }, 400);
+            }
+            
+            spawnScooter() {
+                this.log(FLAVOR_TEXT.scooter_warn, 'danger');
+                const spawnLeft = Math.random() > 0.5;
+                const dir = spawnLeft ? 1 : -1;
+                // Spawn closer to edge (-2 or mapW) to ensure visibility immediately
+                const startX = spawnLeft ? -2 : this.mapW;
+                const spawnY = Math.floor(Math.random() * 9) + 4; 
+                this.scooters.push({ x: startX, y: spawnY, dir: dir, timer: 0 }); 
+            }
+
+            updateScooters() {
+                if (this.level !== 1) return;
+                if (this.scooterTimer <= 0) {
+                    this.spawnScooter();
+                    this.scooterTimer = Math.floor(Math.random() * 6) + 3;
+                } else {
+                    this.scooterTimer--;
+                }
+                for (let i = this.scooters.length - 1; i >= 0; i--) {
+                    let s = this.scooters[i];
+                    // Move slightly slower (3 instead of 4) to track better
+                    s.x += 3 * s.dir; 
+                    if (this.playerPos.x >= s.x && this.playerPos.x < s.x + 7 && 
+                        this.playerPos.y >= s.y && this.playerPos.y < s.y + 3) {
+                        this.grit -= 20;
+                        this.log(FLAVOR_TEXT.scooter_hit, 'danger');
+                        this.scooters.splice(i, 1);
+                        continue;
+                    }
+                    if (s.x > this.mapW + 10 || s.x < -10) {
+                        this.scooters.splice(i, 1);
+                    }
+                }
+            }
+
+            updateEnemies() {
+                this.enemies.forEach(enemy => {
+                    if (enemy.type === 'HUMAN') {
+                        const nx = enemy.x + enemy.dir;
+                        if (nx < enemy.startX - enemy.patrolRange || nx > enemy.startX + enemy.patrolRange || 
+                            nx <= 0 || nx >= this.mapW - 1) {
+                            enemy.dir *= -1; 
+                        } else {
+                            enemy.x = nx;
+                        }
+                        const px = this.playerPos.x;
+                        const py = this.playerPos.y;
+                        if (px === enemy.x && (py === enemy.y || py === enemy.y + 1 || py === enemy.y + 2)) {
+                            this.grit -= 10;
+                            this.log(FLAVOR_TEXT.human_hit, 'danger');
+                        }
+                    } 
+                    else if (enemy.type === 'ANT_1x3') {
+                        // SNAKE LOGIC FOR ANT (Head + Body + Tail)
+                        const head = enemy.segments[0];
+                        
+                        const dx = this.playerPos.x - head.x;
+                        const dy = this.playerPos.y - head.y;
+                        let moveX = 0;
+                        let moveY = 0;
+                        
+                        if (Math.abs(dx) > Math.abs(dy)) {
+                            moveX = dx > 0 ? 1 : -1;
+                        } else {
+                            moveY = dy > 0 ? 1 : -1;
+                        }
+                        
+                        // Reduced aggression (0.45 chance to move)
+                        if(Math.random() < 0.45) { 
+                             const nx = head.x + moveX;
+                             const ny = head.y + moveY;
+                             const headValid = (nx > 0 && nx < this.mapW-1 && ny > 0 && ny < this.mapH-1 && this.map[ny][nx] !== 'WALL');
+                             
+                             if (headValid) {
+                                 // Shift segments
+                                 // Move Body 2 to Body 1
+                                 enemy.segments[2].x = enemy.segments[1].x;
+                                 enemy.segments[2].y = enemy.segments[1].y;
+                                 // Move Body 1 to Head
+                                 enemy.segments[1].x = enemy.segments[0].x;
+                                 enemy.segments[1].y = enemy.segments[0].y;
+                                 // Move Head to New
+                                 enemy.segments[0].x = nx;
+                                 enemy.segments[0].y = ny;
+                             }
+                        }
+                        
+                        // Collision Check (Any segment)
+                        let bitten = false;
+                        for(let seg of enemy.segments) {
+                            if (seg.x === this.playerPos.x && seg.y === this.playerPos.y) bitten = true;
+                        }
+
+                        if (bitten) {
+                            this.grit -= 4;
+                            this.log("Bitten by Giant Ant!", 'danger');
+                        }
+                    }
+                    else if (enemy.type === 'MOUSE') {
+                        // Stage 3 Mouse Logic (BOSS)
+                        const h = MOUSE_ART.length;
+                        const w = MOUSE_ART[0].length;
+                        
+                        // Chase until player gets close to the bed (Safe Zone)
+                        // Bed starts at bottom, so chase until y is deep (e.g. mapH - 12)
+                        const chaseMode = this.playerPos.y < (this.mapH - 12);
+                        
+                        // Target centers
+                        const targetX = chaseMode ? this.playerPos.x - Math.floor(w/2) : Math.floor((this.mapW - w)/2);
+                        const targetY = chaseMode ? this.playerPos.y - Math.floor(h/2) : 2; // Retreat to Top
+                        
+                        const dx = targetX - enemy.x;
+                        const dy = targetY - enemy.y;
+                        
+                        let moveX = 0;
+                        let moveY = 0;
+                        
+                        // Move one axis at a time
+                        if (Math.abs(dx) > Math.abs(dy)) moveX = dx > 0 ? 1 : -1;
+                        else moveY = dy > 0 ? 1 : -1;
+                        
+                        const nx = enemy.x + moveX;
+                        const ny = enemy.y + moveY;
+                        
+                        // Check bounds and collisions for the WHOLE body
+                        let blocked = false;
+                        
+                        // 1. Map Bounds
+                        if (nx < 0 || nx + w > this.mapW || ny < 0 || ny + h > this.mapH) blocked = true;
+                        
+                        // 2. Obstacles (Furniture/Bed)
+                        if (!blocked) {
+                            for(let r=0; r<h; r++) {
+                                for(let c=0; c<w; c++) {
+                                    // Optimization: Only check border of mouse or sparse check
+                                    if (MOUSE_ART[r][c] !== ' ') {
+                                        const tile = this.map[ny+r][nx+c];
+                                        if (tile === 'WALL' || tile === 'FURNITURE' || tile === 'BED') {
+                                            blocked = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if(blocked) break;
+                            }
+                        }
+                        
+                        if (!blocked) {
+                             enemy.x = nx;
+                             enemy.y = ny;
+                        }
+                        
+                        // Check Collision with Player (Bounding Box)
+                        if (this.playerPos.x >= enemy.x && this.playerPos.x < enemy.x + w &&
+                            this.playerPos.y >= enemy.y && this.playerPos.y < enemy.y + h) {
+                            
+                            // Fine-grained collision (hit non-empty art pixels)
+                            const localX = this.playerPos.x - enemy.x;
+                            const localY = this.playerPos.y - enemy.y;
+                            if (MOUSE_ART[localY][localX] !== ' ') {
+                                this.grit -= 20;
+                                this.log("CAUGHT BY THE GIANT MOUSE!", 'danger');
+                                // Bounce player
+                                this.playerPos.y = Math.min(this.mapH-2, this.playerPos.y + 6);
+                            }
+                        }
+                    }
+                    else {
+                        const dx = this.playerPos.x - enemy.x;
+                        const dy = this.playerPos.y - enemy.y;
+                        let moveX = 0;
+                        let moveY = 0;
+                        if (Math.abs(dx) > Math.abs(dy)) moveX = dx > 0 ? 1 : -1;
+                        else moveY = dy > 0 ? 1 : -1;
+                        
+                        if(Math.random() < 0.5) {
+                             const nx = enemy.x + moveX;
+                             const ny = enemy.y + moveY;
+                             if (nx > 0 && nx < this.mapW-1 && ny > 0 && ny < this.mapH-1 && this.map[ny][nx] !== 'WALL') {
+                                 enemy.x = nx;
+                                 enemy.y = ny;
+                             }
+                        }
+
+                        if (enemy.x === this.playerPos.x && enemy.y === this.playerPos.y) {
+                            this.grit -= 3;
+                            this.log(`ATTACKED by ${this.biome.enemyName}!`, 'danger');
+                        }
+                    }
+                });
+            }
+
+            checkDeath() {
+                if (this.grit <= 0 && !this.isGameOver) {
+                    this.isGameOver = true;
+                    // --- UPDATED DEATH LOGIC ---
+                    this.log("CRITICAL FAILURE. VITAL SIGNS ZERO.", 'danger');
+                    this.showDeathScreen();
+                }
+            }
+
+            retryLevel() {
+                this.isGameOver = false;
+                this.grit = MAX_GRIT; // Reset grit
+                this.log("TIMELINE RESET. TRY AGAIN.", 'info');
+                this.startLevel(); 
+            }
+            
+            toggleFullScreen() {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch((e) => {
+                        this.log("Fullscreen blocked: " + e.message, 'danger');
+                    });
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    }
+                }
+            }
+
+            render() {
+                this.gridEl.innerHTML = '';
+
+                this.gritEl.textContent = `GRIT:${Math.ceil(this.grit)}`;
+                this.levelEl.textContent = `L:${this.level}`;
+                
+                if (this.grit < 5) this.gritEl.style.color = "var(--danger-red)";
+                else this.gritEl.style.color = "var(--safe-green)";
+
+                const tileSize = window.innerWidth <= 768 ? 14 : 18;
+
+                for (let y = 0; y < this.mapH; y++) {
+                    for (let x = 0; x < this.mapW; x++) {
+                        const tileDiv = document.createElement('div');
+                        tileDiv.className = 'tile';
+                        
+                        let char = this.visualMap[y][x];
+                        let className = 'floor';
+                        
+                        const type = this.map[y][x];
+                        
+                        if (x === this.playerPos.x && y === this.playerPos.y) {
+                            char = TILES.PLAYER;
+                            className = 'player';
+                        } else {
+                            // Check Enemies
+                            let enemyRendered = false;
+                            
+                            // Human
+                            const human = this.enemies.find(e => e.type === 'HUMAN' && e.x === x && (y >= e.y && y <= e.y + 2));
+                            if (human) {
+                                const offset = y - human.y;
+                                if (offset === 0) char = 'O';
+                                else if (offset === 1) char = '/|\\';
+                                else if (offset === 2) char = '/ \\';
+                                className = 'human';
+                                enemyRendered = true;
+                            }
+                            
+                            // Ant 1x3 (Segments)
+                            if (!enemyRendered) {
+                                const ant = this.enemies.find(e => {
+                                    if (e.type !== 'ANT_1x3') return false;
+                                    return e.segments.some(seg => seg.x === x && seg.y === y);
+                                });
+                                
+                                if (ant) {
+                                    // Determine if Head, Body, or Tail to spell "ant"
+                                    if (ant.segments[0].x === x && ant.segments[0].y === y) char = 'a';      // Head
+                                    else if (ant.segments[1].x === x && ant.segments[1].y === y) char = 'n'; // Thorax
+                                    else if (ant.segments[2].x === x && ant.segments[2].y === y) char = 't'; // Abdomen
+                                    else char = 'o'; // Fallback
+                                    
+                                    className = 'ant';
+                                    enemyRendered = true;
+                                }
+                            }
+                            
+                            // Mouse
+                            if (!enemyRendered) {
+                                // Find if any mouse overlaps this tile
+                                // Since there's usually only 1 big mouse, we can iterate enemies
+                                const mouse = this.enemies.find(e => e.type === 'MOUSE');
+                                if (mouse) {
+                                    const h = MOUSE_ART.length;
+                                    const w = MOUSE_ART[0].length;
+                                    
+                                    // Check if current x,y is inside the mouse's bounding box
+                                    if (x >= mouse.x && x < mouse.x + w && y >= mouse.y && y < mouse.y + h) {
+                                        const charArt = MOUSE_ART[y - mouse.y][x - mouse.x];
+                                        if (charArt !== ' ') {
+                                            char = charArt;
+                                            className = 'mouse';
+                                            enemyRendered = true;
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Standard Enemy
+                            if (!enemyRendered) {
+                                const enemyHere = this.enemies.find(e => e.x === x && e.y === y && !e.type); 
+                                if (enemyHere) {
+                                    char = this.biome.enemyChar;
+                                    className = 'enemy';
+                                    enemyRendered = true;
+                                }
+                            }
+                            
+                            if (!enemyRendered) {
+                                if (type === 'WALL') {
+                                    char = this.biome.wallChar; 
+                                    if(this.biome.pattern === "custom") char = this.visualMap[y][x];
+                                    
+                                    // Check for Borders to apply Highlight class in Stage 1
+                                    // Check Theme for Stage 1 (Union theme)
+                                    const themeIndex = ((this.level - 1) % 3) + 1;
+                                    if (themeIndex === 1) {
+                                        const isBorder = (x === 0 || x === this.mapW - 1 || y === 0 || y === this.mapH - 1);
+                                        if (isBorder) className = 'wall border';
+                                        else className = 'wall';
+                                    } else {
+                                        className = 'wall';
+                                    }
+                                    
+                                } else if (type === 'FOOD') {
+                                    char = TILES.FOOD;
+                                    className = 'food crumb';
+                                } else if (type === 'FOOD_CHUNK') {
+                                    char = this.foodVisuals[y][x];
+                                    className = 'food';
+                                } else if (type === 'POISON') {
+                                    char = TILES.POISON;
+                                    className = 'poison';
+                                } else if (type === 'GLUE') {
+                                    char = TILES.GLUE;
+                                    className = 'glue';
+                                } else if (type === 'EXIT') {
+                                    char = TILES.EXIT;
+                                    className = 'exit';
+                                } else if (type === 'HIDING_SPOT') {
+                                    char = '=';
+                                    className = 'hiding-spot';
+                                } else if (type === 'FURNITURE') {
+                                    char = '#';
+                                    className = 'furniture';
+                                } else if (type === 'BED') {
+                                    char = this.visualMap[y][x]; // Use custom art
+                                    className = 'bed';
+                                }
+                            }
+                        }
+
+                        // RENDER HAZARD (Spray or Paw)
+                        if (this.stompTarget) {
+                            const hx = this.stompTarget.x;
+                            const hy = this.stompTarget.y;
+                            let w, h, art;
+                            
+                            if (this.activeHazardType === 'spray') {
+                                w = SPRAY_ART[0].length; h = SPRAY_ART.length; art = SPRAY_ART;
+                            } else if (this.activeHazardType === 'boot') {
+                                w = BOOT_ART[0].length; h = BOOT_ART.length; art = BOOT_ART;
+                            } else if (this.activeHazardType === 'vacuum') {
+                                w = VACUUM_ART[0].length; h = VACUUM_ART.length; art = VACUUM_ART;
+                            } else {
+                                w = PAW_ART[0].length; h = PAW_ART.length; art = PAW_ART;
+                            }
+                            
+                            // Warning Phase
+                            if (x >= hx && x < hx + w && y >= hy && y < hy + h) {
+                                if (this.stompTimer > 0) {
+                                    // Shadow/Warning
+                                    tileDiv.classList.add('warning');
+                                    
+                                    // Green warning for spray
+                                    if (this.activeHazardType === 'spray') {
+                                        tileDiv.classList.add('spray-warn');
+                                    }
+                                } else {
+                                    // IMPACT PHASE - Draw Art
+                                    const artChar = art[y - hy][x - hx];
+                                    if (artChar !== ' ') {
+                                        // MASK IF BLOCKED (Hiding under table vs Physical attack)
+                                        // If it's a hiding spot and the attack is physical, don't draw the impact here
+                                        const isMasked = this.map[y][x] === 'HIDING_SPOT' && (this.activeHazardType === 'boot' || this.activeHazardType === 'paw');
+                                        
+                                        if (!isMasked) {
+                                            char = artChar;
+                                            if (this.activeHazardType === 'spray') className = 'spray-impact';
+                                            else className = 'impact';
+                                            tileDiv.textContent = char;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        
+                        if(tileDiv.textContent !== char) tileDiv.textContent = char;
+                        
+                        className.split(' ').forEach(cls => tileDiv.classList.add(cls));
+
+                        this.gridEl.appendChild(tileDiv);
+                    }
+                }
+
+                // RENDER SCOOTER OVERLAYS (Level 1)
+                if (this.level === 1) {
+                    this.scooters.forEach(s => {
+                        const div = document.createElement('div');
+                        div.className = 'scooter-sprite';
+                        div.innerText = SCOOTER_ART.join('\n');
+                        
+                        div.style.fontSize = `${tileSize}px`;
+                        div.style.lineHeight = `${tileSize}px`;
+                        div.style.left = `${s.x * tileSize}px`;
+                        div.style.top = `${s.y * tileSize}px`;
+                        
+                        if (s.dir === -1) {
+                            div.style.transform = "scaleX(-1)";
+                        }
+                        
+                        this.gridEl.appendChild(div);
+                    });
+                }
+            }
+
+            bindInput() {
+                document.addEventListener('keydown', (e) => {
+                    if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].indexOf(e.code) > -1) {
+                        e.preventDefault();
+                    }
+                    
+                    switch(e.key) {
+                        case 'ArrowUp': case 'w': this.handleInput(0, -1); break;
+                        case 'ArrowDown': case 's': this.handleInput(0, 1); break;
+                        case 'ArrowLeft': case 'a': this.handleInput(-1, 0); break;
+                        case 'ArrowRight': case 'd': this.handleInput(1, 0); break;
+                        case 'Enter': case ' ': this.handleInput(0, 0); break;
+                    }
+                });
+
+                document.getElementById('btn-up').onclick = () => this.handleInput(0, -1);
+                document.getElementById('btn-down').onclick = () => this.handleInput(0, 1);
+                document.getElementById('btn-left').onclick = () => this.handleInput(-1, 0);
+                document.getElementById('btn-right').onclick = () => this.handleInput(1, 0);
+                document.getElementById('btn-wait').onclick = () => this.handleInput(0, 0);
+                document.getElementById('btn-skip').onclick = () => this.skipLevel();
+                
+                // Full Screen Button Binding
+                document.getElementById('btn-fullscreen').onclick = () => this.toggleFullScreen();
+            }
+
+            // --- MIDI SUPPORT (Arturia MiniLab 3) ---
+            bindMIDI() {
+                if (!navigator.requestMIDIAccess) {
+                    console.log("Web MIDI API not supported in this browser.");
+                    return;
+                }
+
+                navigator.requestMIDIAccess().then(
+                    (midiAccess) => {
+                        console.log("MIDI ready. Inputs:");
+                        for (const input of midiAccess.inputs.values()) {
+                            console.log("MIDI input:", input.name);
+                            input.onmidimessage = (msg) => this.handleMIDIMessage(msg);
+                        }
+                    },
+                    (err) => {
+                        console.log("Could not access MIDI devices:", err);
+                    }
+                );
+            }
+
+            handleMIDIMessage(message) {
+                const [status, data1, data2] = message.data;
+                const command = status & 0xf0;
+                const channel = status & 0x0f;
+
+                // Log raw messages so you can fine‑tune mappings in dev tools
+                console.log("MIDI", { status, command, channel, data1, data2 });
+
+                // NOTE ON (pads)
+                if (command === 0x90 && data2 > 0) {
+                    switch (data1) {
+                        case MIDI_CONFIG.padLeft:
+                            this.handleInput(-1, 0);
+                            break;
+                        case MIDI_CONFIG.padUp:
+                            this.handleInput(0, -1);
+                            break;
+                        case MIDI_CONFIG.padDown:
+                            this.handleInput(0, 1);
+                            break;
+                        case MIDI_CONFIG.padRight:
+                            this.handleInput(1, 0);
+                            break;
+                        case MIDI_CONFIG.padAction:
+                            // If a modal is open, click its main button; otherwise skip level
+                            if (this.modalOverlay && this.modalOverlay.style.display === 'flex') {
+                                if (this.modalBtn) this.modalBtn.click();
+                            } else {
+                                const skipBtn = document.getElementById('btn-skip');
+                                if (skipBtn) skipBtn.click();
+                            }
+                            break;
+                        case MIDI_CONFIG.padResetLevel:
+                            // Reset current level (retry)
+                            if (typeof this.retryLevel === 'function') {
+                                this.retryLevel();
+                            }
+                            break;
+                        case MIDI_CONFIG.padResetGame:
+                            // Reset whole game back to level 1 intro
+                            this.level = 1;
+                            this.isGameOver = false;
+                            this.showStartScreen();
+                            break;
+                        case MIDI_CONFIG.padToggleFullscreen:
+                            if (typeof this.toggleFullScreen === 'function') {
+                                this.toggleFullScreen();
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                // CONTROL CHANGE (knobs / faders) – map both to master volume
+                if (command === 0xB0) {
+                    if (data1 === MIDI_CONFIG.volKnobCC || data1 === MIDI_CONFIG.volFaderCC) {
+                        // data2 is 0‑127 → 0.0‑1.0 volume
+                        const vol = Math.max(0, Math.min(1, data2 / 127));
+                        this.masterVolume = vol;
+                        this.audio.volume = this.masterVolume;
+                        this.updateVolumeDisplay();
+                    }
+                }
+            }
+        }
+
+        // Init
+        window.addEventListener('DOMContentLoaded', () => {
+             window.game = new NeonScuttle();
+        });
+    </script>
+</body>
+</html>

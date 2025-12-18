@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arboria's Ascent: Adaptable Environment</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <h1>🧬 Arboria's Ascent: Adaptable Environment 🧬</h1>
+        <p class="description">Adapt to the variables! Use the buttons below to **TEST** a tool (discover effects) or **USE** it (apply the effect).</p>
+        
+        <div class="current-conditions">
+            <h3>Current Environment Variables:</h3>
+            <div id="trackerOutput" class="tracker-data"></div>
+            <div id="targetOutput" class="target-data"></div>
+        </div>
+
+        <div class="catalysts-available">
+            <h3>Adaptation Tools:</h3>
+            
+            <div class="catalyst-actions-row">
+                <button id="btnTestMode" class="btn-mode active">1. TEST MODE</button>
+                <button id="btnApplyMode" class="btn-mode">2. USE MODE</button>
+            </div>
+            
+            <div id="catalystList" class="tool-grid">
+                </div>
+            <div class="moves-left" id="movesDisplay"></div>
+        </div>
+        
+        <div class="game-output" id="gameOutput">
+            <p>Welcome, Biologist! Click **'Start Game'** to begin your first adaptation challenge.</p>
+        </div>
+
+        <div class="game-controls">
+            <button id="startStopButton">Start Game</button>
+            <button id="checkEnvButton" style="display: none;">Check Environment</button>
+            <button id="advanceButton" style="display: none;">Advance Stage</button>
+            <button id="restartButton" style="display: none;">Restart Game</button>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>

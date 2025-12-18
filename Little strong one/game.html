@@ -2,1162 +2,1148 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cockroach: Ascension</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NEON SCUTTLE: Survival Edition</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
+        :root {
+            /* PALETTE */
+            --bg-color: #1a0510;
+            --grid-bg: #000000;
+            
+            --dominant-pink: #ff007f;
+            --danger-red: #ff3333;
+            --loot-yellow: #ffff00;
+            --safe-green: #00ff66;
+            --toxic-green: #adff2f;
+            --motor-blue: #00ccff;
+            
+            --floor-dim: #552244;
+            --white: #ffffff;
+            
+            --ui-font: 'Courier New', Courier, monospace;
+        }
+
         body {
-            background: #0a0a0a;
-            color: #888;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            line-height: 1;
-            overflow: hidden;
+            background-color: var(--bg-color);
+            color: var(--dominant-pink);
+            font-family: var(--ui-font);
+            margin: 0;
+            padding: 0;
             display: flex;
             flex-direction: column;
-            height: 100vh;
-        }
-        
-        #ui-bar {
-            padding: 10px;
-            background: #111;
-            border-bottom: 2px solid #333;
-            display: flex;
-            justify-content: space-between;
             align-items: center;
-            flex-shrink: 0;
-        }
-        
-        .stat {
-            color: #fff;
-            margin: 0 15px;
-            font-weight: bold;
-        }
-        
-        .stat.danger { color: #ff4444; }
-        .stat.safe { color: #44ff44; }
-        
-        #game-viewport {
-            flex: 1;
+            justify-content: center;
+            height: 100vh;
             overflow: hidden;
-            position: relative;
-            background: #000;
-            min-height: 400px;
-            min-width: 600px;
+            user-select: none;
         }
-        
-        #ascii-background {
-            position: absolute;
+
+        /* --- CRT EFFECT --- */
+        .scanlines {
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 1;
-            opacity: 0.3;
+            background: linear-gradient(
+                to bottom,
+                rgba(255,0,127,0),
+                rgba(255,0,127,0) 50%,
+                rgba(0,0,0,0.2) 50%,
+                rgba(0,0,0,0.2)
+            );
+            background-size: 100% 4px;
             pointer-events: none;
-            animation: backgroundPulse 3s ease-in-out infinite;
-        }
-        
-        @keyframes backgroundPulse {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 0.5; }
-        }
-        
-        #game-map {
-            position: absolute;
-            white-space: pre;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            line-height: 16px;
-            color: #aaa;
-            margin: 0;
-            padding: 10px;
-            top: 0;
-            left: 0;
-            background: transparent;
             z-index: 10;
         }
         
-        .player { 
-            color: #00ff00 !important; 
-            background: #002200 !important;
+        .vignette {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            box-shadow: inset 0 0 150px rgba(20,0,10,0.9);
+            pointer-events: none;
+            z-index: 11;
+        }
+
+        /* --- UI LAYOUT --- */
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            max-width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        header {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            border-bottom: 2px solid var(--dominant-pink);
+            padding-bottom: 5px;
+            font-size: 14px;
+            color: var(--dominant-pink);
+            text-shadow: 0 0 5px var(--dominant-pink);
+            flex-shrink: 0;
+        }
+
+        .stat-box {
+            display: flex;
+            gap: 15px;
+        }
+
+        .stat {
             font-weight: bold;
-            text-shadow: 0 0 5px #00ff00;
         }
+
+        /* --- SCROLL WRAPPER FOR BIG MAPS --- */
+        #viewport {
+            flex-grow: 1;
+            display: block; 
+            width: 100%;
+            max-width: 100%;
+            margin-bottom: 10px;
+            border: 1px solid #33001a;
+            overflow: auto;
+            position: relative;
+            
+            scrollbar-width: thin;
+            scrollbar-color: var(--dominant-pink) var(--bg-color);
+        }
+
+        /* --- THE GRID --- */
+        #grid-container {
+            position: relative;
+            background-color: var(--grid-bg);
+            border: 2px solid var(--dominant-pink);
+            display: grid;
+            gap: 0px; 
+            box-shadow: 0 0 15px rgba(255, 0, 127, 0.3);
+            width: fit-content; 
+            margin: 0; 
+        }
+
+        .tile {
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            cursor: default;
+            line-height: 18px;
+            position: relative; 
+            white-space: pre;
+        }
+
+        /* --- ENTITY COLORS --- */
+        .tile.floor { color: var(--floor-dim); z-index: 1; }
         
-        .food { color: #ffaa00; font-weight: bold; }
-        .food-chunk { color: #ff8800; font-weight: bold; }
-        .exit { 
-            background: #ff00ff !important; 
-            color: #000 !important; 
+        .tile.wall { 
+            color: var(--dominant-pink); 
             font-weight: bold;
-            text-shadow: 0 0 10px #ff00ff;
+            text-shadow: 0 0 2px var(--dominant-pink);
+            z-index: 5;
+        }
+
+        .tile.player { 
+            color: var(--safe-green); 
+            background-color: #002200;
+            font-weight: 900;
+            text-shadow: 0 0 4px var(--safe-green);
+            z-index: 10; 
+            border: 1px solid var(--safe-green); 
+        }
+
+        .tile.enemy {
+            color: var(--danger-red);
+            background-color: #220000;
+            font-weight: bold;
+            text-shadow: 0 0 4px var(--danger-red);
+            z-index: 8;
         }
         
-        .human { color: #fff; font-weight: bold; text-shadow: 0 0 3px #fff; }
-        .ant { color: #ff8800; font-weight: bold; }
-        .toxic-warning { 
-            background: #00ff00 !important; 
-            color: #000 !important; 
-            animation: flash 0.3s infinite;
+        .tile.human {
+            color: var(--white);
+            font-weight: bold;
+            text-shadow: 0 0 5px var(--danger-red);
+            z-index: 9;
         }
-        .toxic-cloud { 
-            background: #00ff00 !important; 
-            color: #000 !important; 
+
+        /* Scooter Style */
+        .tile.scooter {
+            color: var(--motor-blue);
+            font-weight: 900;
+            text-shadow: 0 0 5px var(--motor-blue);
+            z-index: 15;
+            background-color: rgba(0, 204, 255, 0.1);
         }
-        @keyframes flash { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+        .tile.food { 
+            color: var(--loot-yellow); 
+            font-weight: bold;
+            z-index: 5;
+        }
         
-        .paw-shadow { 
-            background: #440044 !important; 
-            color: #fff !important; 
+        .tile.food.crumb {
+             animation: blink 1s infinite;
+        }
+
+        .tile.poison { 
+            color: var(--danger-red); 
             opacity: 0.7;
+            z-index: 5;
         }
-        .paw-print { 
-            background: #880088 !important; 
-            color: #fff !important; 
+
+        .tile.glue { 
+            color: var(--dominant-pink); 
+            opacity: 0.5;
+            text-decoration: line-through;
+            z-index: 2;
+        }
+
+        .tile.exit { 
+            background-color: var(--dominant-pink);
+            color: black;
             font-weight: bold;
+            box-shadow: 0 0 10px var(--dominant-pink);
+            z-index: 5;
+        }
+
+        /* --- HAZARD OVERLAYS --- */
+        .tile.warning {
+            background-color: rgba(255, 51, 51, 0.3);
+            color: var(--white);
+            animation: blink-fast 0.5s infinite;
+        }
+
+        .tile.impact {
+            background-color: var(--white);
+            color: var(--danger-red);
+            font-weight: 900;
+            animation: shake 0.2s;
+            z-index: 20; 
         }
         
-        .wall { color: #444; }
+        .tile.spray-impact {
+            background-color: rgba(173, 255, 47, 0.2);
+            color: var(--toxic-green);
+            font-weight: bold;
+            animation: blink-fast 0.2s infinite;
+            z-index: 20;
+        }
+
+        /* --- LOG CONSOLE --- */
+        #log-console {
+            width: 100%;
+            max-width: 800px;
+            height: 80px;
+            background-color: #11050a;
+            border: 1px solid var(--dominant-pink);
+            padding: 5px;
+            font-size: 12px;
+            overflow-y: auto;
+            color: #ff8ec7;
+            font-family: 'Courier New', Courier, monospace;
+            margin-bottom: 5px;
+            white-space: pre-wrap;
+            flex-shrink: 0;
+        }
         
-        #status-message {
-            position: absolute;
+        .log-entry { margin-bottom: 4px; border-bottom: 1px dashed #33001a; }
+        .log-entry.new { color: var(--safe-green); }
+        .log-entry.danger { color: var(--danger-red); font-weight: bold; }
+        .log-entry.info { color: var(--loot-yellow); }
+
+        /* --- SKIP BUTTON --- */
+        #btn-skip {
+            width: 100%;
+            max-width: 300px;
+            margin-bottom: 5px;
+            padding: 8px;
+            background: transparent;
+            border: 1px dashed var(--dominant-pink);
+            color: var(--dominant-pink);
+            font-family: var(--ui-font);
+            font-size: 12px;
+            cursor: pointer;
+            text-transform: uppercase;
+            flex-shrink: 0;
+        }
+        #btn-skip:active {
+            background: var(--dominant-pink);
+            color: black;
+        }
+
+        /* --- CONTROLS --- */
+        #mobile-controls {
+            display: none; 
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            width: 100%;
+            max-width: 300px;
+            flex-shrink: 0;
+            margin-bottom: 10px;
+        }
+
+        .control-btn {
+            background: #220011;
+            border: 1px solid var(--dominant-pink);
+            color: var(--dominant-pink);
+            padding: 10px;
+            border-radius: 0;
+            text-align: center;
+            font-size: 18px;
+            touch-action: manipulation;
+        }
+        
+        .control-btn:active { background: var(--dominant-pink); color: black; }
+
+        @media (max-width: 768px) {
+            #mobile-controls { display: grid; }
+            .tile { width: 14px; height: 14px; font-size: 10px; } 
+        }
+
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        @keyframes blink-fast { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        @keyframes shake { 0% { transform: translate(1px, 1px); } 50% { transform: translate(-1px, -1px); } 100% { transform: translate(0, 0); } }
+
+        #game-over-modal {
+            display: none;
+            position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.9);
-            border: 2px solid #ff00ff;
-            padding: 20px;
-            color: #ff00ff;
-            font-size: 18px;
-            font-weight: bold;
-            z-index: 1000;
-            display: none;
+            background: #000;
+            border: 4px solid var(--danger-red);
+            padding: 30px;
+            text-align: center;
+            z-index: 100;
+            box-shadow: 0 0 50px var(--danger-red);
         }
         
-        #instructions {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-            background: rgba(0,0,0,0.8);
-            padding: 10px;
-            border: 1px solid #333;
-            font-size: 10px;
-            color: #888;
-            z-index: 100;
+        button.restart-btn {
+            background: var(--dominant-pink);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-family: var(--ui-font);
+            font-weight: bold;
+            margin-top: 15px;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 0 0 10px var(--dominant-pink);
         }
+
     </style>
 </head>
 <body>
-    <div id="ui-bar">
-        <div class="stat" id="level-display">LEVEL: 1 - WET MARKET</div>
-        <div class="stat" id="grit-display">GRIT: 50</div>
-        <div class="stat" id="moves-display">MOVES: 0</div>
-    </div>
-    
-    <div id="game-viewport">
-        <canvas id="ascii-background"></canvas>
-        <pre id="game-map"></pre>
-        <div id="status-message"></div>
-        <div id="instructions">
-            ARROWS/WASD: Move | SPACE/ENTER: Wait | Reach the Exit (E) to advance
+
+    <div class="scanlines"></div>
+    <div class="vignette"></div>
+
+    <div id="game-container">
+        <header>
+            <div class="title">NEON SCUTTLE</div>
+            <div class="stat-box">
+                <div class="stat" id="level-display">L:1</div>
+                <div class="stat" id="grit-display" style="color:var(--safe-green)">GRIT:40</div>
+            </div>
+        </header>
+
+        <div id="viewport">
+            <div id="grid-container"></div>
+        </div>
+
+        <div id="log-console">
+            <div class="log-entry">> SYSTEM REBOOT...</div>
+        </div>
+
+        <button id="btn-skip">>> FORCE ASCEND (SKIP) >></button>
+
+        <div id="mobile-controls">
+            <div></div>
+            <button class="control-btn" id="btn-up">▲</button>
+            <div></div>
+            <button class="control-btn" id="btn-left">◀</button>
+            <button class="control-btn" id="btn-wait">●</button>
+            <button class="control-btn" id="btn-right">▶</button>
+            <div></div>
+            <button class="control-btn" id="btn-down">▼</button>
+            <div></div>
         </div>
     </div>
 
+    <div id="game-over-modal">
+        <h2 style="color:var(--danger-red)">WAKE UP</h2>
+        <p id="death-reason" style="color:white">The dream ends.</p>
+        <button class="restart-btn" onclick="game.retryLevel()">TRY AGAIN</button>
+    </div>
+
     <script>
-        // ============ GAME STATE ============
-        let gameState = {
-            level: 1,
-            grit: 50,
-            moves: 0,
-            player: { x: 5, y: 3 },
-            map: [],
-            mapWidth: 0,
-            mapHeight: 0,
-            gameOver: false,
-            enemies: [],
-            toxicSprays: [],
-            pawTimer: 0,
-            pawTarget: null
+        // --- CONSTANTS ---
+        const MAX_GRIT = 40.0;
+        const MOVES_PER_HUNGER = 3; 
+        const TILE_SIZE = 18; 
+        
+        const TILES = {
+            PLAYER: '&',
+            FOOD: '$', 
+            FOOD_CHUNK: 'F', 
+            POISON: 'x',
+            GLUE: '%',
+            EXIT: 'E',
+            WALL: '#',
+            ENEMY: '!' 
+        };
+
+        const SEAFOOD_ART = {
+            creature: [
+                "    /¯¯¯¯\\",
+                "   ( #|\\_ü|",
+                "   ( #\\  ƒƒ",
+                "    \\ #\\",
+                "    /|||\\"
+            ],
+            shrimp: [
+                ".            ,",
+                "           .:/",
+                ".      ,,///;,   ,;/",
+                "  .   o:::::::;;///",
+                "     >::::::::;;\\\\\\",
+                "       ''\\\\\\\\\\'\" ';\\",
+                "          ';\\"
+            ],
+            fish: [
+                "  ;,//;,    ,;/",
+                " o:::::::;;///",
+                ">::::::::;;\\\\\\",
+                "  ''\\\\\\\\\\'\" ';\\"
+            ]
         };
         
-        // ============ MAP DATA ============
-        const MAPS = {
+        const SCOOTER_ART = [
+            "   __o",
+            " _ \\<_",
+            "(_)/(_)"
+        ];
+
+        const PAW_ART = [
+            " . . . . ",
+            " O O O O ",
+            " OOOOOOO ",
+            "  OOOOO  "
+        ];
+        
+        const SPRAY_ART = [
+            " : . : : ",
+            " .:::::. ",
+            " ::...:: ",
+            " ::::::. "
+        ];
+
+        const BIOMES = {
             1: {
                 name: "WET MARKET",
-                rawMap: `             ||
-_____________||_________________________________________________________________________________________________________________________________________________________
-________________________________________________________________________________________________________________________________________________________________________
-   .---.                     .---.                                                                                                                                     |
-  [  $  ]  [FRESH CATCH]    [  $  ]                                                                                                                        [SERVICE ENTRANCE] |
-   '---'  +-------------+    '---'                                                                                                                                _____|_____
-    ||    |  /\\\`:·.      |     ||        [FISH $15]             [CRAB $28]           [PORK $12]                                                             | STAFF ONLY|
-    ||    | /...\\\`:·   |     ||      +--------------+          +--------------+       .---.   .---.   .---.                                                     | ___________ |
-    ||    |             |     ||      | ~  ><[[['> ~|          |  [V]    [V]  |      [   [ ] [   [ ] [   [ ]                                                     | | | | | | |
-   _||_   | ><> ><> ><> |    _||_     | ~  ><[[['> ~|          |  [@@]   [@@] |       \ , ]   \ . ]   \ ' ]                                                     | | | | | | |
-  /____\  +-------------+   /____\    +--------------+          +--------------+       ] [     ] [     ] [                                                     | : : : : : : |
-                                                                                      | |     | |     | |                                                     | . . . . . . |
-  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░\\\`-´░░░░░\\\`-´░░░░░\\\`-´░░░░░░░                                                     |             |
-  ░░ .===.   ░░                               ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░                                                     |  [CRATES]   |
-  ░░ ||||| ~   ░░                               ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ ~~~~~~~ ░░░░░░░░░░░░░░░░░░░░░░                                                     |  [||||||]   |
-  ░░ '==='     ░░                               ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░                                                     |__[||||||]___|
-                                                                                                                                                                        \\
-   [VEGETABLES]                  [DURIANS]           [BANANAS]               [SPICES & DRY GOODS]           [LOCAL GREENS]           [CITRUS MOUNTAIN]                   \\
-   vvv   vvv   vvv                ^,^   ^,^           //   \\\\               ^^^      ^^^                   {{{{{{{}}}}}              o  o  o                       \\  [TO KITCHEN]
-  [   ] [   ] [   ]              [* *] [* *]        [[     ]]              ^^^^^    ^^^^^                   {{{{{{}}}}                o o  o o                        >
-   \\ /   \\ /   \\ /                \\\`~'   \\\`~'        [[[[   ]]]]             ^^^^^^^  ^^^^^^^                   {{{{{{{{}}}}                o  o  o  o                         /
-   _Y_   _Y_   _Y_               [$18/KG ]          [$3/BUN ]              [=======][=======]                 [=======]              [==========]                       /
-  +---------------+             [DRAGONFRUIT]       [WATERMELONS]          | $5/100g|| $12/kg |                 |$4/BDL |              | $6/BAG  |                      /
-  | $2 / KILO !!! |               ,^,   ,^,         /'''\\             +-------++-------+                 +-------+              +----------+                     /
-  +---------------+              <, ,> <, ,>        [:::]::                                                                                                    /
-                                  \\\`~'   \\\`'         \\___/                                                                                                   /
-                                 [$2/EA  ]          [$5/EA  ]                                                                                                   /
-____________________________________________________________________________________________________________________________________________________________________/`,
-                startPos: { x: 5, y: 3 },
-                exitPos: { x: 205, y: 16 },
-                walkable: [' ', '.', '~', ',', '`', '"', ':', ';', '-', '_', '|', '[', ']', '{', '}', '/', '\\', 'o', 'x', 'v', 'V', '@', '*', '^', '<', '>', 'Y', '=', '+', '░'],
-                walls: ['#'],
-                foods: ['$'],
-                foodChunks: ['F', 'f'],
-                exits: ['E'],
-                enemies: [] // Walking humans will be added dynamically
+                width: 80, 
+                height: 20, 
+                floorChars: ['~', ',', '.', '"'],
+                wallChar: '#',
+                enemyChar: 'M',
+                enemyName: "WALKING HUMAN",
+                desc: "Giants are shopping. Watch for the scooters!",
+                pattern: "puddles",
+                layout: "horizontal",
+                hazardType: 'paw'
             },
             2: {
                 name: "RESTAURANT KITCHEN",
-                rawMap: `                          ||
-                          ||
-+-------------------------||-----------------------------------------------------------------------+
-|    [WALK-IN FRIDGE]     ||                        [DRY STORAGE WAREHOUSE]                        |
-|    +----------------+   ||   +---------------------------------------------------------------+   |
-|    |  ?   ?   ?     |   ||   |                                                               |   |
-|    |  |   |   |     |   ||   |                          )_(        _[_]_                         |   |
-|    | [S] [S] [S]    |   ||   |                         .'-'.      /_:_\\                          |   |
-|    | [S] [S] [S]    |   ||   |   /-\\         /-\\       |:::|      ]_:_[       {:}       {:}      |   |
-|    |  U   U   U     |   ||   |  [ R ]       [ F ]      |:::|      |:._|       {S}       {M}      |   |
-|    | [|^^|]  [(@)]  |   ||   |   \\_/         \\_/       '-.-'      \\\`-.-'       {_}       {_}      |   |
-|    | [====]  [===]  |   ||   |  [====]     [=====]     [===]     [===]     [=====]     [===]   |   |
-|    |                |   ||   |===============================================================|   |
-|    |      _   ____  |   ||   |                           mmm        mmm          mmm             |   |
-|    |     [_] [____] |   ||   |    __          __         -[        ]-[          ]-[             |   |
-|    |     [_]  |@@|  |   ||   |   [  ]        [  ]       [   ]      [   ]        [   ]            |   |
-|    |     [_]  \\__/  |   ||   |   [__]        [__]       |   |      |   |        |   |            |   |
-|    |      _    U    |   ||   |   [  ]        [  ]       |   |      |   |        |   |            |   |
-|    | [~@@~]  [<>< ] |   ||   |   [__]        [__]       |___|      |___|        |___|            |   |
-|    | [====]  [====] |   ||   |   [____]      [____]      [|X|]      [|/|]      [oooo]        |   |
-|    +-------[0]------+   ||   +---------------------------------------------------------------+   |
-|    +-----+-----+-----+  ||   +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+       |
-|    |     |     |     |  ||   |     |     |     |     |     |     |     |     |     |     |       |
-|    +-----+-----+-----+  ||   +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+       |
-|   +---------------------++-------------------------------------------------------------------+   |
-|   |  THE HOT LINE [COOKING STATION]                                                          |   |
-|   |                                                                                          |   |
-|   |   [WOK STATION 1]          [WOK STATION 2]           [STOVE TOP]            [OVENS]      |   |
-|   |                                                                                          |   |
-|   |       [  ]                     [  ]                   [  ] [  ]             [~~~~~]      |   |
-|   |        ][                       ][                     ][   ][              [~~~~~]      |   |
-|   |       [__]                     [__]                   [__] [__]             [__o__]      |   |
-|   |      /    \\                   /    \\                 /    \\ /    \\            |     |      |   |
-|   |     |______|                 |______|               |_____|_____|            |_____|      |   |
-|   |     [==FIRE]                 [==FIRE]               [====GAS====]            [HOT!!]      |   |
-|   |                                                                                          |   |
-|   +------------------------------------------------------------------------------------------+   |
-|          [WIDE CHEF'S ALLEY - DANGER ZONE]                                                       |
-|    +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+               |
-|    |     |     |     |     |     |     |     |     |     |     |     |     |     |               |
-|    +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+               |
-|    |     |     |     |     |     |     |     |     |     |     |     |     |     |               |
-|    +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+               |
-|    |     |     |     |     |     |     |     |     |     |     |     |     |     |               |
-|    +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+               |
-|    |     |     |     |     |     |     |     |     |     |     |     |     |     |               |
-|    +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+               |
-|   +-----------------------------------------------------+   +--------------------------------+   |
-|   |  PREP STATION [STAINLESS STEEL]                     |   |  DISH PIT & WASHING            |   |
-|   |                                                     |   |                                |   |
-|   |    ___________       ___________       ___________  |   |    \\______/       [|||||||]    |   |
-|   |   |___________}     |___________}     |___________} |   |     [ SINK ]       [PLATES ]    |   |
-|   |    [Chopping]        [Plating]         [Saucing]    |   |     [______]       [PLATES ]    |   |
-|   |      _||_              [    ]             _||_      |   |        |                         |   |
-|   |     [ vvv]            [      ]           [ @@@]     |   |        | [ ~~~ ~~~ ~~~ ]         |   |
-|   |     [Veg ]            [Plate]            [Meat]     |   |        |                         |   |
-|   +-----------------------------------------------------+   +-------|------------------------+   |
-|                                                                     |                            |
-|    +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+----+-----+-----+-----+-----+    |
-|    |     |     |     |     |     |     |     |     |     |     |    |     |     |     |     |    |
-|    +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+----+-----+-----+-----+-----+    v
-|    |     |     |     |     |     |     |     |     |     |     |    |     |     |     |     |  (TO THE PIPE)
-+---------------------------------------------------------------------|                            |`,
-                startPos: { x: 7, y: 42 },
-                exitPos: { x: 70, y: 58 },
-                walkable: [' ', '+', '|', '-', ':', '.', '~', '[', ']', '{', '}', '/', '\\', '_', '=', '?', 'S', 'U', '@', '^', 'v', 'o', 'X', 'x', 'm', '.', '\'', ':', ';'],
-                walls: ['#'],
-                foods: ['$'],
-                foodChunks: ['F', 'f'],
-                exits: ['E', 'v'],
-                enemies: []
+                width: 50,
+                height: 40,
+                floorChars: ['=', '+', '-', ' '],
+                wallChar: '[',
+                enemyChar: 'a', // Ant
+                enemyName: "SCOUT ANT",
+                desc: "A maze of counters. Avoid the Ants!",
+                pattern: "checkerboard",
+                layout: "cubes",
+                hazardType: 'spray'
             },
             3: {
                 name: "THE BEDROOM",
-                rawMap: `[FROM KITCHEN]
-                          ||
-                          ||
-      +=================++=================+
-      |          THE SEWER PIPE            |
-      |   ▓▓▓▓▓▓▓▓▓▓▓▓||▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓   |
-      |   ▓▓▓▓▓▓▓▓▓▓▓▓||▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓   |
-      |   ▓▓▓▓▓▓▓▓▓▓▓▓||▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓   |
-      |   ▓▓▓▓▓▓▓▓     _  _     ▓▓▓▓▓▓▓▓   |
-      |   ▓▓▓▓▓▓▓▓    [o][o]--. ▓▓▓▓▓▓▓▓   | <--- THE MOUSE
-      |   ▓▓▓▓▓▓▓▓     \\../ [ ] ▓▓▓▓▓▓▓▓   |      [Blocking path]
-      |   ▓▓▓▓▓▓▓▓     m\\/m--m'- ▓▓▓▓▓▓▓▓   |
-      |   ▓▓▓▓▓▓▓▓▓▓▓▓||▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓   |
-      |   ▓▓▓▓▓▓▓▓▓▓▓▓||▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓   |
-      |   ▓▓▓▓▓▓▓▓▓▓▓▓vv▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓   |
-      +=================++=================+
-                          ||
-                          ||  [Water dripping]
-                          ||
-                          vv
-+-------------------||---------------------------+
-|  SMALL BATHROOM    V  [Vent Entry]             |
-|                                                   |
-|  [ BATHTUB ]       [ THE TOILET ]               |
-|  +---------+       ______________               |
-|  | |W| /  /|       |            |               |
-|  | |W||  | |       | [||]   [P] |               |
-|  | |W||__| |       |____________|               |
-|  | |W|     |        _ /   \\ _                 |
-|  | |W|[Crt]|       [ [     ] ] [Bowl]          |
-|  |___|_____|        \\ \\____/ /                 |
-|                      \\______/                  |
-|   [TILED FLOOR]             ||                  |
-|   +-----+-----+           __||__                |
-|   |     |     |          |______|               |
-|   +-----+-----+                                 |
-|   |     |     |          [ BATH MAT ]           |
-|   +-----+-----+           MMMMMMMMMMM           |
-+-----------------------------    --------------+
-                              | [DOOR]|        
-                              |       |        
-                              |       |        
-+----------------------------------+    +-------------------------------------+
-|   THE BEDROOM                    |    |                                     |
-|                                  |    |     .-----------.                   |
-|   [WARDROBE]                     '-------' .-------. |                   |
-|  .-----------------.                             | | C:\\>_ | | [WORK DESK]         |
-|  |  ___________    |                             | '-------' |                   |
-|  | |  |     |  |   |                             | [Kb] [Ms] |                   |
-|  | |  |     |  |   |                             |___________|                   |
-|  | |  '--.  |  |   |                              /        \\                   |
-|  | | [==] '--' |   |                             /_________\\\\                  |
-|  | '-----------'   |                                             (WINDOW)      |
-|  '-----------------'                                             +-------+     |
-|                                                                  |  * * |     |
-|   [QUEEN BED]                                                    | * * |     |
-|   .---.________                                                  +-------+     |
-|  /   /         /|        :::::::::::::::::                      | [===] |     |
-| /___/________/ |        ::  PATTERNED  ::                      |       |     |
-| |   |  ====  | |        ::    AREA     ::                      |       |     |
-| |___|________|/         :::::::::::::::::                      | [===] |     |
-|                         :::::::::::::::::                      |       |     |
-|                          [SLEEPING CAT]                        |   /_\\ |     |
-|                          |W|/,, |  [\\\`\\\\                        |  [O O]|     |
-|                       _.|o o |_   ] ]                        +-------+     |
-|                       -[[[---[[[--------                                    |
-|                                                                             |
-+--------------------------------------------------------------------------------+`,
-                startPos: { x: 30, y: 15 },
-                exitPos: { x: 25, y: 30 }, // On the bed
-                walkable: [' ', '.', ':', ';', '-', '|', '+', '/', '\\', '[', ']', '{', '}', '=', '_', 'v', 'V', 'o', 'O', 'x', 'X', 'w', 'W', 'P', 'M', 'm', 'C', 'K', 'b', 's', ',', '\'', '`', '·', '▓', 'N'],
-                walls: ['#'],
-                foods: ['$'],
-                foodChunks: ['F', 'f'],
-                exits: ['E'],
-                enemies: []
+                width: 45,
+                height: 45,
+                floorChars: ['(', ')', 'c', 'u'],
+                wallChar: 'I',
+                enemyChar: '☻',
+                enemyName: "YOU (THE SLEEPER)",
+                desc: "Quiet... don't wake the cat.",
+                pattern: "face",
+                layout: "open_square",
+                hazardType: 'paw' 
             }
         };
-        
-        // ============ ASCII BACKGROUND RENDERING ============
-        function renderAsciiBackground(levelNum) {
-            const canvas = document.getElementById('ascii-background');
-            if (!canvas) return;
-            
-            const levelData = MAPS[levelNum];
-            if (!levelData || !levelData.rawMap) return;
-            
-            const viewport = document.getElementById('game-viewport');
-            canvas.width = viewport.clientWidth || 800;
-            canvas.height = viewport.clientHeight || 600;
-            
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#000';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Set font for ASCII art
-            ctx.font = '12px "Courier New", monospace';
-            ctx.fillStyle = '#333';
-            ctx.textBaseline = 'top';
-            
-            // Calculate scaling to fit ASCII art
-            const lines = levelData.rawMap.split('\n');
-            const maxLineLength = Math.max(...lines.map(l => l.length));
-            const fontSize = Math.min(12, Math.floor(canvas.width / maxLineLength * 0.8));
-            ctx.font = `${fontSize}px "Courier New", monospace`;
-            
-            // Render ASCII art lines
-            const lineHeight = fontSize * 1.2;
-            const startY = (canvas.height - (lines.length * lineHeight)) / 2;
-            
-            lines.forEach((line, index) => {
-                // Escape and render each character safely
-                const safeLine = line.replace(/[<>&"']/g, (char) => {
-                    const map = {'<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&#39;'};
-                    return map[char] || char;
-                });
+
+        const FLAVOR_TEXT = {
+            food: ["Slurped a chunk!", "Strange texture.", "Seafood consumed."],
+            poison: "POISON! Wretched taste.",
+            glue: "Stuck in the muck.",
+            human_hit: "YOU TOUCHED THE GIANT! PAIN!",
+            cat_warn: "MEOW! A giant shadow looms...",
+            cat_hit: "SPLAT! The cat caught you.",
+            spray_warn: "HISSS! The air smells chemical...",
+            spray_hit: "CHOKING! Poison mist descends.",
+            scooter_warn: "HONK HONK! Motor engine revs...",
+            scooter_hit: "ROADKILL! The scooter ran you over.",
+            starve: "You starved to death.",
+            level_up: "Ascended."
+        };
+
+        class NeonScuttle {
+            constructor() {
+                this.gridEl = document.getElementById('grid-container');
+                this.viewportEl = document.getElementById('viewport'); 
+                this.logEl = document.getElementById('log-console');
+                this.gritEl = document.getElementById('grit-display');
+                this.levelEl = document.getElementById('level-display');
+                this.gameOverModal = document.getElementById('game-over-modal');
+                this.deathReasonEl = document.getElementById('death-reason');
+
+                this.level = 1;
+                this.grit = MAX_GRIT;
+                this.steps = 0; 
+                this.playerPos = { x: 1, y: 1 };
                 
-                // Draw character by character to avoid parsing issues
-                let x = (canvas.width - (maxLineLength * fontSize * 0.6)) / 2;
-                for (let i = 0; i < line.length; i++) {
-                    const char = line[i];
-                    // Draw printable characters including Unicode (for ░, ▓, etc.)
-                    if (char && (char.charCodeAt(0) >= 32 || char.charCodeAt(0) > 127)) {
-                        try {
-                            ctx.fillText(char, x, startY + (index * lineHeight));
-                        } catch (e) {
-                            // Skip characters that can't be rendered
-                            console.warn('Could not render character:', char);
+                this.map = []; 
+                this.visualMap = []; 
+                this.foodVisuals = []; 
+                this.enemies = []; 
+                this.scooters = [];
+                
+                // Hazard Variables
+                this.stompTimer = 0;
+                this.stompTarget = null;
+                this.hazardType = null;
+                
+                this.isGameOver = false;
+
+                this.mapW = 25;
+                this.mapH = 18;
+
+                this.startLevel();
+                this.bindInput();
+            }
+
+            log(msg, type = 'normal') {
+                const div = document.createElement('div');
+                div.textContent = `> ${msg}`;
+                div.className = `log-entry ${type}`;
+                this.logEl.prepend(div);
+                if (this.logEl.children.length > 20) this.logEl.lastChild.remove();
+            }
+
+            startLevel() {
+                this.grit = MAX_GRIT;
+                this.steps = 0;
+                this.stompTimer = 0;
+                this.stompTarget = null;
+                this.scooters = [];
+
+                const biomeIndex = ((this.level - 1) % 3) + 1;
+                this.biome = BIOMES[biomeIndex];
+                
+                this.mapW = this.biome.width;
+                this.mapH = this.biome.height;
+
+                this.gridEl.style.gridTemplateColumns = `repeat(${this.mapW}, 1fr)`;
+                this.gridEl.style.gridTemplateRows = `repeat(${this.mapH}, 1fr)`;
+                this.gridEl.style.width = 'fit-content';
+                this.gridEl.style.minWidth = `${this.mapW * 18}px`;
+                this.gridEl.style.minHeight = `${this.mapH * 18}px`;
+                
+                this.log(`ENTER: ${this.biome.name}`, 'new');
+                this.log(this.biome.desc);
+
+                this.generateLevel();
+                this.render();
+                
+                this.viewportEl.scrollLeft = 0;
+                this.viewportEl.scrollTop = 0;
+                this.updateCamera();
+            }
+
+            skipLevel() {
+                this.log("CHEAT: WARPING TO NEXT FLOOR...", 'new');
+                this.level++;
+                this.startLevel();
+            }
+
+            updateCamera() {
+                const tileSize = window.innerWidth <= 768 ? 14 : 18;
+                
+                const playerPixelX = (this.playerPos.x * tileSize) + (tileSize / 2);
+                const playerPixelY = (this.playerPos.y * tileSize) + (tileSize / 2);
+                
+                const halfViewW = this.viewportEl.clientWidth / 2;
+                const halfViewH = this.viewportEl.clientHeight / 2;
+                
+                this.viewportEl.scrollLeft = playerPixelX - halfViewW;
+                this.viewportEl.scrollTop = playerPixelY - halfViewH;
+            }
+
+            generateLevel() {
+                this.map = [];
+                this.visualMap = [];
+                this.foodVisuals = [];
+                this.enemies = [];
+
+                this.generateProceduralLevel();
+            }
+
+            generateProceduralLevel() {
+                for (let y = 0; y < this.mapH; y++) {
+                    const row = [];
+                    const visRow = [];
+                    const foodRow = [];
+                    for (let x = 0; x < this.mapW; x++) {
+                        row.push('EMPTY');
+                        foodRow.push(null);
+                        
+                        let char = '.';
+                        if (this.biome.pattern === "puddles") {
+                            const noise = Math.sin(x * 0.2) + Math.cos(y * 0.5); 
+                            char = noise > 0.5 ? '~' : (noise > 0 ? ',' : '.');
+                        } 
+                        else if (this.biome.pattern === "checkerboard") {
+                            char = (x + y) % 2 === 0 ? '+' : ' ';
+                        } 
+                        else if (this.biome.pattern === "face") {
+                            char = Math.random() > 0.8 ? (Math.random() > 0.5 ? '(' : ')') : ' ';
+                        }
+
+                        visRow.push(char);
+                    }
+                    this.map.push(row);
+                    this.visualMap.push(visRow);
+                    this.foodVisuals.push(foodRow);
+                }
+
+                for (let i = 0; i < this.mapW; i++) { this.setTile(0, i, 'WALL'); this.setTile(this.mapH-1, i, 'WALL'); }
+                for (let i = 0; i < this.mapH; i++) { this.setTile(i, 0, 'WALL'); this.setTile(i, this.mapW-1, 'WALL'); }
+
+                if (this.biome.layout === "cubes") {
+                    for (let y = 2; y < this.mapH - 4; y += 5) {
+                        for (let x = 2; x < this.mapW - 4; x += 5) {
+                            if (Math.random() < 0.7) {
+                                this.drawRectWall(x, y, 3, 3, true); 
+                            }
                         }
                     }
-                    x += fontSize * 0.6;
+                } 
+                else if (this.biome.layout === "open_square") {
+                    this.generateFaceObstacles();
+                } else if (this.biome.layout === "horizontal") {
+                     for (let i = 0; i < (this.mapW * this.mapH) * 0.1; i++) this.setRandomTile('WALL');
                 }
-            });
-        }
-        
-        // ============ INITIALIZATION ============
-        function initGame() {
-            try {
-                console.log('Initializing game...');
-                loadLevel(1);
-                console.log('Level loaded, map size:', gameState.mapWidth, 'x', gameState.mapHeight);
-                bindControls();
-                updateUI();
-                renderAsciiBackground(1);
-                console.log('Game initialized successfully');
-            } catch (e) {
-                console.error('Game initialization error:', e);
-                const mapEl = document.getElementById('game-map');
-                if (mapEl) {
-                    mapEl.innerHTML = 'ERROR: ' + e.message + '<br>' + e.stack;
-                    mapEl.style.color = '#ff0000';
+
+                const giantFoodCount = Math.floor((this.mapW * this.mapH) / 70);
+                const foodKeys = Object.keys(SEAFOOD_ART);
+                for(let i=0; i<giantFoodCount; i++) {
+                    const type = foodKeys[Math.floor(Math.random() * foodKeys.length)];
+                    this.placeGiantFood(type);
                 }
-            }
-        }
-        
-        // Handle window resize to update background
-        window.addEventListener('resize', () => {
-            if (gameState.level) {
-                renderAsciiBackground(gameState.level);
-            }
-        });
-        
-        // Start game when page loads
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initGame);
-        } else {
-            initGame();
-        }
-        
-        function loadLevel(levelNum) {
-            const levelData = MAPS[levelNum];
-            if (!levelData) {
-                showMessage("GAME COMPLETE! YOU ASCENDED!");
-                return;
-            }
-            
-            gameState.level = levelNum;
-            gameState.grit = 50;
-            gameState.moves = 0;
-            gameState.player = { ...levelData.startPos };
-            gameState.gameOver = false;
-            gameState.enemies = [];
-            gameState.toxicSprays = [];
-            gameState.pawTimer = 0;
-            gameState.pawTarget = null;
-            
-            // Render ASCII background first
-            renderAsciiBackground(levelNum);
-            
-            // Parse map - create a simplified grid for game logic
-            // We'll use the rawMap dimensions but create a clean grid
-            const lines = levelData.rawMap.split('\n');
-            gameState.mapHeight = lines.length;
-            gameState.mapWidth = Math.max(...lines.map(row => row.length), 1);
-            
-            // Initialize map as empty grid (game logic doesn't need ASCII art)
-            gameState.map = [];
-            // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/616fa030-ed2a-40f0-87e6-a60ea5939942',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'game.html:498',message:'map initialization start',data:{mapWidth:gameState.mapWidth,mapHeight:gameState.mapHeight,walkableCount:levelData.walkable.length,wallsCount:levelData.walls.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-            // #endregion
-            for (let y = 0; y < gameState.mapHeight; y++) {
-                const row = [];
-                for (let x = 0; x < gameState.mapWidth; x++) {
-                    // Check if position is walkable based on level data
-                    const char = (lines[y] && lines[y][x]) ? lines[y][x] : ' ';
-                    const isWalkable = levelData.walkable.includes(char);
-                    const isWall = levelData.walls.includes(char);
-                    // #region agent log
-                    if (x < 5 && y < 5) { // Log first few tiles
-                        fetch('http://127.0.0.1:7242/ingest/616fa030-ed2a-40f0-87e6-a60ea5939942',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'game.html:504',message:'map tile init',data:{x,y,char,charCode:char.charCodeAt(0),isWalkable,isWall},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-                    }
-                    // #endregion
-                    if (levelData.walkable.includes(char)) {
-                        row.push(' ');
-                    } else if (levelData.walls.includes(char)) {
-                        row.push('#');
-                    } else {
-                        row.push(' ');
+
+                const area = this.mapW * this.mapH;
+                const crumbCount = Math.floor(area * 0.02);
+                for(let i=0; i<crumbCount; i++) this.setRandomTile('FOOD');
+
+                for(let i=0; i<Math.floor(area * 0.005); i++) this.setRandomTile('POISON');
+                for(let i=0; i<Math.floor(area * 0.01); i++) this.setRandomTile('GLUE');
+
+                const enemyCount = 3 + Math.floor(this.level / 2) + Math.floor(area * 0.005);
+                for(let i=0; i<enemyCount; i++) {
+                    const pos = this.findEmptyTile();
+                    if(pos) {
+                        this.enemies.push({ x: pos.x, y: pos.y, id: i });
                     }
                 }
-                gameState.map.push(row);
+
+                this.map[this.mapH-2][this.mapW-2] = 'EXIT';
+                
+                this.playerPos = { x: 1, y: 1 };
+                this.map[1][1] = 'EMPTY';
+                this.map[1][2] = 'EMPTY';
+                this.map[2][1] = 'EMPTY';
             }
-            
-            // Initialize level-specific enemies
-            if (levelNum === 1) {
-                // Add walking humans (stick figures) - they patrol back and forth
-                // Position them at different Y positions along the market floor
-                const humanPositions = [
-                    { x: 50, y: 3, direction: 1, minX: 20, maxX: 120 },
-                    { x: 90, y: 3, direction: -1, minX: 20, maxX: 120 },
-                    { x: 140, y: 3, direction: 1, minX: 100, maxX: 190 }
-                ];
-                humanPositions.forEach(pos => {
-                    gameState.enemies.push({
-                        type: 'human',
-                        x: pos.x,
-                        y: pos.y,
-                        direction: pos.direction,
-                        minX: pos.minX,
-                        maxX: pos.maxX
-                    });
-                });
-            } else if (levelNum === 2) {
-                // Add scout ants
-                for (let i = 0; i < 5; i++) {
-                    gameState.enemies.push({
-                        type: 'ant',
-                        x: 30 + i * 10,
-                        y: 42 + (i % 3),
-                        targetX: 30 + i * 10,
-                        targetY: 42 + (i % 3),
-                        moving: false
-                    });
-                }
-            }
-            
-            // Mark exit
-            const exit = levelData.exitPos;
-            // #region agent log
-            const rawMapLines = levelData.rawMap.split('\n');
-            const exitRawChar = rawMapLines[exit.y] && rawMapLines[exit.y][exit.x] ? rawMapLines[exit.y][exit.x] : 'UNDEF';
-            const exitMapChar = gameState.map[exit.y] && gameState.map[exit.y][exit.x] ? gameState.map[exit.y][exit.x] : 'UNDEF';
-            const exitIsWalkable = levelData.walkable.includes(exitRawChar);
-            fetch('http://127.0.0.1:7242/ingest/616fa030-ed2a-40f0-87e6-a60ea5939942',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'game.html:549',message:'exit placement check',data:{exitX:exit.x,exitY:exit.y,exitRawChar,exitMapChar,exitIsWalkable,mapExists:!!(gameState.map[exit.y] && gameState.map[exit.y][exit.x])},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-            // #endregion
-            if (gameState.map[exit.y] && gameState.map[exit.y][exit.x]) {
-                gameState.map[exit.y][exit.x] = 'E';
-            }
-            
-            // Add some food items
-            addFoodItems(levelNum);
-            
-            render();
-        }
-        
-        function addFoodItems(levelNum) {
-            const levelData = MAPS[levelNum];
-            const foodCount = 15;
-            
-            // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/616fa030-ed2a-40f0-87e6-a60ea5939942',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'game.html:560',message:'addFoodItems entry',data:{levelNum,foodCount,mapWidth:gameState.mapWidth,mapHeight:gameState.mapHeight},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-            // #endregion
-            
-            for (let i = 0; i < foodCount; i++) {
+
+            placeGiantFood(type) {
+                const art = SEAFOOD_ART[type];
+                const h = art.length;
+                const w = art[0].length;
+                
+                let placed = false;
                 let attempts = 0;
-                while (attempts < 100) {
-                    const x = Math.floor(Math.random() * gameState.mapWidth);
-                    const y = Math.floor(Math.random() * gameState.mapHeight);
+                while(!placed && attempts < 50) {
+                    const tx = Math.floor(Math.random() * (this.mapW - w - 2)) + 1;
+                    const ty = Math.floor(Math.random() * (this.mapH - h - 2)) + 1;
                     
-                    // #region agent log
-                    const mapChar = gameState.map[y] && gameState.map[y][x] ? gameState.map[y][x] : 'UNDEF';
-                    const rawMapLines = levelData.rawMap.split('\n');
-                    const rawChar = rawMapLines[y] && rawMapLines[y][x] ? rawMapLines[y][x] : 'UNDEF';
-                    const isWalkableInRaw = levelData.walkable.includes(rawChar);
-                    const isWalkableInMap = levelData.walkable.includes(mapChar);
-                    fetch('http://127.0.0.1:7242/ingest/616fa030-ed2a-40f0-87e6-a60ea5939942',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'game.html:570',message:'food placement check',data:{x,y,mapChar,rawChar,isWalkableInRaw,isWalkableInMap,walkableCheck:levelData.walkable.includes(gameState.map[y][x])},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-                    // #endregion
-                    
-                    if (gameState.map[y] && gameState.map[y][x] && 
-                        levelData.walkable.includes(gameState.map[y][x]) &&
-                        !(x === gameState.player.x && y === gameState.player.y)) {
-                        
-                        gameState.map[y][x] = '$';
-                        // #region agent log
-                        fetch('http://127.0.0.1:7242/ingest/616fa030-ed2a-40f0-87e6-a60ea5939942',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'game.html:575',message:'food placed',data:{x,y,placed:true},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-                        // #endregion
-                        break;
+                    let clear = true;
+                    for(let i=0; i<h; i++) {
+                        for(let j=0; j<w; j++) {
+                            if (this.map[ty+i][tx+j] !== 'EMPTY') clear = false;
+                        }
+                    }
+
+                    if(clear) {
+                        for(let i=0; i<h; i++) {
+                            for(let j=0; j<w; j++) {
+                                const char = art[i][j];
+                                if (char !== ' ') {
+                                    this.map[ty+i][tx+j] = 'FOOD_CHUNK';
+                                    this.foodVisuals[ty+i][tx+j] = char;
+                                }
+                            }
+                        }
+                        placed = true;
                     }
                     attempts++;
                 }
             }
-            
-            // Add giant food chunks (represented as F)
-            if (levelNum === 1 || levelNum === 2) {
-                const giantFoodCount = 3;
-                for (let i = 0; i < giantFoodCount; i++) {
-                    let attempts = 0;
-                    while (attempts < 100) {
-                        const x = Math.floor(Math.random() * gameState.mapWidth);
-                        const y = Math.floor(Math.random() * gameState.mapHeight);
-                        
-                        if (gameState.map[y] && gameState.map[y][x] && 
-                            levelData.walkable.includes(gameState.map[y][x]) &&
-                            !(x === gameState.player.x && y === gameState.player.y)) {
-                            
-                            // Create a small cluster
-                            for (let dy = -1; dy <= 1; dy++) {
-                                for (let dx = -1; dx <= 1; dx++) {
-                                    if (gameState.map[y + dy] && gameState.map[y + dy][x + dx] &&
-                                        levelData.walkable.includes(gameState.map[y + dy][x + dx])) {
-                                        gameState.map[y + dy][x + dx] = 'F';
-                                    }
-                                }
-                            }
-                            break;
+
+            generateFaceObstacles() {
+                const cx = Math.floor(this.mapW / 2);
+                const cy = Math.floor(this.mapH / 2);
+                this.drawRectWall(cx - 5, cy - 5, 3, 3, false); 
+                this.drawRectWall(cx + 3, cy - 5, 3, 3, false); 
+                for(let y=cy-2; y<cy+2; y++) this.setTile(y, cx, 'WALL');
+                for(let x=cx-3; x<cx+4; x++) this.setTile(cy+4, x, 'WALL');
+            }
+
+            drawRectWall(x, y, w, h, filled) {
+                for(let i=0; i<h; i++) {
+                    for(let j=0; j<w; j++) {
+                        if (filled || (i===0 || i===h-1 || j===0 || j===w-1)) {
+                            this.setTile(y+i, x+j, 'WALL');
                         }
-                        attempts++;
                     }
                 }
             }
-        }
-        
-        // ============ CONTROLS ============
-        function bindControls() {
-            document.addEventListener('keydown', (e) => {
-                if (gameState.gameOver) return;
+
+            setTile(y, x, type) {
+                if (y >= 0 && y < this.mapH && x >= 0 && x < this.mapW) {
+                    this.map[y][x] = type;
+                }
+            }
+
+            setRandomTile(type) {
+                const pos = this.findEmptyTile();
+                if (pos) this.map[pos.y][pos.x] = type;
+            }
+
+            findEmptyTile() {
+                let safety = 0;
+                while(safety < 2000) {
+                    const x = Math.floor(Math.random() * (this.mapW-2)) + 1;
+                    const y = Math.floor(Math.random() * (this.mapH-2)) + 1;
+                    if (this.map[y][x] === 'EMPTY' && !(x<4 && y<4)) { 
+                        return {x, y};
+                    }
+                    safety++;
+                }
+                return null;
+            }
+
+            handleInput(dx, dy) {
+                if (this.isGameOver) return;
+
+                const newX = this.playerPos.x + dx;
+                const newY = this.playerPos.y + dy;
                 
-                let dx = 0, dy = 0;
-                
-                if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') dy = -1;
-                else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') dy = 1;
-                else if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') dx = -1;
-                else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') dx = 1;
-                else if (e.key === ' ' || e.key === 'Enter') {
-                    // Wait
-                    endTurn();
-                    return;
+                if (newX < 0 || newX >= this.mapW || newY < 0 || newY >= this.mapH) return;
+
+                const targetType = this.map[newY][newX];
+
+                let moved = false;
+
+                if (targetType === 'WALL') {
+                    // Blocked
                 } else {
-                    return;
+                    if (targetType === 'GLUE') {
+                        if (Math.random() > 0.5) {
+                            this.log(FLAVOR_TEXT.glue);
+                            this.endTurn(true); 
+                            return;
+                        }
+                    }
+
+                    this.playerPos.x = newX;
+                    this.playerPos.y = newY;
+                    moved = true;
+
+                    if (targetType === 'FOOD') {
+                        this.grit = Math.min(MAX_GRIT, this.grit + 2); 
+                        this.map[newY][newX] = 'EMPTY';
+                        this.log(FLAVOR_TEXT.food[Math.floor(Math.random()*3)], 'info');
+                    } 
+                    else if (targetType === 'FOOD_CHUNK') {
+                        this.grit = Math.min(MAX_GRIT, this.grit + 2); 
+                        this.map[newY][newX] = 'EMPTY'; 
+                        this.log("Ate a piece of Giant Food.", 'info');
+                    }
+                    else if (targetType === 'POISON') {
+                        this.grit -= 4;
+                        this.map[newY][newX] = 'EMPTY';
+                        this.log(FLAVOR_TEXT.poison, 'danger');
+                    } else if (targetType === 'EXIT') {
+                        this.level++;
+                        this.log(FLAVOR_TEXT.level_up, 'new');
+                        this.startLevel();
+                        return;
+                    }
+                }
+
+                if (dx === 0 && dy === 0) moved = true;
+
+                if (moved) this.endTurn();
+            }
+
+            endTurn(struggled = false) {
+                this.steps++;
+                if (this.steps >= MOVES_PER_HUNGER) {
+                    this.grit -= 1;
+                    this.steps = 0;
+                }
+
+                this.updateEnemies();
+                
+                // HAZARD LOGIC
+                if (this.stompTimer > 0) {
+                    this.stompTimer--;
+                    if (this.stompTimer === 0) {
+                        this.triggerHazard();
+                    }
+                } else {
+                    if (Math.random() < 0.05) {
+                        this.startHazard();
+                    }
                 }
                 
-                e.preventDefault();
-                movePlayer(dx, dy);
-            });
-        }
-        
-        // ============ GAME LOGIC ============
-        function movePlayer(dx, dy) {
-            const levelData = MAPS[gameState.level];
-            const newX = gameState.player.x + dx;
-            const newY = gameState.player.y + dy;
-            
-            // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/616fa030-ed2a-40f0-87e6-a60ea5939942',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'game.html:636',message:'movePlayer entry',data:{playerX:gameState.player.x,playerY:gameState.player.y,dx,dy,newX,newY},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-            // #endregion
-            
-            // Check bounds
-            if (newX < 0 || newX >= gameState.mapWidth || newY < 0 || newY >= gameState.mapHeight) {
-                // #region agent log
-                fetch('http://127.0.0.1:7242/ingest/616fa030-ed2a-40f0-87e6-a60ea5939942',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'game.html:642',message:'movePlayer out of bounds',data:{newX,newY,mapWidth:gameState.mapWidth,mapHeight:gameState.mapHeight},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-                // #endregion
-                return;
+                this.updateScooters(); // Added call for Level 1 scooters
+
+                this.updateCamera();
+                this.checkDeath();
+                this.render();
             }
-            
-            const tile = gameState.map[newY][newX];
-            
-            // #region agent log
-            const rawMapLines = levelData.rawMap.split('\n');
-            const rawChar = rawMapLines[newY] && rawMapLines[newY][newX] ? rawMapLines[newY][newX] : 'UNDEF';
-            const isWalkableInRaw = levelData.walkable.includes(rawChar);
-            const isWalkableInMap = levelData.walkable.includes(tile);
-            fetch('http://127.0.0.1:7242/ingest/616fa030-ed2a-40f0-87e6-a60ea5939942',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'game.html:646',message:'movePlayer walkability check',data:{newX,newY,tile,rawChar,isWalkableInRaw,isWalkableInMap,isSpecialTile:tile === '$' || tile === 'F' || tile === 'E'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-            // #endregion
-            
-            // Check if walkable
-            if (!levelData.walkable.includes(tile) && tile !== '$' && tile !== 'F' && tile !== 'E') {
-                // #region agent log
-                fetch('http://127.0.0.1:7242/ingest/616fa030-ed2a-40f0-87e6-a60ea5939942',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'game.html:649',message:'movePlayer blocked',data:{newX,newY,tile},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-                // #endregion
-                return;
-            }
-            
-            // Check collisions with enemies
-            if (checkEnemyCollision(newX, newY)) {
-                return;
-            }
-            
-            // Move player
-            gameState.player.x = newX;
-            gameState.player.y = newY;
-            gameState.moves++;
-            
-            // Handle tile interactions
-            if (tile === '$') {
-                gameState.grit = Math.min(50, gameState.grit + 2);
-                gameState.map[newY][newX] = ' ';
-                showMessage("ATE CRUMB! +2 GRIT", 500);
-            } else if (tile === 'F') {
-                gameState.grit = Math.min(50, gameState.grit + 2);
-                gameState.map[newY][newX] = ' ';
-                showMessage("ATE CHUNK! +2 GRIT", 500);
-            } else if (tile === 'E') {
-                // Level complete!
-                showMessage("LEVEL COMPLETE! ASCENDING...", 1000);
-                setTimeout(() => {
-                    loadLevel(gameState.level + 1);
-                }, 1500);
-                return;
-            }
-            
-            // Hunger mechanic: lose 1 Grit every 3 moves
-            if (gameState.moves % 3 === 0) {
-                gameState.grit--;
-                if (gameState.grit <= 0) {
-                    gameState.grit = 0;
-                    gameOver("STARVED TO DEATH");
-                    return;
-                }
-            }
-            
-            endTurn();
-        }
-        
-        function checkEnemyCollision(x, y) {
-            // Level 1: Walking humans - check all parts (head at y-1, body at y, legs at y+1)
-            if (gameState.level === 1) {
-                for (let enemy of gameState.enemies) {
-                    if (enemy.type === 'human') {
-                        // #region agent log
-                        const checkY1 = y === enemy.y - 1;
-                        const checkY0 = y === enemy.y;
-                        const checkY2 = y === enemy.y + 1;
-                        const yMinus1Valid = enemy.y - 1 >= 0;
-                        const yPlus1Valid = enemy.y + 1 < gameState.mapHeight;
-                        fetch('http://127.0.0.1:7242/ingest/616fa030-ed2a-40f0-87e6-a60ea5939942',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'game.html:700',message:'human collision check',data:{playerX:x,playerY:y,enemyX:enemy.x,enemyY:enemy.y,checkY1,checkY0,checkY2,yMinus1Valid,yPlus1Valid,mapHeight:gameState.mapHeight},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-                        // #endregion
-                        // Check if player collides with any part of human (head, body, or legs)
-                        if (x === enemy.x && (y === enemy.y - 1 || y === enemy.y || y === enemy.y + 1)) {
-                            gameState.grit -= 15;
-                            showMessage("TRAMPLED BY HUMAN! -15 GRIT", 800);
-                            if (gameState.grit <= 0) {
-                                gameOver("CRUSHED");
-                                return true;
-                            }
-                            return true;
-                        }
-                    }
-                }
-            }
-            
-            // Level 2: Ants
-            if (gameState.level === 2) {
-                for (let enemy of gameState.enemies) {
-                    if (enemy.type === 'ant' && enemy.x === x && enemy.y === y) {
-                        gameState.grit -= 5;
-                        showMessage("ANT BIT! -5 GRIT", 600);
-                        if (gameState.grit <= 0) {
-                            gameOver("DEFEATED BY ANTS");
-                            return true;
-                        }
-                        return true;
-                    }
-                }
-            }
-            
-            // Level 2: Toxic spray
-            for (let spray of gameState.toxicSprays) {
-                if (spray.active && spray.x === x && spray.y === y) {
-                    gameState.grit -= 10;
-                    showMessage("TOXIC CLOUD! -10 GRIT", 800);
-                    if (gameState.grit <= 0) {
-                        gameOver("POISONED");
-                        return true;
-                    }
-                    return true;
-                }
-            }
-            
-            // Level 3: Cat paw
-            if (gameState.level === 3 && gameState.pawTarget) {
-                const px = gameState.pawTarget.x;
-                const py = gameState.pawTarget.y;
-                // 9x4 area
-                if (x >= px - 4 && x <= px + 4 && y >= py - 1 && y <= py + 2) {
-                    gameState.grit -= 20;
-                    showMessage("SMASHED BY CAT PAW! -20 GRIT", 1000);
-                    if (gameState.grit <= 0) {
-                        gameOver("CRUSHED BY CAT");
-                        return true;
-                    }
-                    return true;
-                }
-            }
-            
-            return false;
-        }
-        
-        function endTurn() {
-            // Update enemies
-            updateEnemies();
-            
-            // Level-specific hazards
-            if (gameState.level === 2) {
-                updateToxicSpray();
-            } else if (gameState.level === 3) {
-                updateCatPaw();
-            }
-            
-            render();
-            updateUI();
-            
-            if (gameState.grit <= 0 && !gameState.gameOver) {
-                gameOver("STARVED");
-            }
-        }
-        
-        function updateEnemies() {
-            const levelData = MAPS[gameState.level];
-            
-            if (gameState.level === 1) {
-                // Walking humans patrol back and forth within their bounds
-                gameState.enemies.forEach(enemy => {
-                    if (enemy.type === 'human') {
-                        const newX = enemy.x + enemy.direction;
-                        
-                        // Check bounds
-                        if (newX < enemy.minX || newX > enemy.maxX) {
-                            // Reverse direction at bounds
-                            enemy.direction *= -1;
-                            enemy.x += enemy.direction;
-                        } else if (levelData.walkable.includes(gameState.map[enemy.y][newX]) ||
-                                   gameState.map[enemy.y][newX] === ' ' ||
-                                   gameState.map[enemy.y][newX] === '.') {
-                            enemy.x = newX;
-                        } else {
-                            // Hit obstacle, reverse
-                            enemy.direction *= -1;
-                            enemy.x += enemy.direction;
-                        }
-                    }
-                });
-            } else if (gameState.level === 2) {
-                // Scout ants move randomly
-                gameState.enemies.forEach(enemy => {
-                    if (enemy.type === 'ant' && Math.random() < 0.3) {
-                        const dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]];
-                        const [dx, dy] = dirs[Math.floor(Math.random() * dirs.length)];
-                        const newX = enemy.x + dx;
-                        const newY = enemy.y + dy;
-                        
-                        // #region agent log
-                        const boundsCheck = newX > 0 && newX < gameState.mapWidth - 1 && newY > 0 && newY < gameState.mapHeight - 1;
-                        const mapTile = gameState.map[newY] && gameState.map[newY][newX] ? gameState.map[newY][newX] : 'UNDEF';
-                        const walkableCheck = levelData.walkable.includes(mapTile);
-                        fetch('http://127.0.0.1:7242/ingest/616fa030-ed2a-40f0-87e6-a60ea5939942',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'game.html:815',message:'ant movement check',data:{enemyX:enemy.x,enemyY:enemy.y,newX,newY,dx,dy,boundsCheck,mapTile,walkableCheck,willMove:boundsCheck && walkableCheck},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-                        // #endregion
-                        
-                        if (newX > 0 && newX < gameState.mapWidth - 1 &&
-                            newY > 0 && newY < gameState.mapHeight - 1 &&
-                            levelData.walkable.includes(gameState.map[newY][newX])) {
-                            enemy.x = newX;
-                            enemy.y = newY;
-                        }
-                    }
-                });
-            }
-        }
-        
-        function updateToxicSpray() {
-            // Randomly spawn toxic spray warnings
-            if (Math.random() < 0.05 && gameState.toxicSprays.length < 3) {
-                const x = Math.floor(Math.random() * gameState.mapWidth);
-                const y = Math.floor(Math.random() * gameState.mapHeight);
-                const levelData = MAPS[gameState.level];
+
+            startHazard() {
+                this.stompTimer = 2; // 2 turns warning
+                this.hazardType = this.biome.hazardType;
                 
-                if (levelData.walkable.includes(gameState.map[y][x])) {
-                    gameState.toxicSprays.push({
-                        x: x,
-                        y: y,
-                        active: false,
-                        warning: true,
-                        timer: 2
-                    });
+                const range = 5;
+                const px = this.playerPos.x;
+                const py = this.playerPos.y;
+                
+                const tx = Math.max(1, Math.min(this.mapW-6, px + (Math.floor(Math.random() * range * 2) - range)));
+                const ty = Math.max(1, Math.min(this.mapH-5, py + (Math.floor(Math.random() * range * 2) - range)));
+                
+                this.stompTarget = { x: tx, y: ty };
+                
+                if (this.hazardType === 'spray') {
+                    this.log(FLAVOR_TEXT.spray_warn, 'danger');
+                } else {
+                    this.log(FLAVOR_TEXT.cat_warn, 'danger');
                 }
             }
-            
-            // Update existing sprays
-            gameState.toxicSprays.forEach((spray, idx) => {
-                if (spray.warning) {
-                    spray.timer--;
-                    if (spray.timer <= 0) {
-                        spray.warning = false;
-                        spray.active = true;
-                        spray.timer = 3; // Cloud lasts 3 turns
-                    }
-                } else if (spray.active) {
-                    spray.timer--;
-                    if (spray.timer <= 0) {
-                        gameState.toxicSprays.splice(idx, 1);
-                    }
+
+            triggerHazard() {
+                if (!this.stompTarget) return;
+                
+                const tx = this.stompTarget.x;
+                const ty = this.stompTarget.y;
+                
+                let w, h, art;
+                if (this.hazardType === 'spray') {
+                    w = SPRAY_ART[0].length;
+                    h = SPRAY_ART.length;
+                    art = SPRAY_ART;
+                } else {
+                    w = PAW_ART[0].length;
+                    h = PAW_ART.length;
+                    art = PAW_ART;
                 }
-            });
-        }
-        
-        function updateCatPaw() {
-            // Cat paw warning then smash (9x4 area)
-            if (gameState.pawTimer === 0 && Math.random() < 0.03) {
-                gameState.pawTimer = 3; // 3 turns warning
-                // Target near player
-                gameState.pawTarget = {
-                    x: Math.max(4, Math.min(gameState.mapWidth - 5, 
-                        gameState.player.x + Math.floor(Math.random() * 7) - 3)),
-                    y: Math.max(2, Math.min(gameState.mapHeight - 3,
-                        gameState.player.y + Math.floor(Math.random() * 5) - 2))
-                };
-                showMessage("SHADOW DETECTED ABOVE...", 1500);
-            } else if (gameState.pawTimer > 0) {
-                gameState.pawTimer--;
-                if (gameState.pawTimer === 0) {
-                    // Paw smashes down - check if player is hit
-                    const px = gameState.pawTarget.x;
-                    const py = gameState.pawTarget.y;
-                    if (gameState.player.x >= px - 4 && gameState.player.x <= px + 4 &&
-                        gameState.player.y >= py - 1 && gameState.player.y <= py + 2) {
-                        // Player is in the 9x4 area
-                        checkEnemyCollision(gameState.player.x, gameState.player.y);
-                    }
-                    showMessage("PAW SMASH!", 500);
-                    setTimeout(() => {
-                        gameState.pawTarget = null;
-                        render();
-                    }, 1000);
-                }
-            }
-        }
-        
-        function gameOver(reason) {
-            gameState.gameOver = true;
-            showMessage(`GAME OVER: ${reason}`, 3000);
-        }
-        
-        // ============ RENDERING ============
-        function render() {
-            const mapEl = document.getElementById('game-map');
-            if (!mapEl) {
-                console.error('game-map element not found!');
-                return;
-            }
-            
-            const viewport = document.getElementById('game-viewport');
-            if (!viewport) {
-                mapEl.innerHTML = 'ERROR: viewport not found';
-                mapEl.style.color = '#ff0000';
-                return;
-            }
-            
-            if (!gameState.map || gameState.map.length === 0) {
-                mapEl.innerHTML = 'Loading map... (map is empty)';
-                mapEl.style.color = '#ffff00';
-                console.log('Map is empty!', gameState);
-                return;
-            }
-            
-            const levelData = MAPS[gameState.level];
-            if (!levelData) {
-                mapEl.innerHTML = 'Level data not found';
-                return;
-            }
-            
-            let output = '';
-            
-            // Calculate camera offset (centered on player)
-            const tileWidth = 8; // Character width in pixels
-            const tileHeight = 16; // Line height
-            const vw = viewport.clientWidth || 800;
-            const vh = viewport.clientHeight || 600;
-            const viewportWidth = Math.min(100, Math.max(60, Math.floor(vw / tileWidth)));
-            const viewportHeight = Math.min(40, Math.max(25, Math.floor(vh / tileHeight)));
-            
-            // Camera follows player - center player in viewport
-            let camX = gameState.player.x - Math.floor(viewportWidth / 2);
-            let camY = gameState.player.y - Math.floor(viewportHeight / 2);
-            
-            // Clamp camera to map bounds
-            camX = Math.max(0, Math.min(camX, gameState.mapWidth - viewportWidth));
-            camY = Math.max(0, Math.min(camY, gameState.mapHeight - viewportHeight));
-            
-            // Render visible area - simplified game grid on top of ASCII background
-            for (let y = camY; y < Math.min(camY + viewportHeight, gameState.mapHeight); y++) {
-                let lineOutput = '';
-                for (let x = camX; x < Math.min(camX + viewportWidth, gameState.mapWidth); x++) {
-                    // Ensure we have a valid character
-                    let char = gameState.map[y] && gameState.map[y][x] ? gameState.map[y][x] : ' ';
-                    let classes = [];
+                
+                if (this.playerPos.x >= tx && this.playerPos.x < tx + w &&
+                    this.playerPos.y >= ty && this.playerPos.y < ty + h) {
                     
-                    // Check if player is here
-                    if (x === gameState.player.x && y === gameState.player.y) {
-                        char = '@';
-                        classes.push('player');
+                    this.grit -= 15;
+                    if (this.hazardType === 'spray') {
+                        this.log(FLAVOR_TEXT.spray_hit, 'danger');
                     } else {
-                        // Check enemies - render based on type
-                        let enemyHere = null;
-                        
-                        // Check for human stick figures (3 lines tall: head at y-1, body at y, legs at y+1)
-                        for (let enemy of gameState.enemies) {
-                            if (enemy.type === 'human' && enemy.x === x) {
-                                const relY = y - enemy.y;
-                                if (relY === -1) {
-                                    // Head
-                                    enemyHere = enemy;
-                                    char = 'O';
-                                    break;
-                                } else if (relY === 0) {
-                                    // Body/arms
-                                    enemyHere = enemy;
-                                    char = '|';
-                                    break;
-                                } else if (relY === 1) {
-                                    // Legs
-                                    enemyHere = enemy;
-                                    char = 'V';
-                                    break;
-                                }
-                            } else if (enemy.type === 'ant' && enemy.x === x && enemy.y === y) {
-                                enemyHere = enemy;
-                                char = 'a';
-                                break;
-                            }
-                        }
-                        
-                        if (enemyHere) {
-                            if (enemyHere.type === 'human') {
-                                classes.push('human');
-                            } else if (enemyHere.type === 'ant') {
-                                classes.push('ant');
-                            }
-                        } else if (char === '$') {
-                            classes.push('food');
-                        } else if (char === 'F') {
-                            classes.push('food-chunk');
-                        } else if (char === 'E') {
-                            classes.push('exit');
-                        } else if (char === '#') {
-                            classes.push('wall');
-                            char = '#'; // Simple wall representation
+                        this.log(FLAVOR_TEXT.cat_hit, 'danger');
+                    }
+                } else {
+                    this.log("The hazard missed.", 'normal');
+                }
+                
+                setTimeout(() => { 
+                    this.stompTarget = null; 
+                    this.render(); 
+                }, 600);
+            }
+            
+            // NEW: SCOOTER LOGIC
+            updateScooters() {
+                if (this.level !== 1) return;
+                
+                // Spawn logic: 5% chance per turn
+                if (Math.random() < 0.05) {
+                    this.log(FLAVOR_TEXT.scooter_warn, 'danger');
+                    // Spawn at left or right edge of a "road" row
+                    // In the map, the main aisle is roughly row 14-15
+                    this.scooters.push({ x: 0, y: 15, dir: 1, timer: 0 }); // Drive Left to Right
+                }
+                
+                // Update existing scooters
+                for (let i = this.scooters.length - 1; i >= 0; i--) {
+                    let s = this.scooters[i];
+                    s.x += 4 * s.dir; // Fast speed
+                    
+                    // Collision with player
+                    // Scooter size approx 5x3
+                    if (this.playerPos.x >= s.x && this.playerPos.x < s.x + 5 && 
+                        this.playerPos.y >= s.y && this.playerPos.y < s.y + 3) {
+                        this.grit -= 20;
+                        this.log(FLAVOR_TEXT.scooter_hit, 'danger');
+                        this.scooters.splice(i, 1); // Remove scooter after hit
+                        continue;
+                    }
+                    
+                    // Remove if off screen
+                    if (s.x > this.mapW + 5 || s.x < -5) {
+                        this.scooters.splice(i, 1);
+                    }
+                }
+            }
+
+            updateEnemies() {
+                this.enemies.forEach(enemy => {
+                    // HUMAN PATROL
+                    if (enemy.type === 'HUMAN') {
+                        const nx = enemy.x + enemy.dir;
+                        // Basic patrol bounds for Chef
+                        if (nx < enemy.startX - enemy.patrolRange || nx > enemy.startX + enemy.patrolRange || 
+                            nx <= 0 || nx >= this.mapW - 1) {
+                            enemy.dir *= -1; 
                         } else {
-                            // Empty space - show as transparent or minimal
-                            char = ' ';
+                            enemy.x = nx;
                         }
+                        const px = this.playerPos.x;
+                        const py = this.playerPos.y;
+                        // Chef is tall (3 blocks high)
+                        if (px === enemy.x && (py === enemy.y || py === enemy.y + 1 || py === enemy.y + 2)) {
+                            this.grit -= 10;
+                            this.log(FLAVOR_TEXT.human_hit, 'danger');
+                        }
+                    } 
+                    // STANDARD ENEMY (ANTS)
+                    else {
+                        const dx = this.playerPos.x - enemy.x;
+                        const dy = this.playerPos.y - enemy.y;
+                        let moveX = 0;
+                        let moveY = 0;
+                        if (Math.abs(dx) > Math.abs(dy)) moveX = dx > 0 ? 1 : -1;
+                        else moveY = dy > 0 ? 1 : -1;
                         
-                        // Level 2: Toxic spray
-                        if (gameState.level === 2) {
-                            for (let spray of gameState.toxicSprays) {
-                                if (spray.x === x && spray.y === y) {
-                                    if (spray.warning) {
-                                        char = '!';
-                                        classes.push('toxic-warning');
-                                    } else if (spray.active) {
-                                        char = '~';
-                                        classes.push('toxic-cloud');
+                        if(Math.random() < 0.5) {
+                             const nx = enemy.x + moveX;
+                             const ny = enemy.y + moveY;
+                             if (nx > 0 && nx < this.mapW-1 && ny > 0 && ny < this.mapH-1 && this.map[ny][nx] !== 'WALL') {
+                                 enemy.x = nx;
+                                 enemy.y = ny;
+                             }
+                        }
+
+                        if (enemy.x === this.playerPos.x && enemy.y === this.playerPos.y) {
+                            this.grit -= 3;
+                            this.log(`ATTACKED by ${this.biome.enemyName}!`, 'danger');
+                        }
+                    }
+                });
+            }
+
+            checkDeath() {
+                if (this.grit <= 0) {
+                    this.isGameOver = true;
+                    this.deathReasonEl.textContent = "Vital Signs: ZERO.";
+                    this.gameOverModal.style.display = 'block';
+                }
+            }
+
+            retryLevel() {
+                this.isGameOver = false;
+                this.gameOverModal.style.display = 'none';
+                this.score = this.levelStartScore; 
+                this.log("TIMELINE RESET. TRY AGAIN.", 'info');
+                this.startLevel(); 
+            }
+
+            render() {
+                this.gridEl.innerHTML = '';
+
+                this.gritEl.textContent = `GRIT:${Math.ceil(this.grit)}`;
+                this.levelEl.textContent = `L:${this.level}`;
+                
+                if (this.grit < 5) this.gritEl.style.color = "var(--danger-red)";
+                else this.gritEl.style.color = "var(--safe-green)";
+
+                for (let y = 0; y < this.mapH; y++) {
+                    for (let x = 0; x < this.mapW; x++) {
+                        const tileDiv = document.createElement('div');
+                        tileDiv.className = 'tile';
+                        
+                        let char = this.visualMap[y][x];
+                        let className = 'floor';
+                        
+                        const type = this.map[y][x];
+                        
+                        if (x === this.playerPos.x && y === this.playerPos.y) {
+                            char = TILES.PLAYER;
+                            className = 'player';
+                        } else {
+                            const human = this.enemies.find(e => e.type === 'HUMAN' && e.x === x && (y >= e.y && y <= e.y + 2));
+                            
+                            if (human) {
+                                const offset = y - human.y;
+                                if (offset === 0) char = 'O';
+                                else if (offset === 1) char = '/|\\';
+                                else if (offset === 2) char = '/ \\';
+                                className = 'human';
+                            }
+                            else {
+                                const enemyHere = this.enemies.find(e => e.x === x && e.y === y && !e.type); 
+                                if (enemyHere) {
+                                    char = this.biome.enemyChar;
+                                    className = 'enemy';
+                                } else if (type === 'WALL') {
+                                    char = this.biome.wallChar; 
+                                    if(this.biome.pattern === "custom") char = this.visualMap[y][x];
+                                    className = 'wall';
+                                } else if (type === 'FOOD') {
+                                    char = TILES.FOOD;
+                                    className = 'food crumb';
+                                } else if (type === 'FOOD_CHUNK') {
+                                    char = this.foodVisuals[y][x];
+                                    className = 'food';
+                                } else if (type === 'POISON') {
+                                    char = TILES.POISON;
+                                    className = 'poison';
+                                } else if (type === 'GLUE') {
+                                    char = TILES.GLUE;
+                                    className = 'glue';
+                                } else if (type === 'EXIT') {
+                                    char = TILES.EXIT;
+                                    className = 'exit';
+                                }
+                            }
+                        }
+
+                        // RENDER HAZARD (Spray or Paw)
+                        if (this.stompTarget) {
+                            const hx = this.stompTarget.x;
+                            const hy = this.stompTarget.y;
+                            let w, h, art;
+                            
+                            if (this.hazardType === 'spray') {
+                                w = SPRAY_ART[0].length;
+                                h = SPRAY_ART.length;
+                                art = SPRAY_ART;
+                            } else {
+                                w = PAW_ART[0].length;
+                                h = PAW_ART.length;
+                                art = PAW_ART;
+                            }
+                            
+                            // Warning Phase
+                            if (x >= hx && x < hx + w && y >= hy && y < hy + h) {
+                                if (this.stompTimer > 0) {
+                                    // Shadow/Warning
+                                    tileDiv.classList.add('warning');
+                                } else {
+                                    // IMPACT PHASE - Draw Art
+                                    const artChar = art[y - hy][x - hx];
+                                    if (artChar !== ' ') {
+                                        char = artChar;
+                                        if (this.hazardType === 'spray') {
+                                            className = 'spray-impact';
+                                        } else {
+                                            className = 'impact';
+                                        }
+                                        tileDiv.textContent = char;
                                     }
                                 }
                             }
                         }
                         
-                        // Level 3: Cat paw (9x4 area centered on target)
-                        if (gameState.level === 3 && gameState.pawTarget) {
-                            const px = gameState.pawTarget.x;
-                            const py = gameState.pawTarget.y;
-                            // 9 wide (px-4 to px+4), 4 tall (py-1 to py+2)
-                            if (x >= px - 4 && x <= px + 4 && y >= py - 1 && y <= py + 2) {
-                                if (gameState.pawTimer > 0) {
-                                    // Warning shadow
-                                    classes.push('paw-shadow');
-                                    if (x === px && (y === py || y === py + 1)) char = 'o';
-                                    else char = '.';
-                                } else {
-                                    // Actual paw print - show oOo pattern in center
-                                    classes.push('paw-print');
-                                    if (x === px && y === py) char = 'o';
-                                    else if (x === px && y === py + 1) char = 'O';
-                                    else if (x === px && y === py + 2) char = 'o';
-                                    else char = 'X';
+                        // RENDER SCOOTER (Level 1)
+                        if (this.level === 1) {
+                            this.scooters.forEach(s => {
+                                // Simple bounding box check for rendering art
+                                const sx = s.x;
+                                const sy = s.y;
+                                if (x >= sx && x < sx + 7 && y >= sy && y < sy + 3) {
+                                    const r = y - sy;
+                                    const c = x - sx;
+                                    // Use safe access to ASCII art
+                                    if (SCOOTER_ART[r] && SCOOTER_ART[r][c] && SCOOTER_ART[r][c] !== ' ') {
+                                        char = SCOOTER_ART[r][c];
+                                        className = 'scooter';
+                                        tileDiv.textContent = char;
+                                    }
                                 }
-                            }
+                            });
                         }
-                    }
-                    
-                    // Escape HTML and build span (handle undefined/null)
-                    const escapedChar = (char === undefined || char === null) ? ' ' : String(char);
-                    if (classes.length > 0) {
-                        lineOutput += `<span class="${classes.join(' ')}">${escapedChar}</span>`;
-                    } else {
-                        lineOutput += escapedChar;
+                        
+                        if(tileDiv.textContent !== char) tileDiv.textContent = char;
+                        
+                        className.split(' ').forEach(cls => tileDiv.classList.add(cls));
+
+                        this.gridEl.appendChild(tileDiv);
                     }
                 }
-                output += lineOutput + '\n';
             }
-            
-            // Set innerHTML
-            if (output.trim() === '') {
-                console.error('Empty output generated!', {camX, camY, viewportWidth, viewportHeight, mapWidth: gameState.mapWidth, mapHeight: gameState.mapHeight, player: gameState.player});
-                mapEl.innerHTML = 'ERROR: Empty map output<br>Map: ' + gameState.mapWidth + 'x' + gameState.mapHeight + '<br>Player: ' + gameState.player.x + ',' + gameState.player.y;
-            } else {
-                mapEl.innerHTML = output;
-                
-                // Position map to show player (camera follows player)
-                const offsetX = -camX * tileWidth + 10; // Add padding
-                const offsetY = -camY * tileHeight + 10;
-                mapEl.style.left = offsetX + 'px';
-                mapEl.style.top = offsetY + 'px';
-                mapEl.style.color = '#aaa'; // Ensure text is visible
-            }
-        }
-        
-        function updateUI() {
-            document.getElementById('level-display').textContent = 
-                `LEVEL: ${gameState.level} - ${MAPS[gameState.level].name}`;
-            document.getElementById('grit-display').textContent = `GRIT: ${gameState.grit}`;
-            document.getElementById('moves-display').textContent = `MOVES: ${gameState.moves}`;
-            
-            const gritEl = document.getElementById('grit-display');
-            if (gameState.grit < 10) {
-                gritEl.className = 'stat danger';
-            } else {
-                gritEl.className = 'stat safe';
+
+            bindInput() {
+                document.addEventListener('keydown', (e) => {
+                    if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].indexOf(e.code) > -1) {
+                        e.preventDefault();
+                    }
+                    
+                    switch(e.key) {
+                        case 'ArrowUp': case 'w': this.handleInput(0, -1); break;
+                        case 'ArrowDown': case 's': this.handleInput(0, 1); break;
+                        case 'ArrowLeft': case 'a': this.handleInput(-1, 0); break;
+                        case 'ArrowRight': case 'd': this.handleInput(1, 0); break;
+                        case 'Enter': case ' ': this.handleInput(0, 0); break;
+                    }
+                });
+
+                document.getElementById('btn-up').onclick = () => this.handleInput(0, -1);
+                document.getElementById('btn-down').onclick = () => this.handleInput(0, 1);
+                document.getElementById('btn-left').onclick = () => this.handleInput(-1, 0);
+                document.getElementById('btn-right').onclick = () => this.handleInput(1, 0);
+                document.getElementById('btn-wait').onclick = () => this.handleInput(0, 0);
+                document.getElementById('btn-skip').onclick = () => this.skipLevel();
             }
         }
-        
-        function showMessage(msg, duration = 1000) {
-            const msgEl = document.getElementById('status-message');
-            msgEl.textContent = msg;
-            msgEl.style.display = 'block';
-            setTimeout(() => {
-                msgEl.style.display = 'none';
-            }, duration);
-        }
-        
-        // Game starts when window loads (see initGame function)
+
+        const game = new NeonScuttle();
     </script>
 </body>
 </html>
