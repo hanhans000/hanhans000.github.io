@@ -2072,6 +2072,7 @@
       // --- AUDIO CONFIG ---
       // Background music for each stage
       const AUDIO_SOURCES = {
+        0: "Game composing/Overall/Main Menu.mp3", // Main Menu Music (Start Screen)
         1: "Game composing/Map 1/WET MARKET LEVEL 1 2025-12-18 1831.wav", // Stage 1 Music (Wet Market)
         2: "Game composing/Map 2/KITCHEN.mp3", // Stage 2 Music (Kitchen)
         3: "Game composing/Map 3/COCKROACH BEDROOM COZY 2025-12-18 1946.mp3", // Stage 3 Music (Bedroom)
@@ -2088,6 +2089,7 @@
           "Game composing/Overall/MOVEMENT 12.wav",
         ],
         spray: "Game composing/Map 2/PEST SPRAY 2.ogg",
+        sprayCough: "Game composing/Map 2/COUGH.mp3",
         endLevel: "Game composing/Map 3/COCKROACH FUCNING 2025-12-15 1846.mp3",
         catWarn: "Game composing/Map 1/CAT.wav",
         catAngry: "Game composing/Map 1/ANGRY MEOW.mp3",
@@ -2885,7 +2887,8 @@ ________________________________________________________________________________
           // Initialize and render the game first so it's visible behind the modal
           this.level = 1;
           this.updateTheme();
-          this.playMusic();
+          // Play main menu music for start screen
+          this.playMenuMusic();
 
           const biomeIndex = ((this.level - 1) % 3) + 1;
           this.biome = BIOMES[biomeIndex];
@@ -3153,6 +3156,29 @@ ________________________________________________________________________________
           // Add current theme
           const themeIndex = ((this.level - 1) % 3) + 1;
           document.body.classList.add(`theme-${themeIndex}`);
+        }
+
+        playMenuMusic() {
+          try {
+            const songUrl = AUDIO_SOURCES[0]; // Main Menu music
+            if (this.currentSong !== songUrl) {
+              this.currentSong = songUrl;
+              if (songUrl) {
+                this.audio.src = songUrl;
+                this.audio.volume = this.musicVolume;
+                const playPromise = this.audio.play();
+                if (playPromise && typeof playPromise.catch === "function") {
+                  playPromise.catch((e) => {
+                    console.log("Audio waiting for user interaction", e);
+                  });
+                }
+              } else {
+                this.audio.pause();
+              }
+            }
+          } catch (e) {
+            console.error("Error in playMenuMusic", e);
+          }
         }
 
         playMusic() {
@@ -4228,6 +4254,11 @@ ________________________________________________________________________________
                 this.log(FLAVOR_TEXT.spray_hit, "danger");
                 // Chemical cloud → green flash
                 this.triggerDamageFlash("green");
+                // Cough reaction sound
+                this.sfxAudio.src = SOUND_PATHS.sprayCough;
+                this.sfxAudio.currentTime = 0;
+                this.sfxAudio.volume = this.sfxBaseVolume * this.sfxVolume;
+                this.sfxAudio.play().catch(() => {});
               } else if (this.activeHazardType === "vacuum") {
                 this.lastDeathCause = "vacuum";
                 this.grit -= 20;
